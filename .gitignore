@@ -1,0 +1,17 @@
+*.onnx
+*.pt
+*rknn_model/
+__pycache__/
+.venv/
+venv/
+*.pyc
+*.pyo
+*.log
+.env
+.vscode/
+.idea/
+build/
+dist/
+*.egg-info/
+.DS_Store
+Thumbs.db

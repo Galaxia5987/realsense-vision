@@ -1,0 +1,10 @@
+ultralytics>=8.0.0
+opencv-python
+pyrealsense2
+Pillow
+numpy
+torch==2.2.0
+torchvision==0.17.0
+rknn-toolkit2
+flask
+pynetworktables

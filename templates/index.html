@@ -1,0 +1,81 @@
+{% macro render_config(key_path, value) %}
+    {% if value is mapping %}
+        <fieldset>
+            <legend>{{ key_path.split('.')[-1] if key_path else 'Config' }}</legend>
+            {% for subkey, subval in value.items() %}
+                {{ render_config(key_path ~ '.' ~ subkey if key_path else subkey, subval) }}
+            {% endfor %}
+        </fieldset>
+    {% else %}
+        <label for="{{ key_path }}">
+            {{ key_path.split('.')[-1] | replace('_', ' ') | capitalize }}:
+            {% if value is boolean %}
+                <input type="checkbox" name="{{ key_path }}" id="{{ key_path }}"
+                       value="true" {% if value %}checked{% endif %}>
+            {% elif value is number %}
+                <input type="number" name="{{ key_path }}" id="{{ key_path }}" value="{{ value }}">
+            {% else %}
+                <input type="text" name="{{ key_path }}" id="{{ key_path }}" value="{{ value }}">
+            {% endif %}
+        </label><br>
+    {% endif %}
+{% endmacro %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RealSense Interface</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flashes">
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+        </div>
+    {% endif %}
+    {% endwith %}
+    <h1>RealSense Vision Interface</h1>
+
+    <section>
+        <h2>Video Streams</h2>
+        <div class="streams">
+            <div>
+                <h3>Depth Stream</h3>
+                <img src="/streams/depth_feed" alt="Depth Stream">
+            </div>
+            <div>
+                <h3>YOLO Detection Stream</h3>
+                <img src="/streams/video_feed" alt="Detection Stream">
+            </div>
+        </div>
+        </script>
+    </section>
+
+    <section>
+        <h2>Configuration</h2>
+        <form action="/update_config" method="post">
+            {{ render_config('', config) }}
+            <button type="submit">Update Configuration</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Upload Model and Convert to RKNN</h2>
+        <form action="/upload_model" method="post" enctype="multipart/form-data">
+            <input type="file" name="model" accept=".pt" required>
+            <button type="submit">Upload & Convert</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Restart</h2>
+        <form action="/restart" method="post">
+            <button type="submit">Restart</button>
+        </form>
+    </section>
+</body>
+</html>

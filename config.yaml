@@ -1,0 +1,20 @@
+camera:
+  filters:
+    hole_filling:
+      enabled: true
+    spatial:
+      enabled: true
+    temporal:
+      enabled: true
+  fps: 30
+  height: 720
+  width: 1280
+color_frame:
+  stream:
+    enabled: true
+depth_frame:
+  stream:
+    enabled: true
+pipeline:
+  args: ./best_rknn_model/
+  type: detection
