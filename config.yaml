@@ -1,14 +1,17 @@
 camera:
   filters:
     hole_filling:
-      enabled: true
+      enabled: false
     spatial:
       enabled: true
     temporal:
       enabled: true
   fps: 30
-  height: 720
-  width: 1280
+  resolution:
+    enum:
+    - 640x480
+    - 1280x720
+    value: 1280x720
 color_frame:
   stream:
     enabled: true
@@ -16,5 +19,5 @@ depth_frame:
   stream:
     enabled: true
 pipeline:
-  args: ./best_rknn_model/
+  args: ./best_rknn_model
   type: detection

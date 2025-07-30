@@ -1,6 +1,7 @@
 from utils import frames_to_jpeg_bytes
 from detection.detector import YOLODetector
 import cv2
+from pyrealsense2 import rs2_deproject_pixel_to_point
 
 class DetectionDepthPipeline:
     def __init__(self, camera, model_path):
@@ -13,8 +14,10 @@ class DetectionDepthPipeline:
             for detection in self.detections:
                 center = detection['center']
                 depth = detection['depth']
+                point = detection['point']
+                point = [round(coord, 2) for coord in point]
                 x, y = center
-                depth_text = f"{depth:.2f}m"
+                depth_text = f"{point}"
                 cv2.putText(detected, depth_text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                 cv2.circle(detected, center, 5, (0, 255, 255), -1)
         return frames_to_jpeg_bytes(detected, resolution=(self.camera.width, self.camera.height))
@@ -43,9 +46,12 @@ class DetectionDepthPipeline:
             bboxs = detections[0]
             if len(bboxs) < 1:
                 return
+            intrinsics = depth_frame.profile.as_video_stream_profile().get_intrinsics()
             centers = [(int((bbox[0] + bbox[2]) / 2), int((bbox[1] + bbox[3]) / 2)) for bbox in bboxs]
             depths = [depth_frame.get_distance(center[0], center[1]) for center in centers]
-            self.detections = [{'bbox': bbox, 'center': center, 'depth': depth} for bbox, center, depth in zip(bboxs, centers, depths)]
+            points = [rs2_deproject_pixel_to_point(intrinsics, center, depth) for center, depth in zip(centers, depths)]
+            self.detections = [{'bbox': bbox, 'center': center, 'depth': depth, 'point': point} for bbox, center, depth, point in zip(bboxs, centers, depths, points)]
+            print(self.detections)
 
 
     def get_output(self):
@@ -53,27 +59,19 @@ class DetectionDepthPipeline:
             return self.detections
         return None
 
-class DepthPipeline:
+class RegularPipeline:
     def __init__(self, camera):
         self.camera = camera
         self.frame = None
 
     def loop(self):
-        pass
-        # self.frame = self.camera.get_latest_depth_frame()
-
-    def get_jpeg(self):
-        if self.frame is None:
+        self.frame = self.camera.get_latest_frame()
+        self.depth_frame = self.camera.get_latest_depth_frame()
+        
+    def get_depth_jpeg(self):
+        if self.depth_frame is None:
             return None
-        return frames_to_jpeg_bytes(self.frame, resolution=(self.camera.width, self.camera.height))
-
-class ColorPipeline:
-    def __init__(self, camera):
-        self.camera = camera
-        self.frame = None
-
-    def loop(self):
-        self.frame = self.camera.get_latest_color_frame()
+        return frames_to_jpeg_bytes(self.depth_frame, resolution=(self.camera.width, self.camera.height))
 
     def get_jpeg(self):
         if self.frame is None:
@@ -83,7 +81,6 @@ class ColorPipeline:
 
 pipelines = {
     "detection": DetectionDepthPipeline, 
-    "depth": DepthPipeline,
-    "color": ColorPipeline
+    "regular": RegularPipeline
 }
 

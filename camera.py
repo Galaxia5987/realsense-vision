@@ -3,6 +3,9 @@ import numpy as np
 import threading
 import cv2
 from config import config
+from utils import generate_stream_disabled_image
+
+disabled_mat = generate_stream_disabled_image()
 
 class RealSenseCamera:
     def __init__(self, width=1280, height=720, fps=30):
@@ -17,36 +20,39 @@ class RealSenseCamera:
         self.latest_depth_data = None
 
     def start(self):
-        if self.running:
-            return
-        self.pipeline = rs.pipeline()
-        rs_config = rs.config()
-        rs_config.enable_stream(rs.stream.color, self.width, self.height, rs.format.bgr8, self.fps)
-        rs_config.enable_stream(rs.stream.depth, self.width, self.height, rs.format.z16, self.fps)
-        self.align = rs.align(rs.stream.color)
-        self.spatial = rs.spatial_filter() if config.get_config().get("camera", {}).get("filters", {}).get("spatial", {}).get("enabled", True) else None
-        self.temporal = rs.temporal_filter() if config.get_config().get("camera", {}).get("filters", {}).get("temporal", {}).get("enabled", True) else None
-        self.hole_filling = rs.hole_filling_filter() if config.get_config().get("camera", {}).get("filters", {}).get("hole_filling", {}).get("enabled", True) else None
-        self.pipeline.start(rs_config)
-        depth_sensor = self.pipeline.get_active_profile().get_device().first_depth_sensor()
-        depth_sensor.set_option(rs.option.visual_preset, 3)
-        self.running = True
-        self.thread = threading.Thread(target=self._update_loop, daemon=True)
-        self.thread.start()
+        try:
+            if self.running:
+                return
+            self.pipeline = rs.pipeline()
+            rs_config = rs.config()
+            rs_config.enable_stream(rs.stream.color, self.width, self.height, rs.format.bgr8, self.fps)
+            rs_config.enable_stream(rs.stream.depth, self.width, self.height, rs.format.z16, self.fps)
+            self.align = rs.align(rs.stream.color)
+            self.spatial = rs.spatial_filter() if config.get_config().get("camera", {}).get("filters", {}).get("spatial", {}).get("enabled", True) else None
+            self.temporal = rs.temporal_filter() if config.get_config().get("camera", {}).get("filters", {}).get("temporal", {}).get("enabled", True) else None
+            self.hole_filling = rs.hole_filling_filter() if config.get_config().get("camera", {}).get("filters", {}).get("hole_filling", {}).get("enabled", True) else None
+            self.pipeline.start(rs_config)
+            depth_sensor = self.pipeline.get_active_profile().get_device().first_depth_sensor()
+            depth_sensor.set_option(rs.option.visual_preset, 3)
+            self.bad_init = False
+            self.stop_event = threading.Event()
+            self.thread = threading.Thread(target=self._update_loop, daemon=True)
+            self.thread.start()
+        except Exception as e:
+            self.bad_init = True
 
     def stop(self):
-        if not self.running:
+        if self.stop_event.is_set():
             return
-        self.running = False
-        if self.pipeline:
-            self.pipeline.stop()
-            self.pipeline = None
+        self.stop_event.set()
+        self.pipeline.stop()
+        self.pipeline = None
 
     def _update_loop(self):
         MIN_DEPTH = 0
         MAX_DEPTH = 3000
 
-        while self.running:
+        while not self.stop_event.is_set() and not self.bad_init:
             frames = self.pipeline.wait_for_frames()
             frames = self.align.process(frames)
             color_frame = frames.get_color_frame()
@@ -88,10 +94,10 @@ class RealSenseCamera:
                 self.latest_depth_frame = np.vstack((top_bar, heatmap))
 
     def get_latest_frame(self):
-        return self.latest_frame
+        return self.latest_frame if not self.bad_init else disabled_mat
 
     def get_latest_depth_frame(self):
-        return self.latest_depth_frame
+        return self.latest_depth_frame if not self.bad_init else disabled_mat
 
     def get_latest_depth_data(self):
         return self.latest_depth_data

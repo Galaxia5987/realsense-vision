@@ -1,11 +1,24 @@
 {% macro render_config(key_path, value) %}
-    {% if value is mapping %}
+    {% if value is mapping and 'enum' in value and 'value' in value %}
+        <label for="{{ key_path }}">
+            {{ key_path.split('.')[-1] | replace('_', ' ') | capitalize }}:
+            <select name="{{ key_path }}.value" id="{{ key_path }}">
+                {% for option in value.enum %}
+                    <option value="{{ option }}" {% if option == value.value %}selected{% endif %}>
+                        {{ option }}
+                    </option>
+                {% endfor %}
+            </select>
+        </label><br>
+
+    {% elif value is mapping %}
         <fieldset>
             <legend>{{ key_path.split('.')[-1] if key_path else 'Config' }}</legend>
             {% for subkey, subval in value.items() %}
                 {{ render_config(key_path ~ '.' ~ subkey if key_path else subkey, subval) }}
             {% endfor %}
         </fieldset>
+
     {% else %}
         <label for="{{ key_path }}">
             {{ key_path.split('.')[-1] | replace('_', ' ') | capitalize }}:
@@ -72,9 +85,9 @@
     </section>
 
     <section>
-        <h2>Restart</h2>
-        <form action="/restart" method="post">
-            <button type="submit">Restart</button>
+        <h2>Reload</h2>
+        <form action="/reload" method="post">
+            <button type="submit">Reload</button>
         </form>
     </section>
 </body>

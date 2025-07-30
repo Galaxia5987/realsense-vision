@@ -6,7 +6,7 @@ class YOLODetector:
         self.imgsz = imgsz
 
     def detect(self, image):
-        self.results = self.model(image, imgsz=self.imgsz)[0]
+        self.results = self.model(image, imgsz=self.imgsz, verbose=False)[0]
     
     def get_annotated_image(self):
         return self.results.plot()
