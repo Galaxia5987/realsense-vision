@@ -19,5 +19,6 @@ depth_frame:
   stream:
     enabled: true
 pipeline:
-  args: ./best_rknn_model
+  args: ./uploads/best6_rknn_model
   type: detection
+rknn_chip_type: rk3588

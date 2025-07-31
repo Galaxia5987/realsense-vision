@@ -8,7 +8,7 @@ from server import streams, routes
 from config import config
 from utils import comma_seperated_to_list
 from detection.pipeline_runner import PipelineRunner, disabled_jpeg
-from robot import NetworkTablesPublisher
+from network_tables import NetworkTablesPublisher
 
 logging.basicConfig(level=logging.INFO)
 
@@ -35,8 +35,9 @@ def reload_app():
         resolution_str = config.get_config().get("camera", {}).get("resolution", {}).get("value", "640x480")
         res = list(map(int, resolution_str.split("x")))
         camera = RealSenseCamera(
-            *res,
-            config.get_config().get("camera", {}).get("fps", 30),
+            res[0],
+            res[1],
+            config.get_config().get("camera", {}).get("fps", 30)
         )
         camera.start()
     except Exception as e:
@@ -89,8 +90,8 @@ def run():
     # Create stream routes
     try:
         if runner is not None:
-            streams.create_stream_route("/video_feed", lambda: runner.get_jpeg())
-            streams.create_stream_route("/depth_feed", lambda: runner.get_depth_jpeg())
+            streams.create_stream_route("/video_feed", lambda: runner.get_jpeg()) # type: ignore
+            streams.create_stream_route("/depth_feed", lambda: runner.get_depth_jpeg()) # type: ignore
         else:
             streams.create_stream_route("/video_feed", lambda: disabled_jpeg)
             streams.create_stream_route("/depth_feed", lambda: disabled_jpeg)

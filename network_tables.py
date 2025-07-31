@@ -19,6 +19,9 @@ class NetworkTablesPublisher:
         self.table = NetworkTables.getTable(table_name)
 
     def publish_detections(self, detections):
+        if not detections:
+            self.clear()
+            return
         json_array = [json.dumps(det,cls=NumpyEncoder) for det in detections]
         self.table.putStringArray("detections", json_array)
 

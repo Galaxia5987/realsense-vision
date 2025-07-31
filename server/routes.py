@@ -1,16 +1,26 @@
 from flask import Blueprint, render_template, flash, redirect, request
 from config import config
 from utils import unflatten_dict, flatten_with_types, get_enum_options_by_path
+from werkzeug.utils import secure_filename
+import os
+import logging
+import convert_model
 
 bp = Blueprint('routes', __name__, template_folder='templates', static_folder='static')
+UPLOAD_FOLDER = 'uploads'
 
 def set_reload_function(func):
     global reload_app
     reload_app = func
 
+def get_uploaded_models():
+    if not os.path.exists(UPLOAD_FOLDER):
+        return []
+    return [f for f in os.listdir(UPLOAD_FOLDER) if f.endswith('_rknn_model')]
+
 @bp.route('/')
 def home():
-    return render_template('index.html', config=config.get_config())
+    return render_template('index.html', config=config.get_config(), models=get_uploaded_models())
 
 @bp.route('/update_config', methods=['POST'])
 def update_config():
@@ -71,3 +81,38 @@ def restart():
     global reload_app
     reload_app()
     return redirect('/')
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() == "pt"
+
+@bp.route("/upload", methods=["POST"])
+def upload():
+    if 'file' not in request.files:
+        flash('No file part', 'error')
+        return redirect("/")
+    file = request.files['file']
+    if file.filename == '':
+        flash('No selected file', 'error')
+        return redirect("/")
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename if file.filename else "model.pt")
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+        if not filename.endswith(".pt"):
+            filename += ".pt"
+        if os.path.exists(os.path.join(UPLOAD_FOLDER, filename)):
+            os.remove(os.path.join(UPLOAD_FOLDER, filename))
+        file.save(os.path.join(UPLOAD_FOLDER, filename))
+        try:
+            os.chdir(UPLOAD_FOLDER)
+            chip = config.get_config().get("rknn_chip_type", "rk3588")
+            out_path = convert_model.convert_model(filename, chip)
+            flash(f'Model converted and saved to {out_path}', 'success')
+        except Exception as e:
+            flash(f'Error converting model: {e}', 'error')
+            logging.exception("Model conversion failed")
+        finally:
+            os.chdir('..')
+        return redirect("/")
+    return redirect("/")

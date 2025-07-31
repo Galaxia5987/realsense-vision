@@ -4,6 +4,7 @@ import threading
 import cv2
 from config import config
 from utils import generate_stream_disabled_image
+import logging
 
 disabled_mat = generate_stream_disabled_image()
 
@@ -40,6 +41,7 @@ class RealSenseCamera:
             self.thread.start()
         except Exception as e:
             self.bad_init = True
+            logging.exception("Failed to start RealSense camera: %s", e)
 
     def stop(self):
         if self.stop_event.is_set():

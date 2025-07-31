@@ -78,10 +78,20 @@
 
     <section>
         <h2>Upload Model and Convert to RKNN</h2>
-        <form action="/upload_model" method="post" enctype="multipart/form-data">
-            <input type="file" name="model" accept=".pt" required>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".pt" required>
             <button type="submit">Upload & Convert</button>
         </form>
+        <div>
+            <h3>Uploaded Models</h3>
+            <ul>
+                {% for model in models %}
+                    <li>{{ model }}</li>
+                {% else %}
+                    <li>No models uploaded.</li>
+                {% endfor %}
+            </ul>
+        </div>
     </section>
 
     <section>
