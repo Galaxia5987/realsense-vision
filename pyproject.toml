@@ -3,7 +3,7 @@ name = "realsense-vision"
 version = "0.1.0"
 description = "Very good vision"
 readme = "README.md"
-requires-python = "==3.10.18"
+requires-python = ">=3.10.0,<=3.10.18"
 dependencies = [
     "ultralytics>=8.0.0",
     "opencv-python",
