@@ -1,0 +1,21 @@
+[project]
+name = "realsense-vision"
+version = "0.1.0"
+description = "Very good vision"
+readme = "README.md"
+requires-python = "==3.10.18"
+dependencies = [
+    "ultralytics>=8.0.0",
+    "opencv-python",
+    "pyrealsense2",
+    "Pillow",
+    "numpy",
+    "torch==2.2.0",
+    "torchvision==0.17.0",
+    "rknn-toolkit2",
+    "flask",
+    "pynetworktables",
+    "onnxslim>=0.1.61",
+    "setuptools>=80.9.0",
+    "rknn-toolkit-lite2>=2.3.2",
+]
