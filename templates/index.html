@@ -95,10 +95,35 @@
     </section>
 
     <section>
+        <h2>Logs</h2>
+        <div id="logs"></div>
+    </section>
+
+    <section>
         <h2>Reload</h2>
         <form action="/reload" method="post">
             <button type="submit">Reload</button>
         </form>
     </section>
+
+    <section>
+        <h2>Restart Service</h2>
+        <form action="/restart" method="post">
+            <button type="submit">Restart Service</button>
+        </form>
+    </section>
+    <script>
+        const logDiv = document.getElementById("logs");
+        const ws = new WebSocket("ws://" + location.hostname + ":8765");
+
+        ws.onmessage = (event) => {
+            logDiv.innerText += event.data + "\n";
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+
+        ws.onclose = () => {
+            logDiv.innerText += "[DISCONNECTED FROM LOG SERVER]\n";
+        };
+    </script>
 </body>
 </html>

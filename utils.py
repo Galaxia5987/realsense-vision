@@ -1,5 +1,10 @@
 import cv2
 import numpy as np
+import subprocess
+import logging
+from reloader import reload_app
+from pathlib import Path
+from config import config
 
 def frames_to_jpeg_bytes(frame, resolution=(640, 480)):
     resized = cv2.resize(frame, resolution)
@@ -60,3 +65,24 @@ def generate_stream_disabled_image(width=640, height=480, text="Stream Disabled"
     cv2.putText(image, text, (x, y), font, font_scale, font_color, thickness, lineType=cv2.LINE_AA)
 
     return image
+
+def restart_service():
+    try:
+        subprocess.run(["sudo", "systemctl", "restart", "realsense-vision.service"], check=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        logging.exception("Failed to restart service: %s", e)
+        return False
+
+def fail_restart():
+    logging.info("Failed action, reloading...")
+    fail_count = 0
+    if Path(".fail").is_file():
+        with open(".fail", "r") as f:
+            fail_count = int(f.read())
+    if fail_count >= int(config.get_config().get("max_fail_count", 3)):
+        logging.critical("Exceeded fail count - not reloading again.")
+        return
+    with open(".fail", "w") as f:
+        f.write(str(fail_count+1))
+    reload_app()

@@ -63,3 +63,11 @@ input[type="file"] {
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
+
+#logs { 
+      white-space: pre-wrap; 
+      border: 1px solid #444; 
+      padding: 10px; 
+      height: 90vh; 
+      overflow-y: auto; 
+    }

@@ -11,14 +11,15 @@ camera:
     enum:
     - 640x480
     - 1280x720
-    value: 1280x720
+    value: 640x480
 color_frame:
   stream:
     enabled: true
 depth_frame:
   stream:
     enabled: true
+max_fail_count: 5
 pipeline:
-  args: ''
-  type: regular
+  args: ./uploads/best_rknn_model
+  type: detection
 rknn_chip_type: rk3588

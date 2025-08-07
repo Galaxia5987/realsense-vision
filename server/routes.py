@@ -1,17 +1,15 @@
 from flask import Blueprint, render_template, flash, redirect, request
 from config import config
-from utils import unflatten_dict, flatten_with_types, get_enum_options_by_path
+from utils import unflatten_dict, flatten_with_types, get_enum_options_by_path, restart_service
 from werkzeug.utils import secure_filename
 import os
 import logging
 import convert_model
+from reloader import reload_app
+import logging
 
 bp = Blueprint('routes', __name__, template_folder='templates', static_folder='static')
 UPLOAD_FOLDER = 'uploads'
-
-def set_reload_function(func):
-    global reload_app
-    reload_app = func
 
 def get_uploaded_models():
     if not os.path.exists(UPLOAD_FOLDER):
@@ -77,10 +75,23 @@ def update_config():
     return redirect('/')
 
 @bp.route('/reload', methods=['POST'])
-def restart():
+def reload():
     global reload_app
     reload_app()
     return redirect('/')
+
+@bp.route('/restart', methods=['POST'])
+def restart():
+    return redirect('/')
+
+@bp.after_request
+def mid(response):
+    if request.path == "/restart":
+        restart_service()
+    return response
+
+    
+
 
 def allowed_file(filename):
     return '.' in filename and \

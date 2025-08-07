@@ -9,8 +9,11 @@ from config import config
 from utils import comma_seperated_to_list
 from detection.pipeline_runner import PipelineRunner, disabled_jpeg
 from network_tables import NetworkTablesPublisher
+from wslog import start_ws_log_server, StdInterceptor
+import threading
+import sys
+import reloader
 
-logging.basicConfig(level=logging.INFO)
 
 app = None
 camera = None
@@ -82,8 +85,18 @@ def run():
 
     app = Flask(__name__)
     app.secret_key = secrets.token_hex(32)
-    
-    routes.set_reload_function(reload_app)
+    sys.stdout = StdInterceptor("stdout")
+    sys.stderr = StdInterceptor("stderr")
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+
+
+    def run_ws_server():
+        loop = start_ws_log_server()
+        loop.run_forever()
+
+    threading.Thread(target=run_ws_server, daemon=True).start()
+
+    reloader.set_reload_function(reload_app)
     
     reload_app()
     
@@ -115,6 +128,7 @@ def run():
             flash(error, 'error')
 
     app.run(host="0.0.0.0", port=5000)
+    reloader.is_finished = True
 
 def stop():
     global camera, runner

@@ -3,7 +3,7 @@ import numpy as np
 import threading
 import cv2
 from config import config
-from utils import generate_stream_disabled_image
+from utils import generate_stream_disabled_image, fail_restart
 import logging
 
 disabled_mat = generate_stream_disabled_image()
@@ -42,6 +42,9 @@ class RealSenseCamera:
         except Exception as e:
             self.bad_init = True
             logging.exception("Failed to start RealSense camera: %s", e)
+            print("dadasdassdsd")
+            raise Exception("Failed to start realsense camera")
+            # fail_restart()            
 
     def stop(self):
         if self.stop_event.is_set():
