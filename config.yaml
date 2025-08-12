@@ -11,6 +11,7 @@ camera:
     enum:
     - 640x480
     - 1280x720
+    - 848x640
     value: 640x480
 color_frame:
   stream:
@@ -19,6 +20,10 @@ depth_frame:
   stream:
     enabled: true
 max_fail_count: 5
+min_confidence: 0.85
+network_tables:
+  server: 10.59.87.2
+  table: RealsenseVision
 pipeline:
   args: ./uploads/best_rknn_model
   type: detection

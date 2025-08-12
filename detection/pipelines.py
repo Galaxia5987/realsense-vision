@@ -1,11 +1,13 @@
 from utils import frames_to_jpeg_bytes
 from detection.detector import YOLODetector
 import cv2
+import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
 class DetectionDepthPipeline:
     def __init__(self, camera, model_path):
         self.camera = camera
+        np.set_printoptions(threshold=100000)
         self.detector = YOLODetector(model_path)
 
     def get_jpeg(self):
@@ -47,11 +49,18 @@ class DetectionDepthPipeline:
             if len(bboxs) < 1:
                 return
             intrinsics = depth_frame.profile.as_video_stream_profile().get_intrinsics()
-            centers = [(int((bbox[0] + bbox[2]) / 2), int((bbox[1] + bbox[3]) / 2)) for bbox in bboxs]
-            depths = [depth_frame.get_distance(center[0], center[1]) for center in centers]
-            points = [rs2_deproject_pixel_to_point(intrinsics, center, depth) for center, depth in zip(centers, depths)]
-            self.detections = [{'bbox': bbox, 'center': center, 'depth': depth, 'point': point} for bbox, center, depth, point in zip(bboxs, centers, depths, points)]
-            print(self.detections)
+            self.detections = []
+            for bbox in bboxs:
+                center = (int((bbox[0] + bbox[2]) / 2), int((bbox[1] + bbox[3]) / 2))
+                depth_mat = np.asanyarray(depth_frame.get_data())
+                flattened_index = np.argmin(depth_mat[(depth_mat != 0)])
+                row, col = np.unravel_index(flattened_index, depth_mat.shape)
+                min_value = depth_mat[row][col]
+                row += bbox[0]
+                col += bbox[1]
+                center = (row, col)
+                point = rs2_deproject_pixel_to_point(intrinsics, center, min_value)
+                self.detections.append({'bbox': bbox, 'center': center, 'depth': min_value.item(), 'point': point})
 
 
     def get_output(self):

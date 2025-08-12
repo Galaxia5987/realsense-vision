@@ -9,7 +9,7 @@ import logging
 disabled_mat = generate_stream_disabled_image()
 
 class RealSenseCamera:
-    def __init__(self, width=1280, height=720, fps=30):
+    def __init__(self, width=640, height=480, fps=30):
         self.width = width
         self.height = height
         self.fps = fps
@@ -42,7 +42,6 @@ class RealSenseCamera:
         except Exception as e:
             self.bad_init = True
             logging.exception("Failed to start RealSense camera: %s", e)
-            print("dadasdassdsd")
             raise Exception("Failed to start realsense camera")
             # fail_restart()            
 
@@ -73,30 +72,11 @@ class RealSenseCamera:
                 self.latest_frame = np.asanyarray(color_frame.get_data())
             if depth_frame:
                 self.latest_depth_data = depth_frame.as_depth_frame()
-                depth_image = np.asanyarray(self.latest_depth_data.get_data())
-                if not config.get_config().get("depth_frame", {}).get("stream", {}).get("enabled", True):
-                    self.latest_depth_frame = depth_image
-                    continue
-                depth_clipped = np.clip(depth_image, MIN_DEPTH, MAX_DEPTH)
-                normalized = ((depth_clipped - MIN_DEPTH) / (MAX_DEPTH - MIN_DEPTH) * 255).astype(np.uint8)
-                hist_eq = cv2.equalizeHist(normalized)
-                heatmap = cv2.applyColorMap(hist_eq, cv2.COLORMAP_JET)
+                color_map = rs.colorizer()
+                colorized_frame = color_map.process(self.latest_depth_data)
+                depth_image = np.asanyarray(colorized_frame.get_data()).astype(np.uint8)
+                self.latest_depth_frame = depth_image
 
-                # --- Add depth scale legend bar on top ---
-                legend = np.linspace(0, 255, 256, dtype=np.uint8)
-                legend = np.tile(legend, (30, 1))
-                legend_color = cv2.applyColorMap(legend, cv2.COLORMAP_JET)
-                legend_color_resized = cv2.resize(legend_color, (self.width, 30), interpolation=cv2.INTER_NEAREST)
-
-                label_img = np.zeros((30, self.width, 3), dtype=np.uint8)
-                tick_positions = [0, 128, 255]
-                tick_values = [f"{MIN_DEPTH}mm",f"{(MIN_DEPTH + MAX_DEPTH)//4}mm" ,f"{(MIN_DEPTH + MAX_DEPTH)//2}mm",f"{(MIN_DEPTH + MAX_DEPTH)*3//4}mm", f"{MAX_DEPTH}mm"]
-                for pos, val in zip(tick_positions, tick_values):
-                    x = int(pos / 255 * self.width)
-                    cv2.putText(label_img, val, (x, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
-
-                top_bar = cv2.addWeighted(legend_color_resized, 0.7, label_img, 0.3, 0)
-                self.latest_depth_frame = np.vstack((top_bar, heatmap))
 
     def get_latest_frame(self):
         return self.latest_frame if not self.bad_init else disabled_mat
