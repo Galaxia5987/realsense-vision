@@ -7,16 +7,18 @@ requires-python = ">=3.10.0,<=3.10.18"
 dependencies = [
     "ultralytics>=8.0.0",
     "opencv-python",
-    "pyrealsense2",
     "Pillow",
     "numpy",
     "torch==2.2.0",
     "torchvision==0.17.0",
     "rknn-toolkit2",
     "flask",
-    "pynetworktables",
+    "pyntcore",
     "onnxslim>=0.1.61",
     "setuptools>=80.9.0",
     "rknn-toolkit-lite2>=2.3.2",
     "websockets>=15.0.1",
 ]
+
+[tool.uv.sources]
+pyntcore = { url = "https://tortall.net/~robotpy/wheels/2023/raspbian/pyntcore-2023.4.3.0-cp310-cp310-linux_aarch64.whl" }

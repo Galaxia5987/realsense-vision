@@ -46,6 +46,9 @@ sudo apt install -y cmake 1>/dev/null || log_error "Failed to install cmake"
 log_info "Installing build-essential..."
 sudo apt install -y build-essential 1>/dev/null || log_error "Failed to install build-essential"
 
+log_info "Installing tools..."
+sudo apt install cmake build-essential python3-dev libllvm15 clang 1>/dev/null || log_error "Failed to install tools"
+
 log_info "Adding deadsnakes PPA..."
 sudo add-apt-repository -y ppa:deadsnakes/ppa 1>/dev/null || log_error "Failed to add PPA"
 
