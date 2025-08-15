@@ -53,8 +53,6 @@ class RealSenseCamera:
         self.pipeline = None
 
     def _update_loop(self):
-        MIN_DEPTH = 0
-        MAX_DEPTH = 3000
 
         while not self.stop_event.is_set() and not self.bad_init:
             frames = self.pipeline.wait_for_frames()

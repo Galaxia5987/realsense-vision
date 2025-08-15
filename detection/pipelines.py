@@ -50,17 +50,49 @@ class DetectionDepthPipeline:
                 return
             intrinsics = depth_frame.profile.as_video_stream_profile().get_intrinsics()
             self.detections = []
+
+            depth_mat = np.asanyarray(depth_frame.get_data())  # shape: (height, width), uint16 in mm
+            height, width = depth_mat.shape
+
             for bbox in bboxs:
-                center = (int((bbox[0] + bbox[2]) / 2), int((bbox[1] + bbox[3]) / 2))
-                depth_mat = np.asanyarray(depth_frame.get_data())
-                flattened_index = np.argmin(depth_mat[(depth_mat != 0)])
-                row, col = np.unravel_index(flattened_index, depth_mat.shape)
-                min_value = depth_mat[row][col]
-                row += bbox[0]
-                col += bbox[1]
-                center = (row, col)
-                point = rs2_deproject_pixel_to_point(intrinsics, center, min_value)
-                self.detections.append({'bbox': bbox, 'center': center, 'depth': min_value.item(), 'point': point})
+                # Convert to absolute integer pixel coordinates
+                x_min, y_min, x_max, y_max = map(int, bbox)
+
+                # Clamp to image bounds
+                x_min = max(0, min(x_min, width - 1))
+                x_max = max(0, min(x_max, width - 1))
+                y_min = max(0, min(y_min, height - 1))
+                y_max = max(0, min(y_max, height - 1))
+
+                center_x = (x_min + x_max) // 2
+                center_y = (y_min + y_max) // 2
+
+                depth_crop = depth_mat[y_min:y_max, x_min:x_max]
+
+                mask = (depth_crop != 0)
+                if np.any(mask):
+                    min_idx = np.argmin(depth_crop[mask])
+                    mask_coords = np.argwhere(mask)
+                    min_y_local, min_x_local = mask_coords[min_idx]
+
+                    min_x = x_min + min_x_local
+                    min_y = y_min + min_y_local
+                    min_value_mm = depth_mat[min_y, min_x]
+                else:
+                    min_x, min_y = center_x, center_y
+                    min_value_mm = 0
+
+                depth_meters = min_value_mm / 1000.0
+                point = rs2_deproject_pixel_to_point(intrinsics, [min_x, min_y], depth_meters)
+
+                self.detections.append({
+                    'bbox': bbox,
+                    'center': (center_x, center_y),
+                    'depth': min_value_mm,
+                    'point': point
+                })
+
+
 
 
     def get_output(self):
