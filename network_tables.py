@@ -3,6 +3,7 @@ import ntcore
 from wpimath.geometry import Pose3d, Rotation3d, Translation3d
 import numpy as np
 import logging
+import struct
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -24,23 +25,20 @@ class NetworkTablesPublisher:
         self.inst.startClient4("RealsenseVision")
         self.inst.setServer(server)
         self.table = self.inst.getTable(table_name)
-        self.topic = self.table.getTopic("detection")
+        # self.topic = self.table.getTopic("detection")
+        # self.topic.publish()
 
     def publish_detections(self, detections):
         if not detections:
             self.clear()
             return
         x,y,z = detections[0]["point"]
-        self.topic.genericPublishEx("raw",
-            {
-                "translation": {
-                    "x": x,
-                    "y": y,
-                    "z": z
-                }
-            }
-        )
+        pose = Pose3d(
+                Translation3d(x, y, z),  # x, y, z in meters
+                Rotation3d(0.0, 0.0, 0.0)     # roll, pitch, yaw in radians
+            )
+        
+        self.table.putRaw("detection", struct.pack("f",x))
 
     def clear(self):
-        # self.topic.=
         pass
