@@ -662,6 +662,16 @@ wheels = [
 ]
 
 [[package]]
+name = "pyrealsense2"
+version = "2.56.5.9235"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/af/2d/d6d4a12a4af3b944e4ab27850bf1e696fc17fbdccdcd5fbbafadbfbca5a4/pyrealsense2-2.56.5.9235-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:050301dcb13abe49e14449b010732a5b7ec50d0de829c8f8a9356944518d5784", size = 11064623, upload-time = "2025-07-28T14:59:17.835Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/de/217f2b669efd3c109aab1846088733d5241550ae9267a49149224f3b5d72/pyrealsense2-2.56.5.9235-cp310-cp310-manylinux2014_aarch64.whl", hash = "sha256:d68a174f5c3bf43d6eef3aac0de114b4802052c8a98a92dcbb8ecca0f98509d4", size = 4338854, upload-time = "2025-07-28T14:59:20.079Z" },
+    { url = "https://files.pythonhosted.org/packages/13/36/507114d231a16af6a8836059d8b752a90404020629cb52028cc01a8119b9/pyrealsense2-2.56.5.9235-cp310-cp310-win_amd64.whl", hash = "sha256:c0b097b2b3d340a34fd61ca8c7b46e084ffca490318c4cb7f6af0f8f44f94bd9", size = 7799689, upload-time = "2025-07-28T14:59:21.592Z" },
+]
+
+[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
@@ -710,8 +720,10 @@ dependencies = [
     { name = "opencv-python" },
     { name = "pillow" },
     { name = "pyntcore" },
+    { name = "pyrealsense2" },
     { name = "rknn-toolkit-lite2" },
     { name = "rknn-toolkit2" },
+    { name = "robotpy-wpimath" },
     { name = "setuptools" },
     { name = "torch" },
     { name = "torchvision" },
@@ -727,8 +739,10 @@ requires-dist = [
     { name = "opencv-python" },
     { name = "pillow" },
     { name = "pyntcore", url = "https://tortall.net/~robotpy/wheels/2023/raspbian/pyntcore-2023.4.3.0-cp310-cp310-linux_aarch64.whl" },
+    { name = "pyrealsense2", specifier = "==2.56.5.9235" },
     { name = "rknn-toolkit-lite2", specifier = ">=2.3.2" },
     { name = "rknn-toolkit2" },
+    { name = "robotpy-wpimath", url = "https://tortall.net/~robotpy/wheels/2023/raspbian/robotpy_wpimath-2023.4.3.1-cp310-cp310-linux_aarch64.whl" },
     { name = "setuptools", specifier = ">=80.9.0" },
     { name = "torch", specifier = "==2.2.0" },
     { name = "torchvision", specifier = "==0.17.0" },
@@ -786,6 +800,20 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/c2/79/d5f886bd0bbf455c3aa62073191fde1cb9a98a253cee885d57123ffa76f1/rknn_toolkit2-2.3.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:73d0bb55d30ee00bbd9603331a4118da73a4e12fa9d9196200460d07d67c6a12", size = 37641091, upload-time = "2025-04-09T09:51:40.248Z" },
     { url = "https://files.pythonhosted.org/packages/58/5e/2b347a2c4430427ba1cfefdcd6ea12ecaa6de3465a39d45f2a9d685b2b34/rknn_toolkit2-2.3.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6cb783ddf293ac509f39bf9127acf6a5492bbb67e4b4b4ac33a7c6d2cefb4f3c", size = 39604380, upload-time = "2025-04-09T09:47:20.487Z" },
 ]
+
+[[package]]
+name = "robotpy-wpimath"
+version = "2023.4.3.1"
+source = { url = "https://tortall.net/~robotpy/wheels/2023/raspbian/robotpy_wpimath-2023.4.3.1-cp310-cp310-linux_aarch64.whl" }
+dependencies = [
+    { name = "robotpy-wpiutil" },
+]
+wheels = [
+    { url = "https://tortall.net/~robotpy/wheels/2023/raspbian/robotpy_wpimath-2023.4.3.1-cp310-cp310-linux_aarch64.whl", hash = "sha256:37cb235125d3292bc5d3675ed5f1be908d313a37eda9ab22bb929fb3b63ff258" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "robotpy-wpiutil", specifier = "~=2023.4.3" }]
 
 [[package]]
 name = "robotpy-wpinet"

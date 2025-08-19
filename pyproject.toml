@@ -18,7 +18,10 @@ dependencies = [
     "setuptools>=80.9.0",
     "rknn-toolkit-lite2>=2.3.2",
     "websockets>=15.0.1",
+    "pyrealsense2==2.56.5.9235",
+    "robotpy-wpimath"
 ]
 
 [tool.uv.sources]
 pyntcore = { url = "https://tortall.net/~robotpy/wheels/2023/raspbian/pyntcore-2023.4.3.0-cp310-cp310-linux_aarch64.whl" }
+robotpy-wpimath = { url = "https://tortall.net/~robotpy/wheels/2023/raspbian/robotpy_wpimath-2023.4.3.1-cp310-cp310-linux_aarch64.whl" }

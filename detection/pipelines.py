@@ -47,6 +47,7 @@ class DetectionDepthPipeline:
         if detections:
             bboxs = detections[0]
             if len(bboxs) < 1:
+                self.detections = []
                 return
             intrinsics = depth_frame.profile.as_video_stream_profile().get_intrinsics()
             self.detections = []
@@ -91,6 +92,8 @@ class DetectionDepthPipeline:
                     'depth': min_value_mm,
                     'point': point
                 })
+        else:
+            self.detections = []
 
 
 
