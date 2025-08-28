@@ -320,6 +320,16 @@ wheels = [
 ]
 
 [[package]]
+name = "msvc-runtime"
+version = "14.42.34433"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/17/ca/4826ec7b6771db6c3a70916ec1303e88ac957d9d398ebaa4f9a4c88d7ea8/msvc_runtime-14.42.34433-cp310-cp310-win32.whl", hash = "sha256:7211342b24025fd0294f7920814c5a5dc95a22fd03c8bc729ca980fb21df3f2b", size = 1926964, upload-time = "2024-11-15T01:08:15.096Z" },
+    { url = "https://files.pythonhosted.org/packages/15/c9/9d1d4126d374a3f94e3475c5077ec68e08537d15f8f122f70870010be97a/msvc_runtime-14.42.34433-cp310-cp310-win_amd64.whl", hash = "sha256:89574bc376a48e349f97b6dde289367b0a32dedaf3774ef64ed4330e9823e09c", size = 1927398, upload-time = "2024-11-15T01:08:16.47Z" },
+    { url = "https://files.pythonhosted.org/packages/e8/b3/7df711394c6cea501caddaade34ae220c9b16340451452cc6c16c1579be2/msvc_runtime-14.42.34433-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:e934840ebbef53f51febfacdb4f39965060a818cee3429da9fcfd396c61595cf", size = 1927429, upload-time = "2024-11-15T01:08:38.623Z" },
+]
+
+[[package]]
 name = "networkx"
 version = "3.4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -627,20 +637,20 @@ wheels = [
 
 [[package]]
 name = "pyntcore"
-version = "2023.4.3.0"
-source = { url = "https://tortall.net/~robotpy/wheels/2023/raspbian/pyntcore-2023.4.3.0-cp310-cp310-linux_aarch64.whl" }
+version = "2025.3.2.2.dev0+g094dd768.d20250822"
+source = { path = "deps/pyntcore-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" }
 dependencies = [
     { name = "robotpy-wpinet" },
     { name = "robotpy-wpiutil" },
 ]
 wheels = [
-    { url = "https://tortall.net/~robotpy/wheels/2023/raspbian/pyntcore-2023.4.3.0-cp310-cp310-linux_aarch64.whl", hash = "sha256:1836c399760d9e66f1e21d51ceff79da666b9e789a5cb9f42f4bbd7f648e2076" },
+    { filename = "pyntcore-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl", hash = "sha256:18d63ab8bd391c07a7f119fec33741daaeb19069dfeb9a786b807d4f76cce38d" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "robotpy-wpinet", specifier = "~=2023.4.3" },
-    { name = "robotpy-wpiutil", specifier = "~=2023.4.3" },
+    { name = "robotpy-wpinet", specifier = "==2025.3.2.2.dev0+g094dd768.d20250822" },
+    { name = "robotpy-wpiutil", specifier = "==2025.3.2.2.dev0+g094dd768.d20250822" },
 ]
 
 [[package]]
@@ -723,7 +733,8 @@ dependencies = [
     { name = "pyrealsense2" },
     { name = "rknn-toolkit-lite2" },
     { name = "rknn-toolkit2" },
-    { name = "robotpy-wpimath" },
+    { name = "robotpy-wpinet" },
+    { name = "robotpy-wpiutil" },
     { name = "setuptools" },
     { name = "torch" },
     { name = "torchvision" },
@@ -738,11 +749,12 @@ requires-dist = [
     { name = "onnxslim", specifier = ">=0.1.61" },
     { name = "opencv-python" },
     { name = "pillow" },
-    { name = "pyntcore", url = "https://tortall.net/~robotpy/wheels/2023/raspbian/pyntcore-2023.4.3.0-cp310-cp310-linux_aarch64.whl" },
+    { name = "pyntcore", path = "deps/pyntcore-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" },
     { name = "pyrealsense2", specifier = "==2.56.5.9235" },
     { name = "rknn-toolkit-lite2", specifier = ">=2.3.2" },
     { name = "rknn-toolkit2" },
-    { name = "robotpy-wpimath", url = "https://tortall.net/~robotpy/wheels/2023/raspbian/robotpy_wpimath-2023.4.3.1-cp310-cp310-linux_aarch64.whl" },
+    { name = "robotpy-wpinet", path = "deps/robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" },
+    { name = "robotpy-wpiutil", path = "deps/robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" },
     { name = "setuptools", specifier = ">=80.9.0" },
     { name = "torch", specifier = "==2.2.0" },
     { name = "torchvision", specifier = "==0.17.0" },
@@ -802,43 +814,32 @@ wheels = [
 ]
 
 [[package]]
-name = "robotpy-wpimath"
-version = "2023.4.3.1"
-source = { url = "https://tortall.net/~robotpy/wheels/2023/raspbian/robotpy_wpimath-2023.4.3.1-cp310-cp310-linux_aarch64.whl" }
+name = "robotpy-wpinet"
+version = "2025.3.2.2.dev0+g094dd768.d20250822"
+source = { path = "deps/robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" }
 dependencies = [
     { name = "robotpy-wpiutil" },
 ]
 wheels = [
-    { url = "https://tortall.net/~robotpy/wheels/2023/raspbian/robotpy_wpimath-2023.4.3.1-cp310-cp310-linux_aarch64.whl", hash = "sha256:37cb235125d3292bc5d3675ed5f1be908d313a37eda9ab22bb929fb3b63ff258" },
+    { filename = "robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl", hash = "sha256:18530b856a6547365f029c96829e8ec32ae757a48d34f42f40abf8983ca317a9" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "robotpy-wpiutil", specifier = "~=2023.4.3" }]
-
-[[package]]
-name = "robotpy-wpinet"
-version = "2023.4.3.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "robotpy-wpiutil" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/f5/db/a3c67b5c5be6ba20e1ffaf4ee15395f53812ac9178442bb13ee929234d26/robotpy-wpinet-2023.4.3.0.tar.gz", hash = "sha256:611e52e287c2f722ffc683a7b85bb385e6f5a7d744b0c8d2948cbf0fd3a30e4e", size = 6696, upload-time = "2023-03-27T04:28:48.829Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/12/750443f23eb7bdabd63703a9f5909cf855d9c9b693439cc2ecf32c2dcb03/robotpy_wpinet-2023.4.3.0-cp310-cp310-macosx_10_16_x86_64.whl", hash = "sha256:93d7c853c7df21abb51dd970cce320b7bbcae2e56d5bcce0700db096d9095c2c", size = 1253860, upload-time = "2023-03-27T04:28:27.495Z" },
-    { url = "https://files.pythonhosted.org/packages/45/db/e0106f0070c67fe4e55d902e032a4f08002e4c098ec6c8ee2dc827609f9b/robotpy_wpinet-2023.4.3.0-cp310-cp310-manylinux_2_35_x86_64.whl", hash = "sha256:3a9691ce2c1b549e55934d9bd78c020a4e188c62b273213d8b942678f2f62415", size = 713635, upload-time = "2023-03-27T04:28:29.262Z" },
-    { url = "https://files.pythonhosted.org/packages/96/74/5c090bcfde577b8f6ed9125d3314b113de202ce2d4d78fd7dc8c444fb285/robotpy_wpinet-2023.4.3.0-cp310-cp310-win_amd64.whl", hash = "sha256:f0385a3c50c29e1e55b148b4a3cc71e12aff805e854d5dad90f65ab782819526", size = 913203, upload-time = "2023-03-27T04:28:30.483Z" },
-]
+requires-dist = [{ name = "robotpy-wpiutil", specifier = "==2025.3.2.2.dev0+g094dd768.d20250822" }]
 
 [[package]]
 name = "robotpy-wpiutil"
-version = "2023.4.3.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/4a/60/a37ea8727bc82af093308b6938ec2c29fafe78a1cd12b5ab920ff544a042/robotpy-wpiutil-2023.4.3.0.tar.gz", hash = "sha256:dfc003d656d4b10d7c779ce7d3ea145562dc168bda8d81fbe6fe5d59210d9abf", size = 23566, upload-time = "2023-03-27T04:18:00.303Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/77/66/16c9228b8b866501dc37e24fca26b786e7e1edba95ac715a749ff6b9f481/robotpy_wpiutil-2023.4.3.0-cp310-cp310-macosx_10_16_x86_64.whl", hash = "sha256:96d8abf0c596084a804926b4fa75bc6d1998c79b307832ffe609da47d87a6fe8", size = 1747912, upload-time = "2023-03-27T04:17:33.803Z" },
-    { url = "https://files.pythonhosted.org/packages/02/c1/8721ac55d253f5ead3793644085718f626303ace1f4ec69813c3e06a621a/robotpy_wpiutil-2023.4.3.0-cp310-cp310-manylinux_2_35_x86_64.whl", hash = "sha256:e25db1cf716e6a2f0a58a7369d208e0569d18c62ca197aee72bd24caa0e69781", size = 1384397, upload-time = "2023-03-27T04:17:35.884Z" },
-    { url = "https://files.pythonhosted.org/packages/f0/49/db90935cdef95a73ec6095440daf738a7681f10f6765c82abf26784058b1/robotpy_wpiutil-2023.4.3.0-cp310-cp310-win_amd64.whl", hash = "sha256:9a80c2f7e3466af58a41f602069c24ef84e3ae7e703b1a28f8adf910608cdf70", size = 1447568, upload-time = "2023-03-27T04:17:37.073Z" },
+version = "2025.3.2.2.dev0+g094dd768.d20250822"
+source = { path = "deps/robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" }
+dependencies = [
+    { name = "msvc-runtime", marker = "sys_platform == 'win32'" },
 ]
+wheels = [
+    { filename = "robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl", hash = "sha256:6f44bfb3f6b7e567329518af884d7cbd3bfe0ce0abd97d1b89d65a95955ae11e" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "msvc-runtime", marker = "sys_platform == 'win32'", specifier = ">=14.42.34433" }]
 
 [[package]]
 name = "ruamel-yaml"
