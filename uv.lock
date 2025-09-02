@@ -9,6 +9,18 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "apscheduler"
+version = "3.11.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tzlocal" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4e/00/6d6814ddc19be2df62c8c898c4df6b5b1914f3bd024b780028caa392d186/apscheduler-3.11.0.tar.gz", hash = "sha256:4c622d250b0955a65d5d0eb91c33e6d43fd879834bf541e0a18661ae60460133", size = 107347, upload-time = "2024-11-24T19:39:26.463Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d0/ae/9a053dd9229c0fde6b1f1f33f609ccff1ee79ddda364c756a924c6d8563b/APScheduler-3.11.0-py3-none-any.whl", hash = "sha256:fc134ca32e50f5eadcc4938e3a4545ab19131435e851abb40b34d63d5141c6da", size = 64004, upload-time = "2024-11-24T19:39:24.442Z" },
+]
+
+[[package]]
 name = "blinker"
 version = "1.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -637,20 +649,20 @@ wheels = [
 
 [[package]]
 name = "pyntcore"
-version = "2025.3.2.2.dev0+g094dd768.d20250822"
-source = { path = "deps/pyntcore-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" }
+version = "2025.3.2.2.dev0+g094dd768.d20250829"
+source = { path = "deps/pyntcore-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" }
 dependencies = [
     { name = "robotpy-wpinet" },
     { name = "robotpy-wpiutil" },
 ]
 wheels = [
-    { filename = "pyntcore-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl", hash = "sha256:18d63ab8bd391c07a7f119fec33741daaeb19069dfeb9a786b807d4f76cce38d" },
+    { filename = "pyntcore-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl", hash = "sha256:eaa245d896f5320e522a383515462ff3371db7f94f2d566a018a74cf95facc55" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "robotpy-wpinet", specifier = "==2025.3.2.2.dev0+g094dd768.d20250822" },
-    { name = "robotpy-wpiutil", specifier = "==2025.3.2.2.dev0+g094dd768.d20250822" },
+    { name = "robotpy-wpinet", specifier = "==2025.3.2.2.dev0+g094dd768.d20250829" },
+    { name = "robotpy-wpiutil", specifier = "==2025.3.2.2.dev0+g094dd768.d20250829" },
 ]
 
 [[package]]
@@ -724,6 +736,7 @@ name = "realsense-vision"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "apscheduler" },
     { name = "flask" },
     { name = "numpy" },
     { name = "onnxslim" },
@@ -733,6 +746,7 @@ dependencies = [
     { name = "pyrealsense2" },
     { name = "rknn-toolkit-lite2" },
     { name = "rknn-toolkit2" },
+    { name = "robotpy-wpimath" },
     { name = "robotpy-wpinet" },
     { name = "robotpy-wpiutil" },
     { name = "setuptools" },
@@ -744,17 +758,19 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "apscheduler", specifier = ">=3.11.0" },
     { name = "flask" },
     { name = "numpy" },
     { name = "onnxslim", specifier = ">=0.1.61" },
     { name = "opencv-python" },
     { name = "pillow" },
-    { name = "pyntcore", path = "deps/pyntcore-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" },
+    { name = "pyntcore", path = "deps/pyntcore-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" },
     { name = "pyrealsense2", specifier = "==2.56.5.9235" },
     { name = "rknn-toolkit-lite2", specifier = ">=2.3.2" },
     { name = "rknn-toolkit2" },
-    { name = "robotpy-wpinet", path = "deps/robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" },
-    { name = "robotpy-wpiutil", path = "deps/robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" },
+    { name = "robotpy-wpimath", path = "deps/robotpy_wpimath-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" },
+    { name = "robotpy-wpinet", path = "deps/robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" },
+    { name = "robotpy-wpiutil", path = "deps/robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" },
     { name = "setuptools", specifier = ">=80.9.0" },
     { name = "torch", specifier = "==2.2.0" },
     { name = "torchvision", specifier = "==0.17.0" },
@@ -814,28 +830,42 @@ wheels = [
 ]
 
 [[package]]
-name = "robotpy-wpinet"
-version = "2025.3.2.2.dev0+g094dd768.d20250822"
-source = { path = "deps/robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" }
+name = "robotpy-wpimath"
+version = "2025.3.2.2.dev0+g094dd768.d20250829"
+source = { path = "deps/robotpy_wpimath-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" }
 dependencies = [
     { name = "robotpy-wpiutil" },
 ]
 wheels = [
-    { filename = "robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl", hash = "sha256:18530b856a6547365f029c96829e8ec32ae757a48d34f42f40abf8983ca317a9" },
+    { filename = "robotpy_wpimath-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl", hash = "sha256:cda9fe1b6dc22fe35000cd34ded9ba6eb7e2afeafb748f597ccfa2de40fb57f7" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "robotpy-wpiutil", specifier = "==2025.3.2.2.dev0+g094dd768.d20250822" }]
+requires-dist = [{ name = "robotpy-wpiutil", specifier = "==2025.3.2.2.dev0+g094dd768.d20250829" }]
+
+[[package]]
+name = "robotpy-wpinet"
+version = "2025.3.2.2.dev0+g094dd768.d20250829"
+source = { path = "deps/robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" }
+dependencies = [
+    { name = "robotpy-wpiutil" },
+]
+wheels = [
+    { filename = "robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl", hash = "sha256:9c6e8ff72bf59395afdb8efcc75540527ff7db40fda0229c804a9bdacf672eb4" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "robotpy-wpiutil", specifier = "==2025.3.2.2.dev0+g094dd768.d20250829" }]
 
 [[package]]
 name = "robotpy-wpiutil"
-version = "2025.3.2.2.dev0+g094dd768.d20250822"
-source = { path = "deps/robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" }
+version = "2025.3.2.2.dev0+g094dd768.d20250829"
+source = { path = "deps/robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" }
 dependencies = [
     { name = "msvc-runtime", marker = "sys_platform == 'win32'" },
 ]
 wheels = [
-    { filename = "robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl", hash = "sha256:6f44bfb3f6b7e567329518af884d7cbd3bfe0ce0abd97d1b89d65a95955ae11e" },
+    { filename = "robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl", hash = "sha256:405abde89b6e580e8302253776bec64c52a9c45d33131a8b0025973916eefdfc" },
 ]
 
 [package.metadata]
@@ -1009,6 +1039,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/95/32/1a225d6164441be760d75c2c42e2780dc0873fe382da3e98a2e1e48361e5/tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9", size = 196380, upload-time = "2025-03-23T13:54:43.652Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5c/23/c7abc0ca0a1526a0774eca151daeb8de62ec457e77262b66b359c3c7679e/tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8", size = 347839, upload-time = "2025-03-23T13:54:41.845Z" },
+]
+
+[[package]]
+name = "tzlocal"
+version = "5.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tzdata", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8b/2e/c14812d3d4d9cd1773c6be938f89e5735a1f11a9f184ac3639b93cef35d5/tzlocal-5.3.1.tar.gz", hash = "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd", size = 30761, upload-time = "2025-03-05T21:17:41.549Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c2/14/e2a54fabd4f08cd7af1c07030603c3356b74da07f7cc056e600436edfa17/tzlocal-5.3.1-py3-none-any.whl", hash = "sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d", size = 18026, upload-time = "2025-03-05T21:17:39.857Z" },
 ]
 
 [[package]]

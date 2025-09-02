@@ -1,3 +1,4 @@
+import time
 from flask import Blueprint, render_template, flash, redirect, request
 from config import config
 from utils import unflatten_dict, flatten_with_types, get_enum_options_by_path, restart_service
@@ -7,6 +8,7 @@ import logging
 import convert_model
 from reloader import reload_app
 import logging
+import scheduler
 
 bp = Blueprint('routes', __name__, template_folder='templates', static_folder='static')
 UPLOAD_FOLDER = 'uploads'
@@ -114,16 +116,14 @@ def upload():
             filename += ".pt"
         if os.path.exists(os.path.join(UPLOAD_FOLDER, filename)):
             os.remove(os.path.join(UPLOAD_FOLDER, filename))
-        file.save(os.path.join(UPLOAD_FOLDER, filename))
+        file.save(os.path.abspath(os.path.join(UPLOAD_FOLDER, filename)))
         try:
-            os.chdir(UPLOAD_FOLDER)
+            time.sleep(1)
             chip = config.get_config().get("rknn_chip_type", "rk3588")
-            out_path = convert_model.convert_model(filename, chip)
-            flash(f'Model converted and saved to {out_path}', 'success')
+            scheduler.scheduler.add_job(convert_model.convert_model, 'date', run_date=None, kwargs={"model_path":os.path.abspath(os.path.join(UPLOAD_FOLDER, filename)), "chip": chip, "flash_after": True}, id=f"convert_model_{filename}")
+            
         except Exception as e:
             flash(f'Error converting model: {e}', 'error')
             logging.exception("Model conversion failed")
-        finally:
-            os.chdir('..')
         return redirect("/")
     return redirect("/")

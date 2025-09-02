@@ -4,6 +4,7 @@ import secrets
 from detection.detector import YOLODetector
 import detection.pipelines as pipelines
 from camera import RealSenseCamera
+import scheduler
 from server import streams, routes
 from config import config
 from utils import comma_seperated_to_list
@@ -95,6 +96,7 @@ def run():
         loop.run_forever()
 
     threading.Thread(target=run_ws_server, daemon=True).start()
+    scheduler.scheduler.start()
 
     reloader.set_reload_function(reload_app)
     
@@ -126,6 +128,9 @@ def run():
     def flash_errors():
         for error in errors:
             flash(error, 'error')
+        if scheduler.flash_scheduler_message != "":
+            flash(scheduler.flash_scheduler_message, 'success')
+            scheduler.flash_scheduler_message = ""
 
     app.run(host="0.0.0.0", port=5000)
     reloader.is_finished = True
