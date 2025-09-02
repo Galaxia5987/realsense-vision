@@ -1,6 +1,5 @@
 import json
 import ntcore
-from wpimath.geometry import Pose3d, Rotation3d, Translation3d
 import numpy as np
 import logging
 import struct
@@ -33,11 +32,6 @@ class NetworkTablesPublisher:
             self.clear()
             return
         x,y,z = detections[0]["point"]
-        pose = Pose3d(
-                Translation3d(x, y, z),  # x, y, z in meters
-                Rotation3d(0.0, 0.0, 0.0)     # roll, pitch, yaw in radians
-            )
-        
         self.table.putRaw("detection", struct.pack("f",x))
 
     def clear(self):

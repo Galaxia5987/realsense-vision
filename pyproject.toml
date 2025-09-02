@@ -20,13 +20,12 @@ dependencies = [
     "websockets>=15.0.1",
     "pyrealsense2==2.56.5.9235",
     "robotpy_wpinet",
-    "robotpy_wpiutil"
+    "robotpy_wpiutil",
+    "robotpy_wpimath"
 ]
-
-[tool.uv]
-required-environments = ["manylinux_2_36_aarch64"]
 
 [tool.uv.sources]
 pyntcore = { path = "./deps/pyntcore-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" }
 robotpy_wpinet = { path = "./deps/robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" }
 robotpy_wpiutil = { path = "./deps/robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250822-cp310-cp310-manylinux_2_36_aarch64.whl" }
+robotpy_wpimath = { url = "https://tortall.net/~robotpy/wheels/2023/raspbian/robotpy_wpimath-2023.4.3.1-cp310-cp310-linux_aarch64.whl" }
