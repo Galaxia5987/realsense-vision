@@ -2,7 +2,6 @@ import json
 import ntcore
 import numpy as np
 import logging
-import struct
 from wpimath.geometry import Pose3d, Translation3d, Rotation3d
 
 class NumpyEncoder(json.JSONEncoder):
@@ -25,21 +24,27 @@ class NetworkTablesPublisher:
         self.inst.startClient4("RealsenseVision")
         self.inst.setServer(server)
         self.table = self.inst.getTable(table_name)
-        self.pose_pub = self.table.getStructTopic("pose", Pose3d).publish()
-        # self.topic = self.table.getTopic("detection")
-        # self.topic.publish()
+
+        # Struct array publisher instead of single struct
+        self.pose_pub = self.table.getStructArrayTopic("poses", Pose3d).publish()
 
     def publish_detections(self, detections):
         if not detections:
             self.clear()
             return
-        x,y,z = detections[0]["point"]
-        pose = Pose3d(
-            Translation3d(x,y,z),
-            Rotation3d(0.0, 0.0, 0)
-        )
 
-        self.pose_pub.set(pose)
+        poses = []
+        for det in detections:
+            y, z, x = det["point"]  # your order
+            pose = Pose3d(
+                Translation3d(x, y, -z),
+                Rotation3d(0.0, 0.0, 0.0)
+            )
+            poses.append(pose)
+
+        # Publish as struct array
+        self.pose_pub.set(poses)
 
     def clear(self):
-        pass
+        # Publish an empty array
+        self.pose_pub.set([])
