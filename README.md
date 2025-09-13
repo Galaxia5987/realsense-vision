@@ -21,7 +21,7 @@ Integrate Intel RealSense cameras with FRC robots seamlessly.
 
 1. **Flash Ubuntu Server Image**
 
-   * Download Ubuntu Server for Orange Pi 5 from the [official site](http://www.orangepi.org/html/hardWare/computerAndMicrocontrollers/service-and-support/Orange-pi-5.html).
+   * Download Ubuntu Server for Orange Pi 5 from this [site](https://joshua-riek.github.io/ubuntu-rockchip-download/boards/orangepi-5.html).
    * Flash it to a microSD card using [Balena Etcher](https://www.balena.io/etcher/).
    * Insert the card into the Orange Pi 5 and power it on.
 
@@ -31,9 +31,11 @@ Integrate Intel RealSense cameras with FRC robots seamlessly.
    * Run:
 
      ```bash
-     curl -sSL https://raw.githubusercontent.com/Galaxia5987/realsense-vision/refs/heads/main/install.sh | bash
+     wget https://raw.githubusercontent.com/Galaxia5987/realsense-vision/refs/heads/main/install.sh
+     chmod +x install.sh
+     ./install.sh
      ```
-   * The installer will prompt you for configuration and ask whether to install PhotonVision.
+   * The installer will prompt you for configuration and ask whether to install PhotonVision aswell.
 
 3. **Access the Dashboard**
 
@@ -90,35 +92,9 @@ Use this [Kaggle Notebook](https://www.kaggle.com/code/adarwas/yolov11-traning) 
 
 ## Network Tables
 
-The `detections` field in NetworkTables is a string array of JSON-encoded dictionaries representing detected objects.
+The `poses` topic in NetworkTables is a Pose3d struct array representing detected objects.
 
 You can configure the server address and table name via `config.yaml` or the dashboard.
-
-### Format
-
-* **Key:** `detections`
-* **Type:** String Array (`putStringArray`)
-* **Each Entry:** A JSON string representing one detection
-
-### Detection Structure
-
-Each detection contains:
-
-* `bbox`: `[x_min, y_min, x_max, y_max]` — bounding box coordinates (ints)
-* `center`: `[x, y]` — center point of the bounding box (ints)
-* `depth`: float — distance to object in meters
-* `point`: `[x, y, z]` — 3D position of the detection (meters)
-
-#### Example
-
-```json
-{
-  "bbox": [120, 80, 200, 160],
-  "center": [160, 120],
-  "depth": 1.23,
-  "point": [0.45, 0.12, 1.23]
-}
-```
 
 ## License
 
