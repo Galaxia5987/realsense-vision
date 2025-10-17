@@ -21,7 +21,7 @@ Integrate Intel RealSense cameras with FRC robots seamlessly.
 
 1. **Flash Ubuntu Server Image**
 
-   * Download Ubuntu Server for Orange Pi 5 from this [site](https://joshua-riek.github.io/ubuntu-rockchip-download/boards/orangepi-5.html).
+   * Download Ubuntu Server for Orange Pi 5 from this [site](https://joshua-riek.github.io/ubuntu-rockchip-download/boards/orangepi-5.html)(use ubuntu24.04).
    * Flash it to a microSD card using [Balena Etcher](https://www.balena.io/etcher/).
    * Insert the card into the Orange Pi 5 and power it on.
 
