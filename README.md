@@ -12,9 +12,7 @@ Integrate Intel RealSense cameras with FRC robots seamlessly.
   * [Dataset](#dataset)
   * [Training and Uploading a Model](#training-and-uploading-a-model)
 * [Network Tables](#network-tables)
-
-  * [Format](#format)
-  * [Detection Structure](#detection-structure)
+* [Setting a static IP Address](#setting-a-static-ip-address)
 * [License](#license)
 
 ## Installation
@@ -95,6 +93,33 @@ Use this [Kaggle Notebook](https://www.kaggle.com/code/adarwas/yolov11-traning) 
 The `poses` topic in NetworkTables is a Pose3d struct array representing detected objects.
 
 You can configure the server address and table name via `config.yaml` or the dashboard.
+
+## Setting a static IP Address
+
+Run this to disable `cloud-init`:
+```
+sudo bash -c 'echo "network: {config: disabled}" > /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg'
+```
+You need to configure `/etc/netplan/50-cloud-init.yaml` like that:
+```
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    end1:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+      - 10.59.87.11/24
+      routes:
+      - to: default
+        via: 10.59.87.4
+      nameservers:
+       addresses: [8.8.8.8,8.8.4.4]
+```
+Edit `addresses` to change the ip.
+
+Run `sudo netplan apply` to apply the changes without the need of a reboot.
 
 ## License
 
