@@ -58,14 +58,14 @@ class ComponentLogger:
         self.component_name = component_name
         self.logger = logging.getLogger(component_name)
     
-    def _log(self, level, message, operation=None, status=None, **kwargs):
+    def _log(self, level, message, operation=None, status=None, exc_info=False, **kwargs):
         extra = {
             'component': self.component_name,
             'operation': operation,
             'status': status
         }
         extra.update(kwargs)
-        self.logger.log(level, message, extra=extra)
+        self.logger.log(level, message, extra=extra, exc_info=exc_info)
     
     def debug(self, message, operation=None, **kwargs):
         self._log(logging.DEBUG, message, operation=operation, **kwargs)

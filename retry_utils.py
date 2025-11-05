@@ -185,8 +185,8 @@ def safe_call(
     default: Optional[T] = None,
     operation_name: Optional[str] = None,
     suppress_errors: bool = True,
-    *args,
-    **kwargs
+    args: tuple = (),
+    kwargs: dict = None
 ) -> T:
     """
     Safely call a function with error handling and logging.
@@ -196,8 +196,8 @@ def safe_call(
         default: Default value to return on error
         operation_name: Name of the operation for logging
         suppress_errors: If True, return default on error; if False, re-raise
-        *args: Positional arguments for func
-        **kwargs: Keyword arguments for func
+        args: Positional arguments for func
+        kwargs: Keyword arguments for func
     
     Returns:
         Result of func or default value on error
@@ -210,6 +210,8 @@ def safe_call(
         )
     """
     op_name = operation_name or func.__name__
+    if kwargs is None:
+        kwargs = {}
     
     try:
         return func(*args, **kwargs)
