@@ -239,7 +239,14 @@ class ComponentSupervisor:
             return False
     
     def _monitor_loop(self):
-        """Main monitoring loop that runs in a background thread."""
+        """
+        Main monitoring loop that runs in a background thread.
+        
+        Note: This runs as a daemon thread, which is appropriate because:
+        - The supervisor is meant to run continuously while the app is running
+        - The stop() method provides graceful shutdown via self.running flag
+        - No critical cleanup is required when the supervisor stops
+        """
         logger.info("Supervisor monitoring loop started", operation="monitor_loop")
         
         while self.running:

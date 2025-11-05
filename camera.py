@@ -12,10 +12,11 @@ logger = logging_config.get_logger('camera')
 disabled_mat = generate_stream_disabled_image()
 
 class RealSenseCamera:
-    def __init__(self, width=640, height=480, fps=30):
+    def __init__(self, width=640, height=480, fps=30, frame_timeout_ms=1000):
         self.width = width
         self.height = height
         self.fps = fps
+        self.frame_timeout_ms = frame_timeout_ms
         self.pipeline = None
         self.thread = None
         self.running = False
@@ -28,7 +29,7 @@ class RealSenseCamera:
         self.error_count = 0
         
         logger.info(
-            f"RealSenseCamera created with resolution {width}x{height} @ {fps}fps",
+            f"RealSenseCamera created with resolution {width}x{height} @ {fps}fps (timeout={frame_timeout_ms}ms)",
             operation="init"
         )
 
@@ -162,7 +163,14 @@ class RealSenseCamera:
         logger.info("RealSense camera stopped", operation="stop", status="success")
 
     def _update_loop(self):
-        """Main camera frame acquisition loop with error handling."""
+        """
+        Main camera frame acquisition loop with error handling.
+        
+        Note: This runs as a daemon thread, which is appropriate because:
+        - The camera should acquire frames continuously while running
+        - The stop() method provides graceful shutdown via stop_event
+        - Pipeline cleanup is handled in stop()
+        """
         logger.info("Camera update loop started", operation="update_loop")
         
         consecutive_errors = 0
@@ -170,7 +178,7 @@ class RealSenseCamera:
 
         while not self.stop_event.is_set() and not self.bad_init:
             try:
-                frames = self.pipeline.wait_for_frames(timeout_ms=1000)
+                frames = self.pipeline.wait_for_frames(timeout_ms=self.frame_timeout_ms)
                 frames = self.align.process(frames)
                 color_frame = frames.get_color_frame()
                 depth_frame = frames.get_depth_frame()

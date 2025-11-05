@@ -4,7 +4,7 @@ Provides detailed, consistent logging across all components.
 """
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 import json
 
@@ -15,7 +15,7 @@ class StructuredFormatter(logging.Formatter):
     def format(self, record):
         # Add timestamp and structured data
         log_data = {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'level': record.levelname,
             'logger': record.name,
             'message': record.getMessage(),

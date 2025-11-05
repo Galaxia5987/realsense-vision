@@ -42,7 +42,14 @@ class PipelineRunner:
     
 
     def loop(self):
-        """Main pipeline processing loop with error handling."""
+        """
+        Main pipeline processing loop with error handling.
+        
+        Note: This runs as a daemon thread, which is appropriate because:
+        - The pipeline should run continuously while the app is running
+        - The stop() method provides graceful shutdown via stop_event
+        - Resources are cleaned up in the finally block
+        """
         logger.info("Pipeline loop started", operation="loop")
         
         try:
