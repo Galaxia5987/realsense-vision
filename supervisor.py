@@ -11,7 +11,7 @@ from datetime import datetime
 import logging_config
 
 
-logger = logging_config.get_logger('supervisor')
+logger = logging_config.get_logger(__name__)
 
 
 class ComponentStatus(Enum):

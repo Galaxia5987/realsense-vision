@@ -5,19 +5,16 @@ import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
 import logging_config
 
-logger = logging_config.get_logger('pipeline')
+logger = logging_config.get_logger(__name__)
 
 class DetectionDepthPipeline:
     def __init__(self, camera, model_path):
-        logger.info(f"Initializing DetectionDepthPipeline with model: {model_path}", operation="init")
-        
         self.camera = camera
         np.set_printoptions(threshold=100000)
         
         try:
             self.detector = YOLODetector(model_path)
             self.detections = []
-            logger.info("DetectionDepthPipeline initialized", operation="init", status="success")
         except Exception as e:
             logger.exception(f"Failed to initialize DetectionDepthPipeline: {e}", operation="init")
             raise

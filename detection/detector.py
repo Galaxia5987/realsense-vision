@@ -3,7 +3,7 @@ from config import config
 import logging_config
 from retry_utils import retry_with_backoff
 
-logger = logging_config.get_logger('detector')
+logger = logging_config.get_logger(__name__)
 
 class YOLODetector:
     def __init__(self, model_path, imgsz=640):

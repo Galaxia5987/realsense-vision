@@ -2,7 +2,7 @@ import yaml
 import logging_config
 from retry_utils import retry_with_backoff
 
-logger = logging_config.get_logger('config')
+logger = logging_config.get_logger(__name__)
 
 class Config():
 

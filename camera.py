@@ -8,7 +8,7 @@ from utils import generate_stream_disabled_image, fail_restart
 import logging_config
 from retry_utils import retry_with_backoff, safe_call
 
-logger = logging_config.get_logger('camera')
+logger = logging_config.get_logger(__name__)
 disabled_mat = generate_stream_disabled_image()
 
 class RealSenseCamera:

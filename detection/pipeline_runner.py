@@ -4,7 +4,7 @@ from config import config
 import logging_config
 from retry_utils import safe_call
 
-logger = logging_config.get_logger('pipeline_runner')
+logger = logging_config.get_logger(__name__)
 disabled_jpeg = frames_to_jpeg_bytes(generate_stream_disabled_image())
 
 class PipelineRunner:

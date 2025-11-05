@@ -7,7 +7,7 @@ from typing import Callable, TypeVar, Optional, Type, Tuple
 import logging_config
 
 
-logger = logging_config.get_logger('retry')
+logger = logging_config.get_logger(__name__)
 
 T = TypeVar('T')
 

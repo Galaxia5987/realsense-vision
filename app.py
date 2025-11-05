@@ -19,8 +19,8 @@ from retry_utils import safe_init
 from supervisor import supervisor
 
 # Setup structured logging
-logging_config.setup_logging(level=logging.INFO, log_file='realsense-vision.log')
-logger = logging_config.get_logger('app')
+logging_config.setup_logging(level=logging.INFO)
+logger = logging_config.get_logger(__name__)
 
 
 app = None

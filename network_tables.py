@@ -5,7 +5,7 @@ import logging_config
 from retry_utils import retry_with_backoff, safe_call
 from wpimath.geometry import Pose3d, Translation3d, Rotation3d
 
-logger = logging_config.get_logger('network_tables')
+logger = logging_config.get_logger(__name__)
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -50,7 +50,7 @@ class NetworkTablesPublisher:
         logger.debug("Creating NetworkTables instance", operation="init_connection")
         
         self.inst = ntcore.NetworkTableInstance.getDefault()
-        self.inst.startClient4("RealsenseVision")
+        self.inst.startClient4(table_name)
         self.inst.setServer(server)
         
         logger.debug(f"NetworkTables client started for server {server}", operation="init_connection")

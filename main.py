@@ -2,7 +2,7 @@ import app
 import logging_config
 
 # Setup structured logging
-logger = logging_config.get_logger('main')
+logger = logging_config.get_logger(__name__)
 
 try:
     logger.info("Starting RealSense Vision system", operation="startup")
