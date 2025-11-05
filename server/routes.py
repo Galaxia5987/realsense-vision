@@ -1,5 +1,5 @@
 import time
-from flask import Blueprint, render_template, flash, redirect, request
+from flask import Blueprint, render_template, flash, redirect, request, jsonify
 from config import config
 from utils import unflatten_dict, flatten_with_types, get_enum_options_by_path, restart_service
 from werkzeug.utils import secure_filename
@@ -7,8 +7,8 @@ import os
 import logging
 import convert_model
 from reloader import reload_app
-import logging
 import scheduler
+from supervisor import supervisor
 
 bp = Blueprint('routes', __name__, template_folder='templates', static_folder='static')
 UPLOAD_FOLDER = 'uploads'
@@ -127,3 +127,16 @@ def upload():
             logging.exception("Model conversion failed")
         return redirect("/")
     return redirect("/")
+
+@bp.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint showing system status."""
+    try:
+        health_summary = supervisor.get_system_health_summary()
+        return jsonify(health_summary), 200
+    except Exception as e:
+        logging.exception("Error getting health status")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
