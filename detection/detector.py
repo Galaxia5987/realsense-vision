@@ -30,6 +30,7 @@ class YOLODetector:
             if image is None:
                 logger.warning("Received None image for detection", operation="detect")
                 return
+            logger.warning(f"imgsz: {self.imgsz}")
             
             self.results = self.model(
                 image,

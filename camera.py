@@ -79,7 +79,7 @@ class RealSenseCamera:
         rs_config.enable_stream(
             rs.stream.color, self.width, self.height, rs.format.bgr8, self.fps
         )
-        
+
         logger.debug(
             f"Configuring depth stream: {self.width}x{self.height} @ {self.fps}fps",
             operation="init_pipeline"
@@ -119,12 +119,18 @@ class RealSenseCamera:
         # Start pipeline
         logger.debug("Starting RealSense pipeline", operation="init_pipeline")
         self.pipeline.start(rs_config)
-        
         # Configure depth sensor
         try:
-            depth_sensor = self.pipeline.get_active_profile().get_device().first_depth_sensor()
+            device = self.pipeline.get_active_profile().get_device()
+            depth_sensor = device.first_depth_sensor()
             depth_sensor.set_option(rs.option.visual_preset, 3)
+            depth_sensor.set_option(rs.option.laser_power, 360)
             logger.debug("Depth sensor configured", operation="init_pipeline")
+
+            with open("camera_config.json", "r") as f: 
+                json_camera_config = f.read()
+                device.hardware_reset()
+                device.load_json(json_camera_config)  # Load settings directly to the live device
         except Exception as e:
             logger.warning(
                 f"Failed to configure depth sensor preset: {e}",
