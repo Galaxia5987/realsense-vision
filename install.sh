@@ -144,6 +144,9 @@ read -rp "$(echo -e "${YELLOW}Do you want to install PhotonVision? (y/n): ${RESE
 if [[ "$install_photon" =~ ^[Yy]$ ]]; then
     log_info "Installing PhotonVision..."
 
+    log_info "Install Mr. Cal dependency..."
+    sudo apt install -y libsuitesparse-dev
+    
     log_info "Installing Java (OpenJDK 17)..."
     sudo apt install -y openjdk-17-jre 1>/dev/null || { log_error "Failed to install Java"; exit 1; }
 
