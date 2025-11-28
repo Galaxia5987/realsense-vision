@@ -11,35 +11,17 @@ from app.scheduler import scheduler
 from app.core.reloader import set_reload_function
 from app.components.supervisor import supervisor
 
-from app.core.initialization import reload_app, stop_components
+from app.core.initialization import (
+    reload_app,
+)
 
 logger = logging_config.get_logger(__name__)
-
-def _start_websocket_log_server():
-    """Launch WS logging server in its own thread."""
-    loop = start_ws_log_server()
-    loop.run_forever()
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting RealSense Vision...", operation="startup")
 
-    # Intercept stdout/stderr to WebSocket logger
-    sys.stdout = StdInterceptor("stdout")
-    sys.stderr = StdInterceptor("stderr")
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-
-    # Start WebSocket logging thread
-    threading.Thread(
-        target=_start_websocket_log_server,
-        daemon=True
-    ).start()
-    logger.info("WebSocket log server started", operation="startup")
-
-    # Start scheduler
-    scheduler.start()
-    logger.info("Scheduler started", operation="startup")
 
     # Register reload handler
     set_reload_function(reload_app)
@@ -59,5 +41,5 @@ async def lifespan(app: FastAPI):
 
     # Shutdown section
     logger.info("Shutting down RealSense Vision", operation="shutdown")
-    stop_components()
+    # stop_components()
     logger.info("Shutdown complete", operation="shutdown")

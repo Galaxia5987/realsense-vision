@@ -19,7 +19,7 @@ def create_stream_route(
     app_instance: FastAPI,
     path: str,
     frame_source_func: Callable,
-    endpoint: str = None
+    endpoint: str | None = None
 ):
     """
     Dynamically create a streaming route for video frames.

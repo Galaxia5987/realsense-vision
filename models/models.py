@@ -1,5 +1,5 @@
 from typing import List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict
 from enum import Enum
 
 
@@ -22,40 +22,40 @@ class TemporalFilter(BaseModel):
 
 
 class Filters(BaseModel):
-    hole_filling: HoleFillingFilter
-    spatial: SpatialFilter
-    temporal: TemporalFilter
+    hole_filling: HoleFillingFilter = HoleFillingFilter()
+    spatial: SpatialFilter = SpatialFilter()
+    temporal: TemporalFilter = TemporalFilter()
 
 
 class CameraSettings(BaseModel):
-    filters: Filters
-    fps: int
-    resolution: ResolutionEnum
+    filters: Filters = Filters()
+    fps: int = 15
+    resolution: ResolutionEnum = ResolutionEnum.r640x480
 
 
 class ColorFrame(BaseModel):
-    stream_enabled: bool
+    stream_enabled: bool = True
 
 
 class DepthFrame(BaseModel):
-    stream_enabled: bool
+    stream_enabled: bool = True
 
 
 class NetworkTables(BaseModel):
-    server: str
-    table: str
+    server: str = "10.59.87.2"
+    table: str = "RealsenseVision"
 
 
 class Pipeline(BaseModel):
-    args: List[str]
-    type: str
+    args: List[str] = []
+    type: str = "regular"
 
 
 class RootConfig(BaseModel):
-    camera: CameraSettings
-    color_frame: ColorFrame
-    depth_frame: DepthFrame
-    min_confidence: float
-    network_tables: NetworkTables
-    pipeline: Pipeline
-    rknn_chip_type: str
+    camera: CameraSettings = CameraSettings()
+    color_frame: ColorFrame = ColorFrame()
+    depth_frame: DepthFrame = DepthFrame()
+    min_confidence: float = 0.85
+    network_tables: NetworkTables = NetworkTables()
+    pipeline: Pipeline = Pipeline()
+    rknn_chip_type: str = "rk3588"

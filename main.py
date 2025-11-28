@@ -1,10 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 import uvicorn
 
 from app.core import logging_config
+from app.config import ConfigManager
+
 from app.core.app_lifespan import lifespan
-from server import routes, streams
+from app.server import streams
 
 logger = logging_config.get_logger(__name__)
 
@@ -15,17 +18,26 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# templates
+templates = Jinja2Templates(directory="templates")
+
 # static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # routers
-app.include_router(routes.router)
+# app.include_router(routes.router)
 app.include_router(streams.router, prefix="/streams")
 
 
 @app.get("/")
-def root():
-    return {"status": "running", "application": "Realsense Vision"}
+async def root(request: Request):
+    return templates.TemplateResponse(
+    "index.html",
+    {
+        "request": request,
+        "cfg": ConfigManager().get()
+    }
+)
 
 def run():
     uvicorn.run(app, host="0.0.0.0", port=8000)
