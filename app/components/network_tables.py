@@ -1,8 +1,10 @@
 import json
+from app.config import ConfigManager
 import ntcore
 import numpy as np
 import app.core.logging_config as logging_config
-from app.components.retry_utils import retry_with_backoff, safe_call
+from app.components.retry_utils import retry_with_backoff
+from utils import singleton
 from wpimath.geometry import Pose3d, Translation3d, Rotation3d
 
 logger = logging_config.get_logger(__name__)
@@ -19,13 +21,18 @@ class NumpyEncoder(json.JSONEncoder):
             return bool(obj)
         return super().default(obj)
 
+@singleton
 class NetworkTablesPublisher:
-    def __init__(self, table_name="RealsenseVision", server="10.0.0.2"):
+    def __init__(self):
+        config = ConfigManager().get()
+
+        table_name = config.network_tables.table
+        server = config.network_tables.server
+        
         logger.info(
             f"Initializing NetworkTables connection to {server} with table {table_name}",
             operation="init", status="starting"
         )
-        
         try:
             self._initialize_connection(table_name, server)
             self.connected = True
