@@ -5,6 +5,10 @@ from utils import frames_to_jpeg_bytes
 logger = logging_config.get_logger(__name__)
 
 class RegularPipeline(PipelineBase):
+    @property
+    def name(self) -> str:
+        return "RegularPipeline"
+
     def __init__(self, camera):
         logger.info("Initializing RegularPipeline", operation="init")
         self.camera = camera

@@ -20,6 +20,10 @@ class DetectionDepthPipeline(PipelineBase):
             logger.exception(f"Failed to initialize DetectionDepthPipeline: {e}", operation="init")
             raise
 
+    @property
+    def name(self) -> str:
+        return "RegularPipeline"
+
     def get_jpeg(self):
         """Get JPEG-encoded annotated image."""
         detected = self.detector.get_annotated_image()
