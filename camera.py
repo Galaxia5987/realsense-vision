@@ -1,37 +1,32 @@
 import pyrealsense2 as rs
 import numpy as np
 import threading
-import cv2
 import time
-from config import config
-from utils import generate_stream_disabled_image, fail_restart
+from utils import AsyncLoopBase, generate_stream_disabled_image
 import logging_config
-from retry_utils import retry_with_backoff, safe_call
 
 logger = logging_config.get_logger(__name__)
 disabled_mat = generate_stream_disabled_image()
 
-class RealSenseCamera:
+class RealSenseCamera(AsyncLoopBase):
     def __init__(self, width=640, height=480, fps=30, frame_timeout_ms=1000):
         self.width = width
         self.height = height
         self.fps = fps
         self.frame_timeout_ms = frame_timeout_ms
         self.pipeline = None
-        self.thread = None
-        self.running = False
         self.latest_frame = None
         self.latest_depth_frame = None
         self.latest_depth_data = None
-        self.bad_init = False
-        self.stop_event = threading.Event()
         self.frame_count = 0
-        self.error_count = 0
         
         logger.info(
             f"RealSenseCamera created with resolution {width}x{height} @ {fps}fps (timeout={frame_timeout_ms}ms)",
             operation="init"
         )
+
+    def on_iteration(self):
+        pass
 
     def start(self):
         """Start the camera with retry logic and detailed logging."""
@@ -43,8 +38,6 @@ class RealSenseCamera:
         
         try:
             self._initialize_pipeline()
-            self.bad_init = False
-            self.stop_event.clear()
             self.running = True
             self.thread = threading.Thread(target=self._update_loop, daemon=True)
             self.thread.start()
@@ -62,7 +55,6 @@ class RealSenseCamera:
             )
             raise Exception("Failed to start realsense camera")
     
-    @retry_with_backoff(max_attempts=3, initial_delay=1.0, backoff_factor=2.0)
     def _initialize_pipeline(self):
         """Initialize the RealSense pipeline with filters."""
         logger.debug("Initializing RealSense pipeline", operation="init_pipeline")

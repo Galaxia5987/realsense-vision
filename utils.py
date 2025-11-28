@@ -1,10 +1,8 @@
+import asyncio
 import cv2
 import numpy as np
 import subprocess
 import logging
-from reloader import reload_app
-from pathlib import Path
-from config import config
 
 def frames_to_jpeg_bytes(frame, resolution=(640, 480)):
     resized = cv2.resize(frame, resolution)
@@ -74,15 +72,37 @@ def restart_service():
         logging.exception("Failed to restart service: %s", e)
         return False
 
-def fail_restart():
-    logging.info("Failed action, reloading...")
-    fail_count = 0
-    if Path(".fail").is_file():
-        with open(".fail", "r") as f:
-            fail_count = int(f.read())
-    if fail_count >= int(config.get_config().get("max_fail_count", 3)):
-        logging.critical("Exceeded fail count - not reloading again.")
-        return
-    with open(".fail", "w") as f:
-        f.write(str(fail_count+1))
-    reload_app()
+def singleton(class_):
+    instances = {}
+    def getinstance(*args, **kwargs):
+        if class_ not in instances:
+            instances[class_] = class_(*args, **kwargs)
+        return instances[class_]
+    return getinstance
+
+class AsyncLoopBase:
+    def __init__(self, interval):
+        self.interval = interval
+        self._task = None
+        self._stop = asyncio.Event()
+
+    def on_iteration(self):
+        raise NotImplementedError
+
+    async def _runner(self):
+        try:
+            while not self._stop.is_set():
+                # run sync code in a thread
+                await asyncio.to_thread(self.on_iteration)
+                await asyncio.wait_for(self._stop.wait(), timeout=self.interval)
+        except asyncio.TimeoutError:
+            pass
+
+    def start(self):
+        if self._task is None:
+            self._task = asyncio.create_task(self._runner())
+
+    async def stop(self):
+        self._stop.set()
+        if self._task:
+            await self._task

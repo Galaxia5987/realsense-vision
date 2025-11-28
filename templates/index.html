@@ -1,129 +1,217 @@
-{% macro render_config(key_path, value) %}
-    {% if value is mapping and 'enum' in value and 'value' in value %}
-        <label for="{{ key_path }}">
-            {{ key_path.split('.')[-1] | replace('_', ' ') | capitalize }}:
-            <select name="{{ key_path }}.value" id="{{ key_path }}">
-                {% for option in value.enum %}
-                    <option value="{{ option }}" {% if option == value.value %}selected{% endif %}>
-                        {{ option }}
-                    </option>
-                {% endfor %}
-            </select>
-        </label><br>
-
-    {% elif value is mapping %}
-        <fieldset>
-            <legend>{{ key_path.split('.')[-1] if key_path else 'Config' }}</legend>
-            {% for subkey, subval in value.items() %}
-                {{ render_config(key_path ~ '.' ~ subkey if key_path else subkey, subval) }}
-            {% endfor %}
-        </fieldset>
-
-    {% else %}
-        <label for="{{ key_path }}">
-            {{ key_path.split('.')[-1] | replace('_', ' ') | capitalize }}:
-            {% if value is boolean %}
-                <input type="checkbox" name="{{ key_path }}" id="{{ key_path }}"
-                       value="true" {% if value %}checked{% endif %}>
-            {% elif value is number %}
-                <input type="number" name="{{ key_path }}" id="{{ key_path }}" value="{{ value }}">
-            {% else %}
-                <input type="text" name="{{ key_path }}" id="{{ key_path }}" value="{{ value }}">
-            {% endif %}
-        </label><br>
-    {% endif %}
-{% endmacro %}
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>RealSense Interface</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Config Editor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <div class="flashes">
-        {% for category, message in messages %}
-            <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
+<body class="bg-light">
+
+<!-- STREAMS SECTION -->
+<h4>Streams</h4>
+
+<!-- COLOR STREAM -->
+<div class="mb-4">
+
+    <div class="form-check mb-2">
+        <input class="form-check-input stream-img-toggle"
+               type="checkbox"
+               id="colorStreamToggle"
+               name="color_frame.stream.enabled"
+               data-target="#colorStreamImage">
+        <label class="form-check-label" for="colorStreamToggle">
+            Enable Color Stream
+        </label>
+    </div>
+
+    <div id="colorStreamImage" class="d-none">
+        <img src="/streams/video_stream"
+             class="img-fluid rounded border"
+             alt="Color Stream Preview">
+    </div>
+</div>
+
+<!-- DEPTH STREAM -->
+<div class="mb-4">
+
+    <div class="form-check mb-2">
+        <input class="form-check-input stream-img-toggle"
+               type="checkbox"
+               id="depthStreamToggle"
+               name="depth_frame.stream.enabled"
+               data-target="#depthStreamImage">
+        <label class="form-check-label" for="depthStreamToggle">
+            Enable Depth Stream
+        </label>
+    </div>
+
+    <div id="depthStreamImage" class="d-none">
+        <img src="/stream/depth_stream"
+             class="img-fluid rounded border"
+             alt="Depth Stream Preview">
+    </div>
+</div>
+
+<hr class="my-4">
+
+<div class="container my-4">
+    <h2 class="mb-4">Edit Configuration</h2>
+
+    <form id="configForm" class="card p-4 shadow-sm">
+
+        <!-- CAMERA -->
+        <h4>Camera</h4>
+
+        <!-- Filters -->
+        <h5 class="mt-3">Filters</h5>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="camera.filters.hole_filling.enabled">
+            <label class="form-check-label">Hole Filling Enabled</label>
         </div>
-    {% endif %}
-    {% endwith %}
-    <h1>RealSense Vision Interface</h1>
 
-    <section>
-        <h2>Video Streams</h2>
-        <div class="streams">
-            <div>
-                <h3>Depth Stream</h3>
-                <img src="/streams/depth_feed" alt="Depth Stream">
-            </div>
-            <div>
-                <h3>YOLO Detection Stream</h3>
-                <img src="/streams/video_feed" alt="Detection Stream">
-            </div>
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="camera.filters.spatial.enabled">
+            <label class="form-check-label">Spatial Enabled</label>
         </div>
-        </script>
-    </section>
 
-    <section>
-        <h2>Configuration</h2>
-        <form action="/update_config" method="post">
-            {{ render_config('', config) }}
-            <button type="submit">Update Configuration</button>
-        </form>
-    </section>
-
-    <section>
-        <h2>Upload Model and Convert to RKNN</h2>
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept=".pt" required>
-            <button type="submit">Upload & Convert</button>
-        </form>
-        <div>
-            <h3>Uploaded Models</h3>
-            <ul>
-                {% for model in models %}
-                    <li>{{ model }}</li>
-                {% else %}
-                    <li>No models uploaded.</li>
-                {% endfor %}
-            </ul>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="camera.filters.temporal.enabled">
+            <label class="form-check-label">Temporal Enabled</label>
         </div>
-    </section>
 
-    <section>
-        <h2>Logs</h2>
-        <div id="logs"></div>
-    </section>
+        <!-- FPS -->
+        <div class="mb-3">
+            <label class="form-label">FPS</label>
+            <input class="form-control" type="number" name="camera.fps">
+        </div>
 
-    <section>
-        <h2>Reload</h2>
-        <form action="/reload" method="post">
-            <button type="submit">Reload</button>
-        </form>
-    </section>
+        <!-- Resolution Enum List -->
+        <div class="mb-3">
+            <label class="form-label">Resolution Options</label>
+            <select class="form-select" multiple name="camera.resolution.enum">
+                <option value="640x480">640x480</option>
+                <option value="1280x720">1280x720</option>
+                <option value="848x640">848x640</option>
+            </select>
+        </div>
 
-    <section>
-        <h2>Restart Service</h2>
-        <form action="/restart" method="post">
-            <button type="submit">Restart Service</button>
-        </form>
-    </section>
-    <script>
-        const logDiv = document.getElementById("logs");
-        const ws = new WebSocket("ws://" + location.hostname + ":8765");
+        <!-- Resolution Value -->
+        <div class="mb-3">
+            <label class="form-label">Selected Resolution</label>
+            <select class="form-select" name="camera.resolution.value">
+                <option value="640x480">640x480</option>
+                <option value="1280x720">1280x720</option>
+                <option value="848x640">848x640</option>
+            </select>
+        </div>
 
-        ws.onmessage = (event) => {
-            logDiv.innerText += event.data + "\n";
-            logDiv.scrollTop = logDiv.scrollHeight;
-        };
+        <!-- COLOR FRAME -->
+        <h4 class="mt-4">Color Frame</h4>
+        <div class="mb-3">
+            <label class="form-label">Stream Enabled</label>
+            <input class="form-check-input ms-2" type="checkbox" name="color_frame.stream.enabled">
+        </div>
 
-        ws.onclose = () => {
-            logDiv.innerText += "[DISCONNECTED FROM LOG SERVER]\n";
-        };
-    </script>
+        <!-- DEPTH FRAME -->
+        <h4 class="mt-4">Depth Frame</h4>
+        <div class="mb-3">
+            <label class="form-label">Stream Enabled</label>
+            <input class="form-check-input ms-2" type="checkbox" name="depth_frame.stream.enabled">
+        </div>
+
+        <!-- MAX_FAIL_COUNT -->
+        <div class="mb-3">
+            <label class="form-label">Max Fail Count</label>
+            <input class="form-control" type="number" name="max_fail_count">
+        </div>
+
+        <!-- MIN_CONFIDENCE -->
+        <div class="mb-3">
+            <label class="form-label">Min Confidence</label>
+            <input class="form-control" type="number" step="0.01" name="min_confidence">
+        </div>
+
+        <!-- NETWORK TABLES -->
+        <h4 class="mt-4">Network Tables</h4>
+
+        <div class="mb-3">
+            <label class="form-label">Server</label>
+            <input class="form-control" type="text" name="network_tables.server">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Table</label>
+            <input class="form-control" type="text" name="network_tables.table">
+        </div>
+
+        <!-- PIPELINE -->
+        <h4 class="mt-4">Pipeline</h4>
+
+        <div class="mb-3">
+            <label class="form-label">Args</label>
+            <input class="form-control" type="text" name="pipeline.args">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Type</label>
+            <input class="form-control" type="text" name="pipeline.type">
+        </div>
+
+        <!-- RKNN CHIP -->
+        <div class="mb-3">
+            <label class="form-label">RKNN Chip Type</label>
+            <input class="form-control" type="text" name="rknn_chip_type">
+        </div>
+
+        <!-- SUBMIT -->
+        <button class="btn btn-primary" type="button" onclick="submitFormJson()">Save</button>
+
+    </form>
+</div>
+
+
+
+<script>
+function setDeep(obj, path, value) {
+    const parts = path.split(".");
+    let current = obj;
+    for (let i = 0; i < parts.length - 1; i++) {
+        if (!(parts[i] in current)) current[parts[i]] = {};
+        current = current[parts[i]];
+    }
+    current[parts[parts.length - 1]] = value;
+}
+
+function submitFormJson() {
+    const form = document.getElementById("configForm");
+    const data = {};
+
+    for (const el of form.elements) {
+        if (!el.name) continue;
+
+        let value;
+        if (el.type === "checkbox") {
+            value = el.checked;
+        } else if (el.multiple) {
+            value = Array.from(el.selectedOptions).map(o => o.value);
+        } else {
+            value = el.value;
+        }
+
+        setDeep(data, el.name, value);
+    }
+
+    console.log("Submitting JSON", data);
+
+    fetch("/update_config", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    }).then(r => r.json()).then(resp => {
+        console.log("Response", resp);
+    });
+}
+</script>
+
 </body>
 </html>

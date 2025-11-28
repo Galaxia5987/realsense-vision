@@ -9,10 +9,8 @@ try:
     app.run()    
 except KeyboardInterrupt:
     logger.info("Application stopped by user (KeyboardInterrupt)", operation="shutdown")
-    app.stop()
 except Exception as e:
     logger.exception(f"An unhandled error occurred: {e}", operation="error_handler")
-    app.stop()
 finally:
     logger.info("RealSense Vision system shutdown complete", operation="shutdown")
     
