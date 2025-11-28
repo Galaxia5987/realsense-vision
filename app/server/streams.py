@@ -52,7 +52,7 @@ def create_stream_route(
         )
     
     # Add route dynamically
-    app_instance.add_api_route(
+    router.add_api_route(
         path,
         dynamic_stream,
         methods=["GET"],

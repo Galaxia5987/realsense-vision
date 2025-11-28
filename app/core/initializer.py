@@ -36,7 +36,8 @@ class Initializer:
             res[1],
             ConfigManager().get().camera.fps
         )
-        self.camera.start()
+        if self.camera.realsense_connected():
+            self.camera.start()
 
     def init_network_tables_component(self):
         logger.info("Initializing NetworkTables", operation="reload_app")
