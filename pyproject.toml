@@ -20,7 +20,7 @@ dependencies = [
     "websockets>=15.0.1",
     "pyrealsense2==2.56.5.9235",
     "apscheduler>=3.11.0",
-    "jinja2"
+    "jinja2",
 #    "rknn-toolkit-lite2>=2.3.2",
 #    "pyntcore",
 #    "robotpy_wpinet",
