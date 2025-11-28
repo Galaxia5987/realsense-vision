@@ -3,19 +3,17 @@ import threading
 import logging
 import sys
 
+from fastapi import FastAPI
+
+from app.core import logging_config
 from app.wslog import StdInterceptor, start_ws_log_server
 from app.scheduler import scheduler
 from app.core.reloader import set_reload_function
-from app.core.logging_config import get_logger
 from app.components.supervisor import supervisor
 
-from app.core.initialization import (
-    reload_app,
-    stop_components
-)
+from app.core.initialization import reload_app, stop_components
 
-logger = get_logger(__name__)
-
+logger = logging_config.get_logger(__name__)
 
 def _start_websocket_log_server():
     """Launch WS logging server in its own thread."""
@@ -24,7 +22,7 @@ def _start_websocket_log_server():
 
 
 @asynccontextmanager
-async def lifespan(app):
+async def lifespan(app: FastAPI):
     logger.info("Starting RealSense Vision...", operation="startup")
 
     # Intercept stdout/stderr to WebSocket logger

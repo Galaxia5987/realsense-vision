@@ -8,7 +8,6 @@ from pydantic import BaseModel
 from typing import Optional
 from app.config import ConfigManager
 from utils import unflatten_dict, flatten_with_types, get_enum_options_by_path, restart_service
-from werkzeug.utils import secure_filename
 import convert_model
 from app.core.reloader import reload_app
 from app.config import ConfigManager
@@ -62,7 +61,7 @@ async def update_config(request: Request):
                     items[full_key] = ('normal', type(v))
             return items
 
-        type_map = flatten_with_enum_refs(ConfigManager.get.model_dump())
+        type_map = flatten_with_enum_refs(ConfigManager().get().model_dump)
         flat = {}
 
         for key, (kind, val_type) in type_map.items():
