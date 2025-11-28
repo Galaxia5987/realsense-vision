@@ -6,6 +6,8 @@ import uvicorn
 from app.config import ConfigManager
 
 from app.core import logging_config
+from app.config import ConfigManager
+
 from app.core.app_lifespan import lifespan
 from app.server import streams
 
