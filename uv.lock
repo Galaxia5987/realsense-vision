@@ -791,6 +791,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "apscheduler" },
     { name = "fastapi" },
+    { name = "jinja2" },
     { name = "numpy" },
     { name = "onnxslim" },
     { name = "opencv-python" },
@@ -810,6 +811,7 @@ dependencies = [
 requires-dist = [
     { name = "apscheduler", specifier = ">=3.11.0" },
     { name = "fastapi" },
+    { name = "jinja2" },
     { name = "numpy" },
     { name = "onnxslim", specifier = ">=0.1.61" },
     { name = "opencv-python" },
