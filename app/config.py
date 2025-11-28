@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 from pydantic import ValidationError
 import yaml
-import logging_config
+import app.core.logging_config as logging_config
 from models.models import RootConfig
 from utils import singleton
 

@@ -8,7 +8,7 @@ from typing import Dict, Callable, Optional, Any
 from enum import Enum
 from dataclasses import dataclass
 from datetime import datetime
-import logging_config
+import app.core.logging_config as logging_config
 
 
 logger = logging_config.get_logger(__name__)

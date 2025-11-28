@@ -1,7 +1,6 @@
 import os
-from flask import flash
 from ultralytics import YOLO
-import scheduler
+import app.scheduler as scheduler
 
 def convert_model(model_path, chip='rk3588', flash_after=True, chdir=True):
     if chdir:

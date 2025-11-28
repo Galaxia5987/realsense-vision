@@ -1,8 +1,8 @@
 import json
 import ntcore
 import numpy as np
-import logging_config
-from retry_utils import retry_with_backoff, safe_call
+import app.core.logging_config as logging_config
+from app.components.retry_utils import retry_with_backoff, safe_call
 from wpimath.geometry import Pose3d, Translation3d, Rotation3d
 
 logger = logging_config.get_logger(__name__)

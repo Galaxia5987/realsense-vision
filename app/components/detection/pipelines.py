@@ -3,7 +3,7 @@ from detection.detector import YOLODetector
 import cv2
 import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
-import logging_config
+import app.core.logging_config as logging_config
 
 logger = logging_config.get_logger(__name__)
 

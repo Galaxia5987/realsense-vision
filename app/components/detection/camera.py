@@ -3,7 +3,7 @@ import numpy as np
 import threading
 import time
 from utils import AsyncLoopBase, generate_stream_disabled_image
-import logging_config
+import app.core.logging_config as logging_config
 
 logger = logging_config.get_logger(__name__)
 disabled_mat = generate_stream_disabled_image()

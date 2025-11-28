@@ -1,7 +1,7 @@
 from ultralytics import YOLO
-from config import config
-import logging_config
-from retry_utils import retry_with_backoff
+from app.config import config
+import app.core.logging_config as logging_config
+from app.components.retry_utils import retry_with_backoff
 
 logger = logging_config.get_logger(__name__)
 

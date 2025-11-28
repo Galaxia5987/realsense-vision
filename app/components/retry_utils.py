@@ -4,7 +4,7 @@ Retry and recovery utilities for fault-tolerant initialization and operations.
 import time
 import functools
 from typing import Callable, TypeVar, Optional, Type, Tuple
-import logging_config
+import app.core.logging_config as logging_config
 
 
 logger = logging_config.get_logger(__name__)

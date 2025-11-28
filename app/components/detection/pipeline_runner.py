@@ -1,8 +1,8 @@
 import threading
 from utils import generate_stream_disabled_image, frames_to_jpeg_bytes, fail_restart
-from config import config
-import logging_config
-from retry_utils import safe_call
+from app.config import config
+import app.core.logging_config as logging_config
+from app.components.retry_utils import safe_call
 
 logger = logging_config.get_logger(__name__)
 disabled_jpeg = frames_to_jpeg_bytes(generate_stream_disabled_image())

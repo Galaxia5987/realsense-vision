@@ -4,7 +4,7 @@ import websockets
 import threading
 from collections import deque
 import logging
-import reloader
+import app.core.reloader
 
 log_buffer = deque(maxlen=500)
 connected_clients = set()
