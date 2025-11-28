@@ -1,5 +1,4 @@
 from contextlib import asynccontextmanager
-import threading
 import logging
 import sys
 
