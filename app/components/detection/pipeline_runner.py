@@ -1,47 +1,38 @@
 import threading
-from utils import generate_stream_disabled_image, frames_to_jpeg_bytes, fail_restart
-from app.config import config
+from utils import AsyncLoopBase, generate_stream_disabled_image, frames_to_jpeg_bytes, fail_restart
+from app.config import ConfigManager
 import app.core.logging_config as logging_config
-from app.components.retry_utils import safe_call
 
 logger = logging_config.get_logger(__name__)
 disabled_jpeg = frames_to_jpeg_bytes(generate_stream_disabled_image())
 
-class PipelineRunner:
-    def __init__(self, pipeline_type, camera, args=[], set_output_callback=None):
+class PipelineRunner(AsyncLoopBase):
+    def __init__(self, pipeline_type, camera, set_output_callback, args=[], ):
+        
         logger.info(
             f"Initializing pipeline runner with {pipeline_type.__name__}",
             operation="init"
         )
+
+        self.pipeline_type = pipeline_type
+        self.args = args
+        self.camera = camera
+        self.set_output_callback = set_output_callback
+        assert set_output_callback, "set_output callback was empty! "
+
+        self.running = False
+        self.error_count = 0
+        self.loop_count = 0
         
-        try:
-            self.pipeline_type = pipeline_type
-            self.args = args
-            self.camera = camera
-            self.set_output_callback = set_output_callback
-            self.stop_event = threading.Event()
-            self.running = False
-            self.error_count = 0
-            self.loop_count = 0
-            
-            self.thread = threading.Thread(target=self.loop, daemon=True)
-            self.thread.start()
-            self.running = True
-            
-            logger.info(
-                "Pipeline runner initialized successfully",
-                operation="init", status="success"
-            )
-        except Exception as e:
-            logger.exception(
-                f"Exception while initializing pipeline: {e}",
-                operation="init"
-            )
-            # fail_restart()
-            raise Exception("Exception while initializing pipeline: " + str(e))
+        self.running = True
+        
+        logger.info(
+            "Pipeline runner initialized successfully",
+            operation="init", status="success"
+        )
     
 
-    def loop(self):
+    def on_iteration(self):
         """
         Main pipeline processing loop with error handling.
         
@@ -52,77 +43,29 @@ class PipelineRunner:
         """
         logger.info("Pipeline loop started", operation="loop")
         
-        try:
-            logger.debug(
-                f"Creating pipeline instance: {self.pipeline_type.__name__}",
-                operation="loop"
-            )
-            self.pipeline = self.pipeline_type(self.camera, *self.args)
-            logger.info("Pipeline instance created", operation="loop", status="success")
+    
+        logger.debug(
+            f"Creating pipeline instance: {self.pipeline_type.__name__}",
+            operation="loop"
+        )
+        self.pipeline = self.pipeline_type(self.camera, *self.args)
+        logger.info("Pipeline instance created", operation="loop", status="success")
+        
+        self.pipeline.loop()
             
-            consecutive_errors = 0
-            max_consecutive_errors = 10
+        if self.set_output_callback and hasattr(self.pipeline, 'get_output'):
+            output = self.pipeline.get_output()
+            if output is not None:
+                self.set_output_callback(output)
+                
+            self.loop_count += 1
             
-            while not self.stop_event.is_set():
-                try:
-                    self.pipeline.loop()
-                    
-                    if self.set_output_callback and hasattr(self.pipeline, 'get_output'):
-                        output = self.pipeline.get_output()
-                        if output is not None:
-                            safe_call(
-                                self.set_output_callback,
-                                operation_name="output_callback",
-                                args=(output,)
-                            )
-                    
-                    # Reset consecutive errors on success
-                    if consecutive_errors > 0:
-                        logger.info(
-                            f"Pipeline recovered from {consecutive_errors} consecutive errors",
-                            operation="loop", status="recovered"
-                        )
-                        consecutive_errors = 0
-                    
-                    self.loop_count += 1
-                    
-                    # Log periodically
-                    if self.loop_count % 300 == 0:
-                        logger.debug(
-                            f"Pipeline processed {self.loop_count} iterations",
-                            operation="loop"
-                        )
-                    
-                except Exception as e:
-                    consecutive_errors += 1
-                    self.error_count += 1
-                    
-                    if consecutive_errors >= max_consecutive_errors:
-                        logger.critical(
-                            f"Pipeline failed after {max_consecutive_errors} consecutive errors",
-                            operation="loop", status="failed"
-                        )
-                        logger.exception(str(e), operation="loop")
-                        break
-                    else:
-                        logger.warning(
-                            f"Error in pipeline loop (consecutive: {consecutive_errors}): {e}",
-                            operation="loop"
-                        )
-                        
-        except Exception as e:
-            logger.exception(
-                f"Fatal exception in pipeline loop: {e}",
-                operation="loop"
-            )
-            # fail_restart()
-            raise Exception("Exception while on pipeline loop: " + str(e))
-        finally:
-            self.running = False
-            logger.info(
-                f"Pipeline loop stopped (iterations: {self.loop_count}, errors: {self.error_count})",
-                operation="loop"
-            )
+            # Log periodically
+            if self.loop_count % 300 == 0:
+                logger.debug(
+                    f"Pipeline processed {self.loop_count} iterations",
+                    operation="loop"
+                )
 
     def stop(self):
         """Stop the pipeline gracefully."""
@@ -139,14 +82,9 @@ class PipelineRunner:
 
     def get_jpeg(self):
         """Get JPEG-encoded color frame."""
-        if config.get_config().get("color_frame", {}).get("stream", {}).get("enabled", False):
-            return safe_call(
-                lambda: self.pipeline.get_jpeg() if hasattr(self, 'pipeline') else disabled_jpeg,
-                default=disabled_jpeg,
-                operation_name="get_jpeg"
-            )
-        else:
-            return disabled_jpeg
+        if ConfigManager().get().color_frame.stream_enabled:
+            return self.pipeline.get_jpeg()
+        return disabled_jpeg
     
     def get_output(self):
         """Get pipeline output."""

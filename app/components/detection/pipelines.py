@@ -7,7 +7,7 @@ import app.core.logging_config as logging_config
 
 logger = logging_config.get_logger(__name__)
 
-class DetectionDepthPipeline:
+class DetectionDepthPipeline(PipelineBase):
     def __init__(self, camera, model_path):
         self.camera = camera
         np.set_printoptions(threshold=100000)

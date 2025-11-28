@@ -2,13 +2,13 @@ import logging
 from typing import List
 
 from app.components.detection.camera import RealSenseCamera
-from app.components.network_tables import init_network_tables, recover_network_tables
-from app.components.detection.pipeline_runner import init_pipeline_runner, recover_pipeline_runner, disabled_jpeg
 
 from app.config import ConfigManager
 from app.components.retry_utils import safe_init
 from app.components.supervisor import supervisor
 
+from components.network_tables import NetworkTablesPublisher
+from models.models import NetworkTables
 from server import streams
 from core.logging_config import get_logger
 
@@ -38,12 +38,12 @@ def reload_app():
 
 def _init_camera():
     """Initialize camera component."""
-    resolution_str = ConfigManager.get("camera", {}).get("resolution", {}).get("value", "640x480")
+    resolution_str = ConfigManager().get().camera.resolution.value
     res = list(map(int, resolution_str.split("x")))
     camera = RealSenseCamera(
         res[0],
         res[1],
-        ConfigManager.get("camera", {}).get("fps", 30)
+        ConfigManager().get().camera.fps
     )
     camera.start()
     return camera
@@ -95,24 +95,16 @@ def init_camera_component():
         )
 
 def init_network_tables_component():
-    global publisher, errors
     logger.info("Initializing NetworkTables", operation="reload_app")
 
-    publisher, nt_error = safe_init(
-        "network_tables",
-        init_network_tables,
-        fallback_value=None,
-        max_attempts=3
-    )
+    # Init Networkstables
+    nt_instance = NetworkTablesPublisher()
 
-    if nt_error:
-        errors.append(f"Failed to initialize NetworkTables: {nt_error}")
-    elif publisher:
-        supervisor.register_component(
-            "network_tables",
-            health_check=lambda: publisher.is_healthy() if publisher else False,
-            recovery_handler=lambda: recover_network_tables()
-        )
+    supervisor.register_component(
+        "network_tables",
+        health_check=lambda: NetworkTablesPublisher().is_healthy(),
+        recovery_handler=lambda: (nt_instance.__init__() or True)
+    )
 
 def init_pipeline_component():
     global runner, errors, camera, publisher

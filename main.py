@@ -5,9 +5,11 @@ import uvicorn
 
 from app.config import ConfigManager
 
+from app.core import logging_config
 from app.core.app_lifespan import lifespan
 from app.server import streams
 
+logger = logging_config.get_logger(__name__)
 
 app = FastAPI(
     title="Realsense Vision",
@@ -36,7 +38,6 @@ async def root(request: Request):
         "cfg": ConfigManager().get()
     }
 )
-
 
 def run():
     uvicorn.run(app, host="0.0.0.0", port=8000)

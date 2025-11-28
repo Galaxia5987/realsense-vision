@@ -33,7 +33,7 @@ class NetworkTablesPublisher:
             f"Initializing NetworkTables connection to {server} with table {table_name}",
             operation="init", status="starting"
         )
-        try:
+        try:    
             self._initialize_connection(table_name, server)
             self.connected = True
             self.publish_count = 0

@@ -11,7 +11,7 @@ dependencies = [
     "numpy",
     "torch==2.2.0",
     "torchvision==0.17.0",
-    "rknn-toolkit2",
+#    "rknn-toolkit2",
     "fastapi",
     "uvicorn",
     "pydantic",
