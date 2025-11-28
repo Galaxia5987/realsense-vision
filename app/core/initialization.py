@@ -1,137 +1,58 @@
+from fastapi import FastAPI
 from app.components.detection.camera import RealSenseCamera
 
 from app.config import ConfigManager
-
+from app.components.detection.pipeline_runner import disabled_jpeg
 from components.network_tables import NetworkTablesPublisher
 from server import streams
 from core.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-camera = None
-runner = None
-publisher = None
+class Initializer:
+    camera = None
+    runner = None
+    publisher = None
 
-def reload_app():
-    logger.info("Starting application reload", operation="reload_app")
+    def __init__(self, app_instance: FastAPI) -> None:
+        self.app_instance = app_instance
 
-    init_camera_component()
-    init_network_tables_component()
-    init_pipeline_component()
-    setup_stream_routes()
+    def load_app(self):
+        logger.info("Starting application reload", operation="reload_app")
 
-def _init_camera():
-    """Initialize camera component."""
-    resolution_str = ConfigManager().get().camera.resolution.value
-    res = list(map(int, resolution_str.split("x")))
-    camera = RealSenseCamera(
-        res[0],
-        res[1],
-        ConfigManager().get().camera.fps
-    )
-    camera.start()
-    return camera
+        self.init_camera()
+        self.init_network_tables_component()
+        self.init_pipeline_component()
+        self.setup_stream_routes()
 
-def _recover_camera():
-    """Attempt to recover the camera component."""
-    global camera
-    logger.info("Attempting camera recovery", operation="recovery")
-    
-    try:
-        if camera:
-            camera.stop()
+    def init_camera(self):
+        """Initialize camera component."""
+        resolution_str = ConfigManager().get().camera.resolution.value
+        res = list(map(int, resolution_str.split("x")))
+        self.camera = RealSenseCamera(
+            res[0],
+            res[1],
+            ConfigManager().get().camera.fps
+        )
+        self.camera.start()
+
+    def init_network_tables_component(self):
+        logger.info("Initializing NetworkTables", operation="reload_app")
+        NetworkTablesPublisher()
+
+    def init_pipeline_component(self):
+        logger.info("Initializing pipeline runner", operation="reload_app")
+
+        if self.camera is None:
+            logger.warning("Skipping pipeline initialization because camera failed", operation="reload_app")
+            self.runner = None
+            return
         
-        camera, error = safe_init(
-            "camera",
-            _init_camera,
-            fallback_value=None,
-            max_attempts=2
-        )
-        
-        if camera and not error:
-            logger.info("Camera recovery successful", operation="recovery", status="success")
-            return True
-        else:
-            logger.error(f"Camera recovery failed: {error}", operation="recovery")
-            return False
-    except Exception as e:
-        logger.exception(f"Error during camera recovery: {e}", operation="recovery")
-        return False
 
-def init_camera_component():
-    global camera, errors
-    logger.info("Initializing camera", operation="reload_app")
+    def setup_stream_routes(self):
+        logger.info("Configuring stream routes", operation="reload_app")
 
-    camera, cam_error = safe_init(
-        "camera",
-        _init_camera,
-        fallback_value=None,
-        max_attempts=3
-    )
-
-    if cam_error:
-        errors.append(f"Failed to initialize camera: {cam_error}")
-    elif camera:
-        supervisor.register_component(
-            "camera",
-            health_check=lambda: camera.is_healthy() if camera else False,
-            recovery_handler=lambda: _recover_camera()
-        )
-
-def init_network_tables_component():
-    logger.info("Initializing NetworkTables", operation="reload_app")
-
-    # Init Networkstables
-    nt_instance = NetworkTablesPublisher()
-
-    supervisor.register_component(
-        "network_tables",
-        health_check=lambda: NetworkTablesPublisher().is_healthy(),
-        recovery_handler=lambda: (nt_instance.__init__() or True)
-    )
-
-def init_pipeline_component():
-    global runner, errors, camera, publisher
-    logger.info("Initializing pipeline runner", operation="reload_app")
-
-    if camera is None:
-        logger.warning("Skipping pipeline initialization because camera failed", operation="reload_app")
-        runner = None
-        return
-
-    runner, runner_error = safe_init(
-        "pipeline_runner",
-        init_pipeline_runner,
-        fallback_value=None,
-        max_attempts=3,
-        camera=camera,
-        publisher=publisher
-    )
-
-    if runner_error:
-        errors.append(f"Failed to initialize pipeline runner: {runner_error}")
-    elif runner:
-        supervisor.register_component(
-            "pipeline_runner",
-            health_check=lambda: runner.is_healthy() if runner else False,
-            recovery_handler=lambda: recover_pipeline_runner()
-        )
-
-def setup_stream_routes():
-    global runner, errors
-    logger.info("Configuring stream routes", operation="reload_app")
-
-    try:
-        if runner is not None:
-            streams.create_stream_route("/video_feed", lambda: runner.get_jpeg())
-            streams.create_stream_route("/depth_feed", lambda: runner.get_depth_jpeg())
-        else:
-            streams.create_stream_route("/video_feed", lambda: disabled_jpeg)
-            streams.create_stream_route("/depth_feed", lambda: disabled_jpeg)
+        streams.create_stream_route(self.app_instance,"/video_feed", lambda: self.runner.get_jpeg() if self.runner else disabled_jpeg)
+        streams.create_stream_route(self.app_instance,"/depth_feed", lambda: self.runner.get_jpeg() if self.runner else disabled_jpeg)
 
         logger.info("Stream routes configured successfully", operation="reload_app", status="success")
-
-    except Exception as e:
-        msg = f"Failed to set up stream routes: {e}"
-        logger.exception(msg, operation="reload_app")
-        errors.append(msg)
