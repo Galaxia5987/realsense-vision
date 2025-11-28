@@ -5,7 +5,7 @@ import sys
 from fastapi import FastAPI
 
 from app.core import logging_config
-from core.initializer import Initializer
+from app.core.initializer import Initializer
 
 logger = logging_config.get_logger(__name__)
 

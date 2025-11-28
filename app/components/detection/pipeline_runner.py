@@ -1,6 +1,5 @@
-import threading
-from components.detection.pipelines.pipeline_base import PipelineBase
-from utils import AsyncLoopBase, generate_stream_disabled_image, frames_to_jpeg_bytes, fail_restart
+from app.components.detection.pipelines.pipeline_base import PipelineBase
+from utils import AsyncLoopBase, generate_stream_disabled_image, frames_to_jpeg_bytes
 from app.config import ConfigManager
 import app.core.logging_config as logging_config
 

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from components.detection.camera import RealSenseCamera
+from app.components.detection.camera import RealSenseCamera
 from models.models import Pipeline
 
 # Registry dictionary
