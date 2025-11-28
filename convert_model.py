@@ -1,18 +1,21 @@
+import asyncio
 import os
 from ultralytics import YOLO
-import app.scheduler as scheduler
 
-def convert_model(model_path, chip='rk3588', flash_after=True, chdir=True):
-    if chdir:
-      os.chdir(os.path.dirname(model_path))
-    model = YOLO("best.pt")
+def convert_model(model_path, chip='rk3588'):
+    os.chdir(os.path.dirname(model_path))
+    model = YOLO(model_path)
     
     out_path = model.export(format='rknn', name=chip)
-    if flash_after:
-        scheduler.flash_scheduler_message = f'Model converted and saved to {out_path}'
-    if chdir:
-      os.chdir('..')
+    os.chdir('..')
     return out_path
 
+async def async_convert_model(model_path, chip='rk3588s'):
+    await asyncio.to_thread(
+        convert_model,
+        model_path,
+        chip,
+      )
+
 if __name__ == "__main__":
-    convert_model("./uploads/best.pt", flash_after=False, chdir=True)
+    convert_model("./uploads/best.pt")

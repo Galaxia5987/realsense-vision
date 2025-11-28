@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, File, Request, UploadFile
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
@@ -10,7 +11,9 @@ from app.core import logging_config
 from app.config import ConfigManager
 
 from app.core.app_lifespan import lifespan
+from app.core.uploader import upload_model
 from app.server import streams
+from utils import restart_service
 
 logger = logging_config.get_logger(__name__)
 
@@ -28,7 +31,6 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # routers
-# app.include_router(routes.router)
 app.include_router(streams.router, prefix="/streams")
 
 
@@ -41,6 +43,15 @@ async def root(request: Request):
         "cfg": ConfigManager().get()
     }
 )
+
+@app.get('/restart')
+async def restart():
+    restart_service()
+    return RedirectResponse(url='/', status_code=303)
+
+@app.post("/upload")
+async def upload(file: UploadFile = File(...)):
+    await upload_model(file)
 
 def run():
     uvicorn.run(app, host="0.0.0.0", port=8000)
