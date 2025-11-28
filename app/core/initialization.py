@@ -1,14 +1,8 @@
-import logging
-from typing import List
-
 from app.components.detection.camera import RealSenseCamera
 
 from app.config import ConfigManager
-from app.components.retry_utils import safe_init
-from app.components.supervisor import supervisor
 
 from components.network_tables import NetworkTablesPublisher
-from models.models import NetworkTables
 from server import streams
 from core.logging_config import get_logger
 
@@ -17,24 +11,14 @@ logger = get_logger(__name__)
 camera = None
 runner = None
 publisher = None
-errors: List[str] = []
 
 def reload_app():
-    global errors
     logger.info("Starting application reload", operation="reload_app")
-
-    errors = []  # reset errors
 
     init_camera_component()
     init_network_tables_component()
     init_pipeline_component()
     setup_stream_routes()
-
-    logger.info(
-        f"Application reload complete (errors: {len(errors)})",
-        operation="reload_app",
-        status="complete"
-    )
 
 def _init_camera():
     """Initialize camera component."""
