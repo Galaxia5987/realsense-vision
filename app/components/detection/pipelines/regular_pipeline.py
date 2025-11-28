@@ -10,6 +10,7 @@ class RegularPipeline(PipelineBase):
         return "RegularPipeline"
 
     def __init__(self, camera):
+        super().__init__()
         logger.info("Initializing RegularPipeline", operation="init")
         self.camera = camera
         self.frame = None

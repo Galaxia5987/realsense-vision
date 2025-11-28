@@ -11,7 +11,6 @@ logger = logging_config.get_logger(__name__)
 class DetectionDepthPipeline(PipelineBase):
     def __init__(self, camera, model_path):
         self.camera = camera
-        np.set_printoptions(threshold=100000)
         
         try:
             self.detector = YOLODetector(model_path)

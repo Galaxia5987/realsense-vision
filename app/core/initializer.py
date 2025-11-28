@@ -2,8 +2,10 @@ from fastapi import FastAPI
 from app.components.detection.camera import RealSenseCamera
 
 from app.config import ConfigManager
-from app.components.detection.pipeline_runner import disabled_jpeg
+from app.components.detection.pipeline_runner import PipelineRunner, disabled_jpeg
+from components.detection.pipelines.pipeline_base import create_pipeline_by_name
 from components.network_tables import NetworkTablesPublisher
+import config
 from server import streams
 from core.logging_config import get_logger
 
@@ -16,6 +18,7 @@ class Initializer:
 
     def __init__(self, app_instance: FastAPI) -> None:
         self.app_instance = app_instance
+        self.config = ConfigManager().get()
 
     def load_app(self):
         logger.info("Starting application reload", operation="reload_app")
@@ -47,6 +50,8 @@ class Initializer:
             logger.warning("Skipping pipeline initialization because camera failed", operation="reload_app")
             self.runner = None
             return
+        
+        self.runner = create_pipeline_by_name(self.config.pipeline, self.camera)
         
 
     def setup_stream_routes(self):
