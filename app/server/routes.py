@@ -1,27 +1,20 @@
 import time
 import os
-from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException, Request
+from fastapi import APIRouter, UploadFile, File, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-from typing import Optional
 from app.config import ConfigManager
-from utils import unflatten_dict, flatten_with_types, get_enum_options_by_path, restart_service
+from utils import unflatten_dict, restart_service
 import convert_model
 from app.core.reloader import reload_app
 from app.config import ConfigManager
 import app.scheduler as scheduler
-from app.components.supervisor import supervisor
 import app.core.logging_config as logging_config
 
-logger = logging_config.get_logger('routes')
+logger = logging_config.get_logger(__name__)
 
 router = APIRouter()
-
-# Setup templates and static files
-templates = Jinja2Templates(directory="templates")
-router.mount("/static", StaticFiles(directory="static"), name="static")
 
 UPLOAD_FOLDER = 'uploads'
 
@@ -130,7 +123,7 @@ async def upload(file: UploadFile = File(...)):
         if not allowed_file(file.filename):
             raise HTTPException(status_code=400, detail='Invalid file type. Only .pt files allowed')
         
-        filename = secure_filename(file.filename)
+        filename = file.filename
         
         if not os.path.exists(UPLOAD_FOLDER):
             os.makedirs(UPLOAD_FOLDER)
