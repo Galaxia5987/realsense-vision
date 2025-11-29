@@ -1,5 +1,5 @@
 from ultralytics import YOLO
-from app.config import config
+from app.config import ConfigManager
 import app.core.logging_config as logging_config
 from app.components.retry_utils import retry_with_backoff
 
@@ -35,7 +35,7 @@ class YOLODetector:
             self.results = self.model(
                 image,
                 imgsz=self.imgsz,
-                conf=config.get_config().get("min_confidence", 0.85)
+                conf=ConfigManager().get().min_confidence
             )[0]
             
             self.detection_count += 1
