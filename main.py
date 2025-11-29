@@ -52,7 +52,12 @@ async def update_config(data: RootConfig):
 
 @app.get('/restart')
 async def restart():
-    restart_service()
+    async def _delayed_restart():
+        await asyncio.sleep(1)
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, restart_service)
+
+    asyncio.create_task(_delayed_restart())
     return RedirectResponse(url='/', status_code=303)
 
 @app.post("/upload")
