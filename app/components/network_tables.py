@@ -1,29 +1,36 @@
 import json
 from app.config import ConfigManager
-import ntcore
 import numpy as np
 import app.core.logging_config as logging_config
 from app.components.retry_utils import retry_with_backoff
 from utils import singleton
-from wpimath.geometry import Pose3d, Translation3d, Rotation3d
 
 logger = logging_config.get_logger(__name__)
+NTCORE = True
+try:
+    import ntcore
+    from wpimath.geometry import Pose3d, Translation3d, Rotation3d
+except ImportError as e:
+    logger.warning("Cannot import robotpy libraries - skipping...")
+    NTCORE = False
 
 class NumpyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        elif isinstance(obj, (np.integer,)):
-            return int(obj)
-        elif isinstance(obj, (np.floating,)):
-            return float(obj)
-        elif isinstance(obj, (np.bool_)):
-            return bool(obj)
-        return super().default(obj)
+    def default(self, o):
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        elif isinstance(o, (np.integer,)):
+            return int(o)
+        elif isinstance(o, (np.floating,)):
+            return float(o)
+        elif isinstance(o, (np.bool_)):
+            return bool(o)
+        return super().default(o)
 
 @singleton
 class NetworkTablesPublisher:
     def __init__(self):
+        if not NTCORE:
+            return
         config = ConfigManager().get()
 
         table_name = config.network_tables.table
@@ -54,6 +61,8 @@ class NetworkTablesPublisher:
     @retry_with_backoff(max_attempts=3, initial_delay=1.0)
     def _initialize_connection(self, table_name, server):
         """Initialize NetworkTables connection with retry logic."""
+        if not NTCORE:
+            return
         logger.debug("Creating NetworkTables instance", operation="init_connection")
         
         self.inst = ntcore.NetworkTableInstance.getDefault()
@@ -71,6 +80,8 @@ class NetworkTablesPublisher:
 
     def publish_detections(self, detections):
         """Publish detection results to NetworkTables with error handling."""
+        if not NTCORE:
+            return
         try:
             if not detections:
                 self.clear()
@@ -113,15 +124,10 @@ class NetworkTablesPublisher:
 
     def clear(self):
         """Clear published detections."""
+        if not NTCORE:
+            return
         try:
             # Publish an empty array
             self.pose_pub.set([])
         except Exception as e:
             logger.warning(f"Error clearing detections: {e}", operation="clear")
-    
-    def is_healthy(self) -> bool:
-        """Check if NetworkTables connection is healthy."""
-        try:
-            return self.connected and self.inst is not None
-        except:
-            return False
