@@ -4,16 +4,20 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
 
-from app.core import logging_config
-from app.config import ConfigManager
-
+from app.components.detection.pipelines.pipeline_base import get_all_pipeline_names
 from app.core import logging_config
 from app.config import ConfigManager
 
 from app.core.app_lifespan import lifespan
 from app.core.uploader import upload_model
+from convert_model import realtime
 from app.server import streams
+from models.models import RootConfig
 from utils import restart_service
+import asyncio
+from models.models import default_config
+
+logging_config.setup_logging()
 
 logger = logging_config.get_logger(__name__)
 
