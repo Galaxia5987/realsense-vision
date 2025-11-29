@@ -1,6 +1,7 @@
 import asyncio
 import os
 import time
+from typing import List
 from fastapi import File, HTTPException, UploadFile
 from fastapi.responses import RedirectResponse
 
@@ -47,3 +48,18 @@ async def upload_model(file: UploadFile = File(...)):
     except Exception as e:
         logger.exception("Model conversion failed", operation="upload")
         raise HTTPException(status_code=500, detail=f"Error converting model: {e}")
+    
+def get_all_rknn_models() -> List[str]:
+    try:
+        if not os.path.exists(UPLOAD_FOLDER):
+            return []
+
+        models = [
+            name
+            for name in os.listdir(UPLOAD_FOLDER)
+            if name.endswith("rknn_model") and os.path.isdir(os.path.join(UPLOAD_FOLDER, name))
+        ]
+        return models
+    except Exception:
+        logger.exception("Failed to list rknn models", operation="list_models")
+        return []
