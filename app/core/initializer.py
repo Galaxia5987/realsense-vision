@@ -63,8 +63,25 @@ class Initializer:
 
     def setup_stream_routes(self):
         logger.info("Configuring stream routes", operation="reload_app")
+        def video(depth: bool):
+            if self.runner:
+                img = None
+                if depth:
+                    img = self.runner.get_depth_jpeg()
+                else:
+                    img = self.runner.get_jpeg()
+                if not img:
+                    return disabled_jpeg
+                return img
+            return disabled_jpeg
+    
+        def video_color():
+            return video(False)
+        
+        def video_depth():
+            return video(True)
 
-        streams.create_stream_route(self.app_instance,"/video_feed", lambda: self.runner.get_jpeg() if self.runner else disabled_jpeg)
-        streams.create_stream_route(self.app_instance,"/depth_feed", lambda: self.runner.get_jpeg() if self.runner else disabled_jpeg)
+        streams.create_stream_route(self.app_instance,"/video_feed", video_color)
+        streams.create_stream_route(self.app_instance,"/depth_feed", video_depth)
 
         logger.info("Stream routes configured successfully", operation="reload_app", status="success")
