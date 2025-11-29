@@ -50,8 +50,15 @@ class Initializer:
             logger.warning("Skipping pipeline initialization because camera failed", operation="reload_app")
             self.runner = None
             return
-        
-        self.runner = create_pipeline_by_name(self.config.pipeline, self.camera)
+        try:
+            self.pipeline = create_pipeline_by_name(self.config.pipeline, self.camera)
+            assert self.pipeline
+            self.runner = PipelineRunner(self.pipeline, lambda: None)
+            self.runner.start()
+        except TypeError:
+            logger.warning("Incompatible number of arguments were passed to the pipeline")
+        except AssertionError:
+            logger.warning(f"Pipline named {self.config.pipeline} was not found.")
         
 
     def setup_stream_routes(self):
