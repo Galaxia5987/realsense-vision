@@ -8,8 +8,11 @@ import app.core.logging_config as logging_config
 logger = logging_config.get_logger(__name__)
 disabled_mat = generate_stream_disabled_image()
 
+LOOP_INTERVAL = 0.1
+
 class RealSenseCamera(AsyncLoopBase):
     def __init__(self, width=640, height=480, fps=30, frame_timeout_ms=1000):
+        super().__init__(LOOP_INTERVAL)
         self.width = width
         self.height = height
         self.fps = fps
