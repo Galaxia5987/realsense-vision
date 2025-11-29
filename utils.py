@@ -4,14 +4,16 @@ import numpy as np
 import subprocess
 import logging
 
+
 def frames_to_jpeg_bytes(frame, resolution=(640, 480)):
     resized = cv2.resize(frame, resolution)
-    ret, jpeg = cv2.imencode('.jpg', resized)
+    ret, jpeg = cv2.imencode(".jpg", resized)
     if not ret:
         return None
     return jpeg.tobytes()
 
-def unflatten_dict(flat, sep='.'):
+
+def unflatten_dict(flat, sep="."):
     result = {}
     for key, value in flat.items():
         parts = key.split(sep)
@@ -22,29 +24,32 @@ def unflatten_dict(flat, sep='.'):
     return result
 
 
-def flatten_with_types(d, parent_key='', sep='.'):
+def flatten_with_types(d, parent_key="", sep="."):
     items = {}
     for k, v in d.items():
         full_key = f"{parent_key}{sep}{k}" if parent_key else k
         if isinstance(v, dict):
             # Handle enum case separately
-            if 'enum' in v and 'value' in v and isinstance(v['enum'], list):
-                items[full_key + '.value'] = type(v['value'])
+            if "enum" in v and "value" in v and isinstance(v["enum"], list):
+                items[full_key + ".value"] = type(v["value"])
             else:
                 items.update(flatten_with_types(v, full_key, sep=sep))
         else:
             items[full_key] = type(v)
     return items
 
+
 def get_enum_options_by_path(d, path):
     for key in path:
         d = d.get(key, {})
-    return d.get('enum', [])
+    return d.get("enum", [])
+
 
 def comma_seperated_to_list(value):
     if isinstance(value, str):
-        return [v.strip() for v in value.split(',') if v.strip()]
+        return [v.strip() for v in value.split(",") if v.strip()]
     return []
+
 
 def generate_stream_disabled_image(width=640, height=480, text="Stream Disabled"):
     image = np.zeros((height, width, 3), dtype=np.uint8)
@@ -60,25 +65,41 @@ def generate_stream_disabled_image(width=640, height=480, text="Stream Disabled"
     x = (width - text_width) // 2
     y = (height + text_height) // 2
 
-    cv2.putText(image, text, (x, y), font, font_scale, font_color, thickness, lineType=cv2.LINE_AA)
+    cv2.putText(
+        image,
+        text,
+        (x, y),
+        font,
+        font_scale,
+        font_color,
+        thickness,
+        lineType=cv2.LINE_AA,
+    )
 
     return image
 
+
 def restart_service():
     try:
-        subprocess.run(["sudo", "systemctl", "restart", "realsense-vision.service"], check=True)
+        subprocess.run(
+            ["sudo", "systemctl", "restart", "realsense-vision.service"], check=True
+        )
         return True
     except subprocess.CalledProcessError as e:
         logging.exception("Failed to restart service: %s", e)
         return False
 
+
 def singleton(class_):
     instances = {}
+
     def getinstance(*args, **kwargs):
         if class_ not in instances:
             instances[class_] = class_(*args, **kwargs)
         return instances[class_]
+
     return getinstance
+
 
 class AsyncLoopBase:
     def __init__(self, interval):

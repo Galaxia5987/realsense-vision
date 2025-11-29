@@ -8,6 +8,7 @@ from utils import singleton
 
 logger = logging_config.get_logger(__name__)
 
+
 class ConfigError(RuntimeError):
     """Raised when configuration cannot be loaded or validated."""
 
@@ -31,7 +32,7 @@ class ConfigManager:
             return yaml.safe_load(self.path.read_text(encoding="utf-8")) or {}
         except Exception as exc:  # pragma: no cover - defensive guard
             raise ConfigError(f"Failed to read config: {exc}") from exc
-        
+
     def update(self, config: RootConfig) -> None:
         """Write given validated config to disk and update the cached instance."""
         try:

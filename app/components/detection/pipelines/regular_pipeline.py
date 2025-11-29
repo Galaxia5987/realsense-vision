@@ -4,6 +4,7 @@ from utils import frames_to_jpeg_bytes
 
 logger = logging_config.get_logger(__name__)
 
+
 class RegularPipeline(PipelineBase):
     name = "RegularPipeline"
 
@@ -19,15 +20,19 @@ class RegularPipeline(PipelineBase):
         """Main processing loop."""
         self.frame = self.camera.get_latest_frame()
         self.depth_frame = self.camera.get_latest_depth_frame()
-        
+
     def get_depth_jpeg(self):
         """Get JPEG-encoded depth frame."""
         if self.depth_frame is None:
             return None
-        return frames_to_jpeg_bytes(self.depth_frame, resolution=(self.camera.width, self.camera.height))
+        return frames_to_jpeg_bytes(
+            self.depth_frame, resolution=(self.camera.width, self.camera.height)
+        )
 
     def get_jpeg(self):
         """Get JPEG-encoded color frame."""
         if self.frame is None:
             return None
-        return frames_to_jpeg_bytes(self.frame, resolution=(self.camera.width, self.camera.height))
+        return frames_to_jpeg_bytes(
+            self.frame, resolution=(self.camera.width, self.camera.height)
+        )

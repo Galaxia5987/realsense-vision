@@ -9,6 +9,7 @@ import app.core.logging_config as logging_config
 
 logger = logging_config.get_logger(__name__)
 
+
 class DetectionDepthPipeline(PipelineBase):
     name = "DetectionDepthPipeline"
 
@@ -19,7 +20,9 @@ class DetectionDepthPipeline(PipelineBase):
             self.detector = YOLODetector(model_path)
             self.detections = []
         except Exception as e:
-            logger.exception(f"Failed to initialize DetectionDepthPipeline: {e}", operation="init")
+            logger.exception(
+                f"Failed to initialize DetectionDepthPipeline: {e}", operation="init"
+            )
             raise
 
     def get_jpeg(self):
@@ -28,33 +31,52 @@ class DetectionDepthPipeline(PipelineBase):
         if detected is None:
             logger.warning("No annotated image available", operation="get_jpeg")
             return None
-            
-        if hasattr(self, 'detections'):
+
+        if hasattr(self, "detections"):
             for detection in self.detections:
-                center = detection['center']
-                depth = detection['depth']
-                point = detection['point']
+                center = detection["center"]
+                point = detection["point"]
                 point = [round(coord, 2) for coord in point]
                 x, y = center
                 depth_text = f"{point}"
-                cv2.putText(detected, depth_text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                cv2.putText(
+                    detected,
+                    depth_text,
+                    (x, y - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.7,
+                    (0, 255, 255),
+                    2,
+                )
                 cv2.circle(detected, center, 5, (0, 255, 255), -1)
-        return frames_to_jpeg_bytes(detected, resolution=(self.camera.width, self.camera.height))
-    
+        return frames_to_jpeg_bytes(
+            detected, resolution=(self.camera.width, self.camera.height)
+        )
+
     def get_depth_jpeg(self):
         """Get JPEG-encoded depth frame with annotations."""
         depth_frame = self.camera.get_latest_depth_frame()
         if depth_frame is None:
             return None
-        if hasattr(self, 'detections'):
+        if hasattr(self, "detections"):
             for detection in self.detections:
-                center = detection['center']
-                depth = detection['depth']
+                center = detection["center"]
+                depth = detection["depth"]
                 x, y = center
-                cv2.putText(depth_frame, f"{depth:.2f}m", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                cv2.putText(
+                    depth_frame,
+                    f"{depth:.2f}m",
+                    (x, y - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.7,
+                    (0, 255, 255),
+                    2,
+                )
                 cv2.circle(depth_frame, center, 5, (0, 255, 255), -1)
-        return frames_to_jpeg_bytes(depth_frame, resolution=(self.camera.width, self.camera.height))
-    
+        return frames_to_jpeg_bytes(
+            depth_frame, resolution=(self.camera.width, self.camera.height)
+        )
+
     def iterate(self):
         """Main detection loop with error handling."""
         frame = self.camera.get_latest_frame()
@@ -103,16 +125,22 @@ class DetectionDepthPipeline(PipelineBase):
                     min_value_mm = 0
 
                 depth_meters = min_value_mm / 1000.0
-                point = rs2_deproject_pixel_to_point(intrinsics, [min_x, min_y], depth_meters)
+                point = rs2_deproject_pixel_to_point(
+                    intrinsics, [min_x, min_y], depth_meters
+                )
 
-                self.detections.append({
-                    'bbox': bbox,
-                    'center': (center_x, center_y),
-                    'depth': min_value_mm,
-                    'point': point
-                })
+                self.detections.append(
+                    {
+                        "bbox": bbox,
+                        "center": (center_x, center_y),
+                        "depth": min_value_mm,
+                        "point": point,
+                    }
+                )
             except Exception as e:
-                logger.warning(f"Error processing detection bbox: {e}", operation="loop")
+                logger.warning(
+                    f"Error processing detection bbox: {e}", operation="loop"
+                )
 
     def get_output(self):
-        return getattr(self, 'detections', None)
+        return getattr(self, "detections", None)

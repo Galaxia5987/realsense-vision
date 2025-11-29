@@ -10,6 +10,7 @@ from app.core.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+
 class Initializer:
     camera = None
     runner = None
@@ -31,11 +32,7 @@ class Initializer:
         """Initialize camera component."""
         resolution_str = ConfigManager().get().camera.resolution.value
         res = list(map(int, resolution_str.split("x")))
-        self.camera = RealSenseCamera(
-            res[0],
-            res[1],
-            ConfigManager().get().camera.fps
-        )
+        self.camera = RealSenseCamera(res[0], res[1], ConfigManager().get().camera.fps)
         if self.camera.realsense_connected():
             self.camera.start()
 
@@ -47,7 +44,10 @@ class Initializer:
         logger.info("Initializing pipeline runner", operation="reload_app")
 
         if self.camera is None:
-            logger.warning("Skipping pipeline initialization because camera failed", operation="reload_app")
+            logger.warning(
+                "Skipping pipeline initialization because camera failed",
+                operation="reload_app",
+            )
             self.runner = None
             return
         try:
@@ -56,13 +56,15 @@ class Initializer:
             self.runner = PipelineRunner(self.pipeline, lambda: None)
             self.runner.start()
         except TypeError:
-            logger.warning("Incompatible number of arguments were passed to the pipeline")
+            logger.warning(
+                "Incompatible number of arguments were passed to the pipeline"
+            )
         except AssertionError:
             logger.warning(f"Pipline named {self.config.pipeline} was not found.")
-        
 
     def setup_stream_routes(self):
         logger.info("Configuring stream routes", operation="reload_app")
+
         def video(depth: bool):
             if self.runner:
                 img = None
@@ -74,14 +76,18 @@ class Initializer:
                     return disabled_jpeg
                 return img
             return disabled_jpeg
-    
+
         def video_color():
             return video(False)
-        
+
         def video_depth():
             return video(True)
 
-        streams.create_stream_route(self.app_instance,"/video_feed", video_color)
-        streams.create_stream_route(self.app_instance,"/depth_feed", video_depth)
+        streams.create_stream_route(self.app_instance, "/video_feed", video_color)
+        streams.create_stream_route(self.app_instance, "/depth_feed", video_depth)
 
-        logger.info("Stream routes configured successfully", operation="reload_app", status="success")
+        logger.info(
+            "Stream routes configured successfully",
+            operation="reload_app",
+            status="success",
+        )

@@ -67,21 +67,15 @@ default_config = RootConfig(
         filters=Filters(
             hole_filling=HoleFillingFilter(enabled=False),
             spatial=SpatialFilter(enabled=True),
-            temporal=TemporalFilter(enabled=True)
+            temporal=TemporalFilter(enabled=True),
         ),
         fps=15,
-        resolution=ResolutionEnum.r640x480
+        resolution=ResolutionEnum.r640x480,
     ),
     color_frame=ColorFrame(stream_enabled=True),
     depth_frame=DepthFrame(stream_enabled=True),
     min_confidence=0.85,
-    network_tables=NetworkTables(
-        server="10.59.87.2",
-        table="RealsenseVision"
-    ),
-    pipeline=Pipeline(
-        args=[],
-        type="regular"
-    ),
-    rknn_chip_type="rk3588"
+    network_tables=NetworkTables(server="10.59.87.2", table="RealsenseVision"),
+    pipeline=Pipeline(args=[], type="regular"),
+    rknn_chip_type="rk3588",
 )

@@ -2,6 +2,7 @@
 Structured logging configuration for the RealSense Vision system.
 Provides detailed, consistent logging across all components.
 """
+
 import logging
 import sys
 from datetime import datetime
@@ -51,72 +52,86 @@ class StructuredFormatter(logging.Formatter):
 
         # Exception block
         if "exception" in log_data:
-            exc = "\n".join("    " + line for line in log_data["exception"].splitlines())
+            exc = "\n".join(
+                "    " + line for line in log_data["exception"].splitlines()
+            )
             msg += f"\n{exc}"
 
         return msg
 
 
-
 class ComponentLogger:
     """Logger wrapper that adds component context to all log messages."""
-    
+
     def __init__(self, component_name: str):
         self.component_name = component_name
         self.logger = logging.getLogger(component_name)
-    
-    def _log(self, level, message, operation=None, status=None, exc_info=False, **kwargs):
+
+    def _log(
+        self, level, message, operation=None, status=None, exc_info=False, **kwargs
+    ):
         extra = {
-            'component': self.component_name,
-            'operation': operation,
-            'status': status
+            "component": self.component_name,
+            "operation": operation,
+            "status": status,
         }
         extra.update(kwargs)
         self.logger.log(level, message, extra=extra, exc_info=exc_info)
-    
+
     def debug(self, message, operation=None, **kwargs):
         self._log(logging.DEBUG, message, operation=operation, **kwargs)
-    
-    def info(self, message, operation=None, status='info', **kwargs):
+
+    def info(self, message, operation=None, status="info", **kwargs):
         self._log(logging.INFO, message, operation=operation, status=status, **kwargs)
-    
-    def warning(self, message, operation=None, status='warning', **kwargs):
-        self._log(logging.WARNING, message, operation=operation, status=status, **kwargs)
-    
-    def error(self, message, operation=None, status='error', **kwargs):
+
+    def warning(self, message, operation=None, status="warning", **kwargs):
+        self._log(
+            logging.WARNING, message, operation=operation, status=status, **kwargs
+        )
+
+    def error(self, message, operation=None, status="error", **kwargs):
         self._log(logging.ERROR, message, operation=operation, status=status, **kwargs)
-    
-    def critical(self, message, operation=None, status='critical', **kwargs):
-        self._log(logging.CRITICAL, message, operation=operation, status=status, **kwargs)
-    
+
+    def critical(self, message, operation=None, status="critical", **kwargs):
+        self._log(
+            logging.CRITICAL, message, operation=operation, status=status, **kwargs
+        )
+
     def exception(self, message, operation=None, **kwargs):
-        self._log(logging.ERROR, message, operation=operation, status='exception', exc_info=True, **kwargs)
+        self._log(
+            logging.ERROR,
+            message,
+            operation=operation,
+            status="exception",
+            exc_info=True,
+            **kwargs,
+        )
 
 
 def setup_logging(level=logging.INFO, log_file: Optional[str] = None):
     """
     Configure structured logging for the entire application.
-    
+
     Args:
         level: Logging level (default: INFO)
         log_file: Optional file path for logging output
     """
     # Create formatter
     formatter = StructuredFormatter()
-    
+
     # Configure root logger
     root_logger = logging.getLogger()
     root_logger.setLevel(level)
-    
+
     # Remove existing handlers
     root_logger.handlers.clear()
-    
+
     # Console handler (stdout)
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(level)
     console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
-    
+
     # File handler (optional)
     if log_file:
         try:
@@ -126,17 +141,17 @@ def setup_logging(level=logging.INFO, log_file: Optional[str] = None):
             root_logger.addHandler(file_handler)
         except Exception as e:
             root_logger.error(f"Failed to setup file logging to {log_file}: {e}")
-    
+
     return root_logger
 
 
 def get_logger(component_name: str) -> ComponentLogger:
     """
     Get a structured logger for a specific component.
-    
+
     Args:
         component_name: Name of the component (e.g., 'camera', 'detector', 'network_tables')
-    
+
     Returns:
         ComponentLogger instance for the component
     """
