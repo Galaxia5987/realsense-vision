@@ -10,19 +10,17 @@ import app.core.logging_config as logging_config
 logger = logging_config.get_logger(__name__)
 
 class DetectionDepthPipeline(PipelineBase):
+    name = "DetectionDepthPipeline"
+
     def __init__(self, camera, model_path):
         self.camera = camera
-        
+        model_path = f"./{UPLOAD_FOLDER}/{model_path}"
         try:
             self.detector = YOLODetector(model_path)
             self.detections = []
         except Exception as e:
             logger.exception(f"Failed to initialize DetectionDepthPipeline: {e}", operation="init")
             raise
-
-    @property
-    def name(self) -> str:
-        return "RegularPipeline"
 
     def get_jpeg(self):
         """Get JPEG-encoded annotated image."""
