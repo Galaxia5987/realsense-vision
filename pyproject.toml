@@ -11,7 +11,6 @@ dependencies = [
     "numpy",
     "torch==2.2.0",
     "torchvision==0.17.0",
-    "rknn-toolkit2",
     "fastapi",
     "uvicorn",
     "pydantic",
@@ -21,11 +20,13 @@ dependencies = [
     "pyrealsense2==2.56.5.9235",
     "jinja2",
     "python-multipart",
-    "rknn-toolkit-lite2>=2.3.2",
-    "pyntcore",
-    "robotpy_wpinet",
-    "robotpy_wpiutil",
-    "robotpy_wpimath",
+
+#    "rknn-toolkit-lite2>=2.3.2",
+#    "rknn-toolkit2",
+#    "pyntcore",
+#    "robotpy_wpinet",
+#    "robotpy_wpiutil",
+#    "robotpy_wpimath",
 ]
 
 [tool.uv.sources]
