@@ -35,17 +35,17 @@ class ConfigManager:
     def update(self, config: RootConfig) -> None:
         """Write given validated config to disk and update the cached instance."""
         try:
-            payload = config.model_dump()
+            payload = config.model_dump(mode="json")
         except Exception as exc:
             raise ConfigError(f"Failed to serialize config: {exc}") from exc
 
         try:
-            self.path.write_text(yaml.safe_dump(payload, sort_keys=False, default_flow_style=False), encoding="utf-8")
+            self.path.write_text(yaml.dump(payload), encoding="utf-8")
         except Exception as exc:
             raise ConfigError(f"Failed to write config: {exc}") from exc
 
         self._config = config
-        logger.info("Configuration written to %s", self.path)
+        logger.info(f"Configuration written to {self.path}", "save-config")
 
     def reload(self) -> RootConfig:
         """Force re-read of the file and validate via Pydantic models."""
