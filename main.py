@@ -62,7 +62,23 @@ async def restart():
 
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
-    await upload_model(file)
+    return await upload_model(file)
+
+@app.get("/get_upload_progress")
+async def get_upload_progress():
+    return "".join(realtime)
+
+@app.get("/upload_progress")
+async def upload_progress(request: Request):
+    return templates.TemplateResponse("upload_progress.html"
+                                      ,{
+                                          "request": request
+                                      })
+
+@app.post("/restore_config")
+async def restore_config():
+    ConfigManager().update(default_config)
+    return {"status": "success"}
 
 def run():
     uvicorn.run(app, host="0.0.0.0", port=8000)
