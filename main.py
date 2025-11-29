@@ -1,5 +1,7 @@
+import logging
+import sys
 from fastapi import FastAPI, File, Request, UploadFile
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
@@ -9,13 +11,14 @@ from app.core import logging_config
 from app.config import ConfigManager
 
 from app.core.app_lifespan import lifespan
-from app.core.uploader import upload_model
+from app.core.uploader import get_all_rknn_models, upload_model
 from convert_model import realtime
 from app.server import streams
 from models.models import RootConfig
 from utils import restart_service
 import asyncio
 from models.models import default_config
+from app.core.logging_config import log_stream
 
 logging_config.setup_logging()
 
@@ -46,9 +49,14 @@ async def root(request: Request):
             "request": request,
             "cfg": ConfigManager().get(),
             "pipelines": get_all_pipeline_names(),
+            "log_level": logging_config.get_root_level(),
+            "models": get_all_rknn_models()
         },
     )
 
+@app.get("/favicon.png", include_in_schema=False)
+def favicon():
+    return FileResponse("favicon.png")
 
 @app.post("/update_config")
 async def update_config(data: RootConfig):
@@ -74,7 +82,7 @@ async def upload(file: UploadFile = File(...)):
 
 @app.get("/get_upload_progress")
 async def get_upload_progress():
-    return "".join(realtime)
+    return HTMLResponse("".join(realtime))
 
 
 @app.get("/upload_progress")
@@ -87,6 +95,14 @@ async def restore_config():
     ConfigManager().update(default_config)
     return {"status": "success"}
 
+@app.get("/logs")
+async def log_endpoint():
+    return HTMLResponse(log_stream.getvalue())
+
+@app.post("/set_log_level")
+async def set_log_level(level: str):
+    logging_config.set_root_level(getattr(logging, level))
+    return {"status": "success"}
 
 def run():
     uvicorn.run(app, host="0.0.0.0", port=8000)

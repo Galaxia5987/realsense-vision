@@ -3,12 +3,17 @@ Structured logging configuration for the RealSense Vision system.
 Provides detailed, consistent logging across all components.
 """
 
+from io import StringIO
 import logging
 import sys
 from datetime import datetime
 from typing import Optional
 import json
 
+import colorlog
+
+log_stream = StringIO()
+_root_logger: logging.Logger = None  # type: ignore
 
 class StructuredFormatter(logging.Formatter):
     """Pretty structured log formatter without colors."""
@@ -116,6 +121,7 @@ def setup_logging(level=logging.INFO, log_file: Optional[str] = None):
         level: Logging level (default: INFO)
         log_file: Optional file path for logging output
     """
+    global _root_logger
     # Create formatter
     formatter = StructuredFormatter()
 
@@ -130,7 +136,26 @@ def setup_logging(level=logging.INFO, log_file: Optional[str] = None):
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(level)
     console_handler.setFormatter(formatter)
+    live_handler = logging.StreamHandler(log_stream)
+    live_handler.setLevel(level)
+    live_handler.setFormatter(
+        colorlog.ColoredFormatter(
+            "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s",
+            datefmt=None,
+            reset=True,
+            log_colors={
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red,bg_white",
+            },
+            secondary_log_colors={},
+            style="%",
+        )
+    )
     root_logger.addHandler(console_handler)
+    root_logger.addHandler(live_handler)
 
     # File handler (optional)
     if log_file:
@@ -142,7 +167,27 @@ def setup_logging(level=logging.INFO, log_file: Optional[str] = None):
         except Exception as e:
             root_logger.error(f"Failed to setup file logging to {log_file}: {e}")
 
+    def log_uncaught_exceptions(exc_type, exc_value, exc_traceback):
+        if issubclass(exc_type, KeyboardInterrupt):
+            # allow keyboard interrupts to exit normally
+            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+            return
+        root_logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+    sys.excepthook = log_uncaught_exceptions
+
+    _root_logger = root_logger
+
     return root_logger
+
+def set_root_level(level):
+    if _root_logger:
+        _root_logger.setLevel(level)
+        for handler in _root_logger.handlers:
+            handler.setLevel(level)
+
+def get_root_level() -> str:
+    return logging.getLevelName(_root_logger.getEffectiveLevel())
 
 
 def get_logger(component_name: str) -> ComponentLogger:
