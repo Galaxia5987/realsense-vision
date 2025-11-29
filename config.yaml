@@ -18,5 +18,5 @@ network_tables:
   table: RealsenseVision
 pipeline:
   args: []
-  type: regular
+  type: RegularPipeline
 rknn_chip_type: rk3588
