@@ -45,6 +45,11 @@ async def root(request: Request):
     }
 )
 
+@app.post("/update_config")
+async def update_config(data: RootConfig):
+    ConfigManager().update(data)
+    return {"status": "success"}
+
 @app.get('/restart')
 async def restart():
     restart_service()
