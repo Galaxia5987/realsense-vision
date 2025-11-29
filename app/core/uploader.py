@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 
 from app.config import ConfigManager
 from app.core import logging_config
-from convert_model import async_convert_model
+from convert_model import async_convert_model, reset_realtime
 
 UPLOAD_FOLDER = 'uploads'
 
@@ -39,9 +39,10 @@ async def upload_model(file: UploadFile = File(...)):
 
         time.sleep(1)
         chip = ConfigManager().get().rknn_chip_type
-        asyncio.create_task(async_convert_model(file, chip))
+        # reset_realtime()
+        asyncio.create_task(async_convert_model(file_path, chip))
 
-        return RedirectResponse(url="/", status_code=303)
+        return RedirectResponse(url="/upload_progress", status_code=303)
     except Exception as e:
         logger.exception("Model conversion failed", operation="upload")
         raise HTTPException(status_code=500, detail=f'Error converting model: {e}')

@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import List
 
 from app.components.detection.camera import RealSenseCamera
 from models.models import Pipeline
@@ -10,14 +11,8 @@ class PipelineBase:
     def __init_subclass__(cls, **kwargs):
             """Automatically register subclasses by their 'name' property."""
             super().__init_subclass__(**kwargs)
-            if hasattr(cls, "name") and isinstance(cls.name, str):
-                PIPELINE_REGISTRY[cls.name] = cls
-
-    @property
-    @abstractmethod
-    def name(self) -> str:
-        """Return the name of the pipeline"""
-        pass
+            if hasattr(cls, "name") and isinstance(getattr(cls, "name"), str):
+                PIPELINE_REGISTRY[getattr(cls, "name")] = cls
 
     @abstractmethod
     def get_jpeg(self) -> bytes | None:
@@ -37,5 +32,8 @@ class PipelineBase:
 def create_pipeline_by_name(pipeline: Pipeline, camera: RealSenseCamera) -> PipelineBase | None:
     cls = PIPELINE_REGISTRY.get(pipeline.type)
     if cls:
-        return cls(pipeline.type, camera, *pipeline.args)
+        return cls(camera, *pipeline.args)
     return None
+
+def get_all_pipeline_names() -> List[str]:
+    return list(PIPELINE_REGISTRY.keys())

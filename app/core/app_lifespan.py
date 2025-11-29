@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
-import logging
-import sys
+import pkgutil
+import importlib
+from app.components.detection import pipelines
 
 from fastapi import FastAPI
 
@@ -12,8 +13,14 @@ logger = logging_config.get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting RealSense Vision...", operation="startup")
+    
+    # Discover and register all pipelines automaticlly
+    for _, module_name, _ in pkgutil.iter_modules(pipelines.__path__):
+        if module_name == "pipeline_base":
+            continue
+        importlib.import_module(f"app.components.detection.pipelines.{module_name}")
+    
 
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     initializer = Initializer(app)
     initializer.load_app()
 

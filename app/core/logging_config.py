@@ -4,51 +4,58 @@ Provides detailed, consistent logging across all components.
 """
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 import json
 
 
 class StructuredFormatter(logging.Formatter):
-    """Custom formatter that adds structured context to log messages."""
-    
+    """Pretty structured log formatter without colors."""
+
     def format(self, record):
-        # Add timestamp and structured data
+        timestamp = datetime.now().strftime("%H:%M:%S")
+
+        # Base log structure
         log_data = {
-            'timestamp': datetime.now(timezone.utc).isoformat(),
-            'level': record.levelname,
-            'logger': record.name,
-            'message': record.getMessage(),
-            'module': record.module,
-            'function': record.funcName,
-            'line': record.lineno
+            "timestamp": timestamp,
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+            "module": record.module,
+            "function": record.funcName,
+            "line": record.lineno,
         }
-        
-        # Add exception info if present
+
+        # Custom fields
+        if hasattr(record, "operation"):
+            log_data["operation"] = getattr(record, "operation")
+
+        # Exception if present
         if record.exc_info:
-            log_data['exception'] = self.formatException(record.exc_info)
-        
-        # Add custom fields if present
-        if hasattr(record, 'component'):
-            log_data['component'] = record.component
-        if hasattr(record, 'operation'):
-            log_data['operation'] = record.operation
-        if hasattr(record, 'status'):
-            log_data['status'] = record.status
-            
-        # Format as JSON for machine parsing, or human-readable
-        if getattr(record, 'json_format', False):
-            return json.dumps(log_data)
-        else:
-            # Human-readable format
-            msg = f"[{log_data['timestamp']}] {log_data['level']:8s} [{log_data['logger']}] {log_data['message']}"
-            if 'component' in log_data:
-                msg += f" (component={log_data['component']})"
-            if 'operation' in log_data:
-                msg += f" (operation={log_data['operation']})"
-            if 'exception' in log_data:
-                msg += f"\n{log_data['exception']}"
-            return msg
+            log_data["exception"] = self.formatException(record.exc_info)
+
+        # JSON mode
+        if getattr(record, "json_format", False):
+            return json.dumps(log_data, ensure_ascii=False)
+
+        # Pretty human-readable mode
+        msg = f"[{log_data['timestamp']}] {log_data['level']:8s} [{log_data['logger']}] {log_data['message']}"
+
+        # Extra structured block
+        structured_parts = []
+        for key in ("component", "operation", "status"):
+            if key in log_data:
+                structured_parts.append(f"{key}={log_data[key]}")
+        if structured_parts:
+            msg += " [" + ", ".join(structured_parts) + "]"
+
+        # Exception block
+        if "exception" in log_data:
+            exc = "\n".join("    " + line for line in log_data["exception"].splitlines())
+            msg += f"\n{exc}"
+
+        return msg
+
 
 
 class ComponentLogger:

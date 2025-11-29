@@ -1,19 +1,18 @@
-from components.detection.pipelines.pipeline_base import PipelineBase
-from core import logging_config
+from app.components.detection.pipelines.pipeline_base import PipelineBase
+from app.core import logging_config
 from utils import frames_to_jpeg_bytes
 
 logger = logging_config.get_logger(__name__)
 
 class RegularPipeline(PipelineBase):
-    @property
-    def name(self) -> str:
-        return "RegularPipeline"
+    name = "RegularPipeline"
 
     def __init__(self, camera):
         super().__init__()
         logger.info("Initializing RegularPipeline", operation="init")
         self.camera = camera
         self.frame = None
+        self.depth_frame = None
         logger.info("RegularPipeline initialized", operation="init", status="success")
 
     def loop(self):

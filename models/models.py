@@ -1,5 +1,5 @@
 from typing import List
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from enum import Enum
 
 
@@ -10,52 +10,78 @@ class ResolutionEnum(str, Enum):
 
 
 class HoleFillingFilter(BaseModel):
-    enabled: bool = False
+    enabled: bool
 
 
 class SpatialFilter(BaseModel):
-    enabled: bool = True
+    enabled: bool
 
 
 class TemporalFilter(BaseModel):
-    enabled: bool = True
+    enabled: bool
 
 
 class Filters(BaseModel):
-    hole_filling: HoleFillingFilter = HoleFillingFilter()
-    spatial: SpatialFilter = SpatialFilter()
-    temporal: TemporalFilter = TemporalFilter()
+    hole_filling: HoleFillingFilter
+    spatial: SpatialFilter
+    temporal: TemporalFilter
 
 
 class CameraSettings(BaseModel):
-    filters: Filters = Filters()
-    fps: int = 15
-    resolution: ResolutionEnum = ResolutionEnum.r640x480
+    filters: Filters
+    fps: int
+    resolution: ResolutionEnum
 
 
 class ColorFrame(BaseModel):
-    stream_enabled: bool = True
+    stream_enabled: bool
 
 
 class DepthFrame(BaseModel):
-    stream_enabled: bool = True
+    stream_enabled: bool
 
 
 class NetworkTables(BaseModel):
-    server: str = "10.59.87.2"
-    table: str = "RealsenseVision"
+    server: str
+    table: str
 
 
 class Pipeline(BaseModel):
-    args: List[str] = []
-    type: str = "regular"
+    args: List[str]
+    type: str
 
 
 class RootConfig(BaseModel):
-    camera: CameraSettings = CameraSettings()
-    color_frame: ColorFrame = ColorFrame()
-    depth_frame: DepthFrame = DepthFrame()
-    min_confidence: float = 0.85
-    network_tables: NetworkTables = NetworkTables()
-    pipeline: Pipeline = Pipeline()
-    rknn_chip_type: str = "rk3588"
+    camera: CameraSettings
+    color_frame: ColorFrame
+    depth_frame: DepthFrame
+    min_confidence: float
+    network_tables: NetworkTables
+    pipeline: Pipeline
+    rknn_chip_type: str
+
+
+# Default configuration instance
+default_config = RootConfig(
+    camera=CameraSettings(
+        filters=Filters(
+            hole_filling=HoleFillingFilter(enabled=False),
+            spatial=SpatialFilter(enabled=True),
+            temporal=TemporalFilter(enabled=True)
+        ),
+        fps=15,
+        resolution=ResolutionEnum.r640x480
+    ),
+    color_frame=ColorFrame(stream_enabled=True),
+    depth_frame=DepthFrame(stream_enabled=True),
+    min_confidence=0.85,
+    network_tables=NetworkTables(
+        server="10.59.87.2",
+        table="RealsenseVision"
+    ),
+    pipeline=Pipeline(
+        args=[],
+        type="regular"
+    ),
+    rknn_chip_type="rk3588"
+)
