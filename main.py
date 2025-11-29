@@ -40,7 +40,8 @@ async def root(request: Request):
     "index.html",
     {
         "request": request,
-        "cfg": ConfigManager().get()
+        "cfg": ConfigManager().get(),
+        "pipelines": get_all_pipeline_names()
     }
 )
 
