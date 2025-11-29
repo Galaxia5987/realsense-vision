@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Log</title>
+    <link href="static/bootstrap.min.css" rel="stylesheet">
+    <script src="static/jquery.min.js"></script>
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+    <h4 class="text-center mb-4">Upload Model</h4>
+
+    <!-- Log area -->
+    <div class="card mb-3">
+        <div class="card-header">
+            Upload Log
+        </div>
+        <div class="card-body" id="upload-log" style="height: 300px; overflow-y: auto; white-space: pre-wrap; background: #f8f9fa;">
+            Waiting for upload...
+        </div>
+    </div>
+
+    <!-- Return Home button -->
+    <div class="text-center">
+        <a href="/" class="btn btn-primary">Return Home</a>
+    </div>
+</div>
+
+<script src="static/bootstrap.bundle.min.js"></script>
+<script>
+function fetchUploadProgress() {
+    $.get('/get_upload_progress', function(data) {
+        var logDiv = $('#upload-log');
+        var atBottom = logDiv[0].scrollHeight - logDiv.scrollTop() <= logDiv.outerHeight() + 10;
+
+        logDiv.text(data);
+
+        // Only scroll if the user was already at the bottom
+        if (atBottom) {
+            logDiv.scrollTop(logDiv[0].scrollHeight);
+        }
+    });
+}
+
+// Poll every 0.5 seconds
+setInterval(fetchUploadProgress, 500);
+</script>
+</body>
+</html>
