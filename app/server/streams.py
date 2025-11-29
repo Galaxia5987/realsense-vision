@@ -4,7 +4,7 @@ import uuid
 from typing import Callable, List, Tuple
 import asyncio
 
-router = APIRouter()
+router = APIRouter(prefix="/streams")
 
 streams: List[Tuple[str, str]] = []
 
@@ -50,10 +50,9 @@ def create_stream_route(
             generate(),
             media_type='multipart/x-mixed-replace; boundary=frame'
         )
-    
     # Add route dynamically
-    router.add_api_route(
-        path,
+    app_instance.add_api_route(
+        router.prefix + path,
         dynamic_stream,
         methods=["GET"],
         name=endpoint,

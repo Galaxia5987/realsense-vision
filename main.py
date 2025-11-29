@@ -31,7 +31,7 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # routers
-app.include_router(streams.router, prefix="/streams")
+app.include_router(streams.router)
 
 
 @app.get("/")
