@@ -1,12 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html data-bs-theme="dark">
 <head>
     <title>Realsense Vision</title>
+    <link rel="icon" href="favicon.png" type="image/x-icon"/>
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon"/>
+
     <link href="static/bootstrap.min.css" rel="stylesheet">
+    <link href="static/xterm.css", rel="stylesheet">
+
     <script src="static/jquery.min.js"></script>
+    <script src="static/xterm.js"></script>
+    <script>
+        var logSettings = {
+            level: "{{log_level}}",
+            interval: 1000,
+            disabled: false
+        }
+    </script>
     <script src="static/main.js"></script>
 </head>
-<body class="bg-light">
+<body>
+
+<div style="position:relative;margin-left: 50px">
+    <div style="position:absolute; left:0; top:0; z-index:1000;">
+        <div class="d-flex align-items-center">
+            <img src="favicon.png" alt="Realsense Logo" width="48" height="48" class="me-2 rounded">
+            <h4 class="mb-0 text-primary fw-bold">Realsense Vision</h4>
+        </div>
+    </div>
+</div>
 
 <div class="container my-5">
     <h4 class="text-center mb-4">Streams</h4>
@@ -52,6 +74,19 @@
             </div>
         </div>
     </div>
+
+    <div class="card p-3 mt-5 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Logs</h4>
+            <button id="logSettingsBtn" type="button" class="btn btn-sm btn-outline-primary" title="Log settings">
+                Settings
+            </button>
+        </div>
+        <div id="logTerminal"
+            style="height:300px, width:100%, border:1px solid #ccc, border-radius:6px, overflow:hidden">
+        </div>
+    </div>
+
 
     <hr class="my-5">
 
