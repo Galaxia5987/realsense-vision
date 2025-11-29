@@ -1,3 +1,4 @@
+from typing import Callable
 from app.components.detection.pipelines.pipeline_base import PipelineBase
 from utils import AsyncLoopBase, generate_stream_disabled_image, frames_to_jpeg_bytes
 from app.config import ConfigManager
@@ -5,11 +6,14 @@ import app.core.logging_config as logging_config
 
 logger = logging_config.get_logger(__name__)
 
+""" Retarded JPEG """
 disabled_jpeg = frames_to_jpeg_bytes(generate_stream_disabled_image())
 
+LOOP_INTERVAL = 0.1
+
 class PipelineRunner(AsyncLoopBase):
-    def __init__(self, pipeline: PipelineBase, set_output_callback, args=[], ):
-        
+    def __init__(self, pipeline: PipelineBase, set_output_callback: Callable):
+        super().__init__(LOOP_INTERVAL)
         logger.info(
             f"Initializing pipeline runner with {pipeline.name}",
             operation="init"
@@ -17,7 +21,6 @@ class PipelineRunner(AsyncLoopBase):
 
         self.config = ConfigManager().get()
         self.pipeline = pipeline
-        self.args = args
         self.set_output_callback = set_output_callback
         assert set_output_callback, "set_output callback was empty! "
         
