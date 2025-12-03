@@ -29,7 +29,6 @@ class DetectionDepthPipeline(PipelineBase):
         """Get JPEG-encoded annotated image."""
         detected = self.detector.get_annotated_image()
         if detected is None:
-            logger.warning("No annotated image available", operation="get_jpeg")
             return None
 
         if hasattr(self, "detections"):
@@ -83,7 +82,7 @@ class DetectionDepthPipeline(PipelineBase):
         depth_frame = self.camera.get_latest_depth_data()
 
         if frame is None or depth_frame is None:
-            logger.error("Pipeline frame is None!")
+            logger.error("Camera frame is None!")
             self.detections = []
             return
 
@@ -95,7 +94,7 @@ class DetectionDepthPipeline(PipelineBase):
             return
 
         bboxs = detections[0]
-        depth_mat = np.asanyarray(depth_frame.get_data())
+        depth_mat = np.asanyarray(depth_frame.get_frame_data())
         height, width = depth_mat.shape
         intrinsics = depth_frame.profile.as_video_stream_profile().get_intrinsics()
         self.detections = []
