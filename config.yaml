@@ -17,6 +17,7 @@ network_tables:
   server: 10.59.87.2
   table: RealsenseVision
 pipeline:
-  args: []
-  type: RegularPipeline
+  args:
+  - balls_rknn_model
+  type: DetectionDepthPipeline
 rknn_chip_type: rk3588

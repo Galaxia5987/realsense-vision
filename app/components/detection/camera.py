@@ -15,7 +15,6 @@ LOOP_INTERVAL = 0.01  # 100 Hz
 
 class RealSenseCamera(AsyncLoopBase):
     def __init__(self, width=640, height=480, fps=30, frame_timeout_ms=5000):
-        # Increased timeout to 5000ms to allow for startup hiccups
         super().__init__(LOOP_INTERVAL)
         self.width = width
         self.height = height
@@ -59,44 +58,6 @@ class RealSenseCamera(AsyncLoopBase):
         except Exception:
             return False
 
-    def _reset_and_wait_for_device(self):
-        """
-        Resets the device and blocks until it re-enumerates on the USB bus.
-        """
-        ctx = rs.context()
-        devices = ctx.query_devices()
-        
-        if len(devices) == 0:
-            logger.warning("No device found to reset.")
-            return
-
-        device = devices[0]
-        serial = device.get_info(rs.camera_info.serial_number)
-        
-        logger.info(f"Issuing Hardware Reset to device {serial}...", operation="init")
-        
-        try:
-            device.hardware_reset()
-        except RuntimeError:
-            # It is normal for this to throw an error as the device disconnects
-            pass
-
-        # Wait for re-enumeration
-        logger.info("Waiting for device to re-enumerate...", operation="init")
-        found = False
-        
-        # Try for up to 10 seconds
-        for i in range(20):
-            time.sleep(0.5)
-            ctx = rs.context() # Refresh context
-            if len(ctx.query_devices()) > 0:
-                found = True
-                logger.info("Device re-connected successfully.", operation="init")
-                break
-        
-        if not found:
-            raise RuntimeError("Device failed to come back online after reset.")
-
     def _load_config_onto_device(self, device, filename="camera_config.json"):
         """
         Loads JSON config onto the device BEFORE pipeline start.
@@ -105,15 +66,9 @@ class RealSenseCamera(AsyncLoopBase):
             with open(filename, "r") as f:
                 json_content = f.read()
             
-            # Validate JSON validity
+            # Validate JSON
             json.loads(json_content)
 
-            # adv = rs.rs400_advanced_mode(device)
-            # if not adv.is_enabled():
-            #     adv.toggle_advanced_mode(True)
-            #     time.sleep(1) # Wait for mode toggle
-            
-            # adv.load_json(json_content)
             advnc_mode = rs.rs400_advanced_mode(device)
             advnc_mode.load_json(json_content)
             logger.info(f"Loaded configuration from {filename}", operation="init")
@@ -130,7 +85,7 @@ class RealSenseCamera(AsyncLoopBase):
 
         if filters_config.spatial.enabled:
             self.spatial = rs.spatial_filter()
-            # Optional: Configure spatial parameters here if needed
+            # TODO: Might be needed
             # self.spatial.set_option(rs.option.filter_magnitude, 2)
             # self.spatial.set_option(rs.option.filter_smooth_alpha, 0.5)
             # self.spatial.set_option(rs.option.filter_smooth_delta, 20)
@@ -147,27 +102,14 @@ class RealSenseCamera(AsyncLoopBase):
         """Initialize the RealSense pipeline with proper reset sequence."""
         logger.debug("Initializing RealSense pipeline sequence", operation="init_pipeline")
 
-        # 1. Reset hardware first (clears bad states from previous runs)
-        # self._reset_and_wait_for_device()
-
-        # 2. Re-acquire context and device after reset
         ctx = rs.context()
         devices = ctx.query_devices()
         if not devices:
             raise RuntimeError("Lost device after reset sequence.")
-        
-        active_device = devices[0]
-        
-        # 3. Load Advanced Mode JSON (must be done before pipeline.start)
-
-        # 4. Configure Pipeline
+    
+        # Configure Pipeline
         self.pipeline = rs.pipeline()
         rs_config = rs.config()
-
-        # Explicitly bind to the device we found
-        serial = active_device.get_info(rs.camera_info.serial_number)
-        rs_config.enable_device(serial)
-
 
         logger.debug(
             f"Configuring streams: {self.width}x{self.height} @ {self.fps}fps",
@@ -180,16 +122,24 @@ class RealSenseCamera(AsyncLoopBase):
             rs.stream.depth, self.width, self.height, rs.format.z16, self.fps
         )
 
-        # 5. Initialize helper objects
+        # Initialize helper objects
         self.align = rs.align(rs.stream.color)
         self._setup_filters()
-
-        # 6. Start Pipeline
+        
+        # Start Pipeline
         logger.debug("Starting RealSense pipeline...", operation="init_pipeline")
         try:
-            self.pipeline.start(rs_config)
+            profile = self.pipeline.start(rs_config)
 
-            self._load_config_onto_device(self.pipeline.get_active_profile().get_device(), "camera_config.json")
+            time.sleep(1) # FUCKKKKKK
+
+            depth_sensor = profile.get_device().first_depth_sensor()
+            try:
+                depth_sensor.set_option(rs.option.visual_preset, 3)
+            except Exception as e:
+                logger.error(f"Exception while loading preset config onto camera: {e}", exc_info=True)
+
+            logger.info("Loading preset config onto camera...")
             
             # Warmup: Discard first few frames to allow auto-exposure to settle
             for _ in range(5):

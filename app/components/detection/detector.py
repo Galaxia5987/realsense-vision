@@ -34,7 +34,6 @@ class YOLODetector:
             if image is None:
                 logger.warning("Received None image for detection", operation="detect")
                 return
-            logger.warning(f"imgsz: {self.imgsz}")
 
             self.results = self.model(
                 image, imgsz=self.imgsz, conf=ConfigManager().get().min_confidence
@@ -56,10 +55,6 @@ class YOLODetector:
         """Get annotated image with detections."""
         try:
             if self.results is None:
-                logger.warning(
-                    "No results available for annotation",
-                    operation="get_annotated_image",
-                )
                 return None
             return self.results.plot()
         except Exception as e:
