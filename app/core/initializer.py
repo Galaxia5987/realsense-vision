@@ -46,7 +46,7 @@ class Initializer:
 
     def init_network_tables_component(self):
         logger.info("Initializing NetworkTables", operation="reload_app")
-        NetworkTablesPublisher()
+        self.publisher = NetworkTablesPublisher()
 
     def init_pipeline_component(self):
         logger.info("Initializing pipeline runner", operation="reload_app")
@@ -61,7 +61,11 @@ class Initializer:
         try:
             self.pipeline = create_pipeline_by_name(self.config.pipeline, self.camera)
             assert self.pipeline
-            self.runner = PipelineRunner(self.pipeline, lambda: None)
+            def _publish(output):
+                if self.publisher:
+                    self.publisher.publish_detections(output)
+
+            self.runner = PipelineRunner(self.pipeline, _publish)
             self.runner.start()
         except TypeError:
             logger.warning(

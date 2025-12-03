@@ -31,11 +31,21 @@ class PipelineRunner(AsyncLoopBase):
         )
 
     def on_iteration(self):
-        self.pipeline.iterate()
+        try:
+            self.pipeline.iterate()
 
-        output = self.pipeline.get_output()
-        if output:
-            self.set_output_callback(output)
+            output = self.pipeline.get_output()
+            if output:
+                try:
+                    self.set_output_callback(output)
+                except Exception as callback_exc:
+                    logger.error(
+                        f"set_output_callback failed: {callback_exc}",
+                        operation="loop",
+                        exc_info=True,
+                    )
+        except Exception as e:
+            logger.error(f"Pipeline iteration failed: {e}", operation="loop", exc_info=True)
 
     def get_jpeg(self):
         """Get JPEG-encoded color frame."""
