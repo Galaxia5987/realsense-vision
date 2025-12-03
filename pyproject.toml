@@ -21,12 +21,12 @@ dependencies = [
     "jinja2",
     "python-multipart",
     "colorlog",
-#    "rknn-toolkit-lite2>=2.3.2",
-#    "rknn-toolkit2",
-#    "pyntcore",
-#    "robotpy_wpinet",
-#    "robotpy_wpiutil",
-#    "robotpy_wpimath",
+    "rknn-toolkit-lite2>=2.3.2",
+    "rknn-toolkit2",
+    "pyntcore",
+    "robotpy_wpinet",
+    "robotpy_wpiutil",
+    "robotpy_wpimath",
 ]
 
 [tool.uv.sources]

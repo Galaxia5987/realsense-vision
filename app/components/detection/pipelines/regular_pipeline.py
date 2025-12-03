@@ -16,7 +16,7 @@ class RegularPipeline(PipelineBase):
         self.depth_frame = None
         logger.info("RegularPipeline initialized", operation="init", status="success")
 
-    def loop(self):
+    def iterate(self):
         """Main processing loop."""
         self.frame = self.camera.get_latest_frame()
         self.depth_frame = self.camera.get_latest_depth_frame()

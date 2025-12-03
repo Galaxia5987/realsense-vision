@@ -28,6 +28,12 @@ class Initializer:
         self.init_pipeline_component()
         self.setup_stream_routes()
 
+    def stop_app(self):
+        if self.runner:
+            self.runner.stop_sync()
+        if self.camera:
+            self.camera.stop_pipeline()
+
     def init_camera(self):
         """Initialize camera component."""
         resolution_str = ConfigManager().get().camera.resolution.value

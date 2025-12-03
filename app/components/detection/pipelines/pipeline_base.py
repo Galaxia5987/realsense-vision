@@ -17,18 +17,18 @@ class PipelineBase:
 
     @abstractmethod
     def get_jpeg(self) -> bytes | None:
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def get_depth_jpeg(self) -> bytes | None:
-        pass
+        raise NotImplementedError()
 
     def get_output(self):
         return None
 
     @abstractmethod
     def iterate(self):
-        pass
+        raise NotImplementedError()
 
 
 def create_pipeline_by_name(

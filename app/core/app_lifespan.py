@@ -31,5 +31,5 @@ async def lifespan(app: FastAPI):
 
     # Shutdown section
     logger.info("Shutting down RealSense Vision", operation="shutdown")
-    # stop_components()
+    initializer.stop_app()
     logger.info("Shutdown complete", operation="shutdown")

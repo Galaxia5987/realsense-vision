@@ -9,14 +9,14 @@ logger = logging_config.get_logger(__name__)
 """ Retarded JPEG """
 disabled_jpeg = frames_to_jpeg_bytes(generate_stream_disabled_image())
 
-LOOP_INTERVAL = 0.1
+LOOP_INTERVAL = 0.01 # 100 Hz
 
 
 class PipelineRunner(AsyncLoopBase):
     def __init__(self, pipeline: PipelineBase, set_output_callback: Callable):
         super().__init__(LOOP_INTERVAL)
         logger.info(
-            f"Initializing pipeline runner with {pipeline.name}", operation="init"
+            f"Initializing pipeline runner with {pipeline.name}", operation="init" # type: ignore
         )
 
         self.config = ConfigManager().get()
@@ -31,21 +31,6 @@ class PipelineRunner(AsyncLoopBase):
         )
 
     def on_iteration(self):
-        """
-        Main pipeline processing loop with error handling.
-
-        Note: This runs as a daemon thread, which is appropriate because:
-        - The pipeline should run continuously while the app is running
-        - The stop() method provides graceful shutdown via stop_event
-        - Resources are cleaned up in the finally block
-        """
-        logger.info("Pipeline loop started", operation="loop")
-
-        logger.debug(
-            f"Creating pipeline instance: {self.pipeline.name}", operation="loop"
-        )
-        logger.info("Pipeline instance created", operation="loop", status="success")
-
         self.pipeline.iterate()
 
         output = self.pipeline.get_output()
@@ -59,7 +44,7 @@ class PipelineRunner(AsyncLoopBase):
         return None
 
     def get_output(self):
-        """Get pipeline output. Returns None if using a none depth pipeline!"""
+        """Get pipeline output. Returns None if using a non depth pipeline!"""
         return self.pipeline.get_output()
 
     def get_depth_jpeg(self):
