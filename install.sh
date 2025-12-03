@@ -49,6 +49,9 @@ sudo apt install -y build-essential 1>/dev/null || log_error "Failed to install 
 log_info "Installing tools..."
 sudo apt install cmake build-essential python3-dev libllvm15 clang 1>/dev/null || log_error "Failed to install tools"
 
+log_info "Installing librknn shared object..."
+sudo wget -P /usr/lib/ https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so
+
 log_info "Adding deadsnakes PPA..."
 sudo add-apt-repository -y ppa:deadsnakes/ppa 1>/dev/null || log_error "Failed to add PPA"
 
