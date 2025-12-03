@@ -89,12 +89,12 @@ class DetectionDepthPipeline(PipelineBase):
         self.detector.detect(frame)
         detections = self.detector.get_detections()
 
-        if not detections or not detections[0]:
+        if not detections or detections[0] is None:
             self.detections = []
             return
 
         bboxs = detections[0]
-        depth_mat = np.asanyarray(depth_frame.get_frame_data())
+        depth_mat = np.asanyarray(depth_frame.get_data())
         height, width = depth_mat.shape
         intrinsics = depth_frame.profile.as_video_stream_profile().get_intrinsics()
         self.detections = []
