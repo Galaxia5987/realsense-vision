@@ -203,7 +203,7 @@ class RealSenseCamera(AsyncLoopBase):
             self.latest_frame = np.asanyarray(color_frame.get_data())
             self.latest_depth_data = depth_frame.as_depth_frame()
 
-            # Create visual depth map
+            # 5. Create visual depth map
             color_map = rs.colorizer()
             colorized_depth = color_map.process(self.latest_depth_data)
             self.latest_depth_frame = np.asanyarray(colorized_depth.get_data()).astype(
