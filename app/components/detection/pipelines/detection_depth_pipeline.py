@@ -29,26 +29,25 @@ class DetectionDepthPipeline(PipelineBase):
     def get_jpeg(self):
         """Get JPEG-encoded annotated image."""
         detected = self.detector.get_annotated_image()
-        if detected is None:
+        if not detected:
             return None
 
-        if hasattr(self, "detections"):
-            for detection in self.detections:
-                center = detection["center"]
-                point = detection["point"]
-                point = [round(coord, 2) for coord in point]
-                x, y = center
-                depth_text = f"{point}"
-                cv2.putText(
-                    detected,
-                    depth_text,
-                    (x, y - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.7,
-                    (0, 255, 255),
-                    2,
-                )
-                cv2.circle(detected, center, 5, (0, 255, 255), -1)
+        for detection in self.detections:
+            center = detection["center"]
+            point = detection["point"]
+            point = [round(coord, 2) for coord in point]
+            x, y = center
+            depth_text = f"{point}"
+            cv2.putText(
+                detected,
+                depth_text,
+                (x, y - 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 255, 255),
+                2,
+            )
+            cv2.circle(detected, center, 5, (0, 255, 255), -1)
         return frames_to_jpeg_bytes(
             detected, resolution=(self.camera.width, self.camera.height)
         )
