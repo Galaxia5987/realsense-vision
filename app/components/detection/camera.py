@@ -215,7 +215,7 @@ class RealSenseCamera(AsyncLoopBase):
         except RuntimeError as e:
             logger.warning(f"Frame polling timeout or error: {e}", operation="loop")
         except Exception as e:
-            logger.error(f"Unexpected error in camera loop: {e}", operation="loop")
+            logger.error(f"Error in camera loop: {e}", operation="loop")
 
     def get_latest_frame(self):
         """Get the latest color frame."""
