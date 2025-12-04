@@ -1,8 +1,9 @@
-from fastapi import FastAPI, APIRouter
-from fastapi.responses import StreamingResponse, HTMLResponse
+import asyncio
 import uuid
 from typing import Callable, List, Tuple
-import asyncio
+
+from fastapi import APIRouter, FastAPI
+from fastapi.responses import HTMLResponse, StreamingResponse
 
 router = APIRouter(prefix="/streams")
 

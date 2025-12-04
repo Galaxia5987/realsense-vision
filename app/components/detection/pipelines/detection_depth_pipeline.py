@@ -1,11 +1,12 @@
-from app.components.detection.pipelines.pipeline_base import PipelineBase
-from app.core.uploader import UPLOAD_FOLDER
-from utils import frames_to_jpeg_bytes
-from app.components.detection.detector import YOLODetector
 import cv2
 import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
+
 import app.core.logging_config as logging_config
+from app.components.detection.detector import YOLODetector
+from app.components.detection.pipelines.pipeline_base import PipelineBase
+from app.core.uploader import UPLOAD_FOLDER
+from utils import frames_to_jpeg_bytes
 
 logger = logging_config.get_logger(__name__)
 

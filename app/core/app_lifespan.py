@@ -1,10 +1,10 @@
-from contextlib import asynccontextmanager
-import pkgutil
 import importlib
-from app.components.detection import pipelines
+import pkgutil
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.components.detection import pipelines
 from app.core import logging_config
 from app.core.initializer import Initializer
 

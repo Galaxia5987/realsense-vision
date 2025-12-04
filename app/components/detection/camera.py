@@ -1,11 +1,13 @@
-from pathlib import Path
-import time
 import json
-import pyrealsense2 as rs
+import time
+from pathlib import Path
+
 import numpy as np
+import pyrealsense2 as rs
+
+import app.core.logging_config as logging_config
 from app.config import ConfigManager
 from utils import AsyncLoopBase, generate_stream_disabled_image
-import app.core.logging_config as logging_config
 
 logger = logging_config.get_logger(__name__)
 disabled_mat = generate_stream_disabled_image() # an image with the text "Stream Disabled"

@@ -1,8 +1,9 @@
 from typing import Callable
-from app.components.detection.pipelines.pipeline_base import PipelineBase
-from utils import AsyncLoopBase, generate_stream_disabled_image, frames_to_jpeg_bytes
-from app.config import ConfigManager
+
 import app.core.logging_config as logging_config
+from app.components.detection.pipelines.pipeline_base import PipelineBase
+from app.config import ConfigManager
+from utils import AsyncLoopBase, frames_to_jpeg_bytes, generate_stream_disabled_image
 
 logger = logging_config.get_logger(__name__)
 

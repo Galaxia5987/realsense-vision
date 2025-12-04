@@ -2,11 +2,11 @@
 Retry and recovery utilities for fault-tolerant initialization and operations.
 """
 
-import time
 import functools
-from typing import Callable, TypeVar, Optional, Type, Tuple
-import app.core.logging_config as logging_config
+import time
+from typing import Callable, Optional, Tuple, Type, TypeVar
 
+import app.core.logging_config as logging_config
 
 logger = logging_config.get_logger(__name__)
 

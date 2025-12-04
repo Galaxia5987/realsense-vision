@@ -3,12 +3,12 @@ Structured logging configuration for the RealSense Vision system.
 Provides detailed, consistent logging across all components.
 """
 
-from io import StringIO
+import json
 import logging
 import sys
 from datetime import datetime
+from io import StringIO
 from typing import Optional
-import json
 
 import colorlog
 

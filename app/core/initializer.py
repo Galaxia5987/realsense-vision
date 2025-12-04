@@ -1,12 +1,12 @@
 from fastapi import FastAPI
-from app.components.detection.camera import RealSenseCamera
 
-from app.config import ConfigManager
+from app.components.detection.camera import RealSenseCamera
 from app.components.detection.pipeline_runner import PipelineRunner, disabled_jpeg
 from app.components.detection.pipelines.pipeline_base import create_pipeline_by_name
 from app.components.network_tables import NetworkTablesPublisher
-from app.server import streams
+from app.config import ConfigManager
 from app.core.logging_config import get_logger
+from app.server import streams
 
 logger = get_logger(__name__)
 

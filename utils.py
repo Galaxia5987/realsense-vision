@@ -1,9 +1,10 @@
 import asyncio
+import logging
+import subprocess
 import threading
+
 import cv2
 import numpy as np
-import subprocess
-import logging
 
 
 def frames_to_jpeg_bytes(frame, resolution=(640, 480)):

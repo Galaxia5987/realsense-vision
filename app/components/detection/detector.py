@@ -1,6 +1,7 @@
 from ultralytics import YOLO
-from app.config import ConfigManager
+
 import app.core.logging_config as logging_config
+from app.config import ConfigManager
 
 logger = logging_config.get_logger(__name__)
 

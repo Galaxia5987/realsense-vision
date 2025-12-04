@@ -1,23 +1,22 @@
+import asyncio
 import logging
+
+import uvicorn
 from fastapi import FastAPI, File, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import uvicorn
 
 from app.components.detection.pipelines.pipeline_base import get_all_pipeline_names
-from app.core import logging_config
 from app.config import ConfigManager
-
+from app.core import logging_config
 from app.core.app_lifespan import lifespan
-from app.core.uploader import get_all_rknn_models, upload_model
-from convert_model import realtime
-from app.server import streams
-from models.models import RootConfig
-from utils import restart_service
-import asyncio
-from models.models import default_config
 from app.core.logging_config import log_stream
+from app.core.uploader import get_all_rknn_models, upload_model
+from app.server import streams
+from convert_model import realtime
+from models.models import RootConfig, default_config
+from utils import restart_service
 
 logging_config.setup_logging()
 
