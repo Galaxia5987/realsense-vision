@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 import json
 import pyrealsense2 as rs
@@ -62,9 +63,8 @@ class RealSenseCamera(AsyncLoopBase):
         Load JSON config onto the device BEFORE pipeline start.
         """
         try:
-            with open(filename, "r") as f:
-                json_content = f.read()
-
+            file = Path(filename)
+            json_content = file.read_text()
             # Validate JSON
             json.loads(json_content)
 
