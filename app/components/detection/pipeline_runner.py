@@ -9,14 +9,15 @@ logger = logging_config.get_logger(__name__)
 """ Retarded JPEG """
 disabled_jpeg = frames_to_jpeg_bytes(generate_stream_disabled_image())
 
-LOOP_INTERVAL = 0.01 # 100 Hz
+LOOP_INTERVAL = 0.01  # 100 Hz
 
 
 class PipelineRunner(AsyncLoopBase):
     def __init__(self, pipeline: PipelineBase, set_output_callback: Callable):
         super().__init__(LOOP_INTERVAL)
         logger.info(
-            f"Initializing pipeline runner with {pipeline.name}", operation="init" # type: ignore
+            f"Initializing pipeline runner with {pipeline.name}",
+            operation="init",  # type: ignore
         )
 
         self.config = ConfigManager().get()
@@ -45,7 +46,9 @@ class PipelineRunner(AsyncLoopBase):
                         exc_info=True,
                     )
         except Exception as e:
-            logger.error(f"Pipeline iteration failed: {e}", operation="loop", exc_info=True)
+            logger.error(
+                f"Pipeline iteration failed: {e}", operation="loop", exc_info=True
+            )
 
     def get_jpeg(self):
         """Get JPEG-encoded color frame."""

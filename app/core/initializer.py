@@ -61,6 +61,7 @@ class Initializer:
         try:
             self.pipeline = create_pipeline_by_name(self.config.pipeline, self.camera)
             assert self.pipeline
+
             def _publish(output):
                 if self.publisher:
                     self.publisher.publish_detections(output)

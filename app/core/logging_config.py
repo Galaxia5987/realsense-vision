@@ -15,6 +15,7 @@ import colorlog
 log_stream = StringIO()
 _root_logger: logging.Logger = None  # type: ignore
 
+
 class StructuredFormatter(logging.Formatter):
     """Pretty structured log formatter without colors."""
 
@@ -172,7 +173,9 @@ def setup_logging(level=logging.INFO, log_file: Optional[str] = None):
             # allow keyboard interrupts to exit normally
             sys.__excepthook__(exc_type, exc_value, exc_traceback)
             return
-        root_logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+        root_logger.error(
+            "Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback)
+        )
 
     sys.excepthook = log_uncaught_exceptions
 
@@ -180,11 +183,13 @@ def setup_logging(level=logging.INFO, log_file: Optional[str] = None):
 
     return root_logger
 
+
 def set_root_level(level):
     if _root_logger:
         _root_logger.setLevel(level)
         for handler in _root_logger.handlers:
             handler.setLevel(level)
+
 
 def get_root_level() -> str:
     return logging.getLevelName(_root_logger.getEffectiveLevel())

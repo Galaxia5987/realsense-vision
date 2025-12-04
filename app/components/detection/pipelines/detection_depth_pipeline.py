@@ -64,8 +64,8 @@ class DetectionDepthPipeline(PipelineBase):
                 x, y = center
                 cv2.putText(
                     depth_frame,
-                    f"{depth/1000.0:.2f}m",
-                    (x, y-10), # Put the text slightlu below the points
+                    f"{depth / 1000.0:.2f}m",
+                    (x, y - 10),  # Put the text slightlu below the points
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.7,
                     (0, 255, 255),

@@ -116,7 +116,7 @@ def _ensure_background_loop():
     _background_loop = asyncio.new_event_loop()
 
     def run_loop():
-        _background_loop.run_forever() # type: ignore
+        _background_loop.run_forever()  # type: ignore
 
     _background_thread = threading.Thread(target=run_loop, daemon=True)
     _background_thread.start()
