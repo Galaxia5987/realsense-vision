@@ -1,5 +1,6 @@
 import json
 
+from models.detection_model import Detection
 import numpy as np
 
 import app.core.logging_config as logging_config
@@ -88,7 +89,7 @@ class NetworkTablesPublisher:
         self.pose_pub = self.table.getStructArrayTopic("poses", Pose3d).publish()
         logger.debug("Pose publisher created", operation="init_connection")
 
-    def publish_detections(self, detections):
+    def publish_detections(self, detections: list[Detection]):
         """Publish detection results to NetworkTables with error handling."""
         if not NTCORE:
             return
@@ -100,8 +101,8 @@ class NetworkTablesPublisher:
             poses = []
             for i, det in enumerate(detections):
                 try:
-                    y, z, x = det["point"]  # your order
-                    pose = Pose3d(Translation3d(x, y, -z), Rotation3d(0.0, 0.0, 0.0))
+                    point = det.point
+                    pose = Pose3d(Translation3d(point.x, point.y, -point.z), Rotation3d(0.0, 0.0, 0.0))
                     poses.append(pose)
                 except Exception as e:
                     logger.warning(

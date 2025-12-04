@@ -7,7 +7,6 @@ from models.models import Pipeline
 # Registry dictionary
 PIPELINE_REGISTRY: dict[str, type] = {}
 
-
 class PipelineBase:
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses by their 'name' property."""
@@ -23,7 +22,8 @@ class PipelineBase:
     def get_depth_jpeg(self) -> bytes | None:
         raise NotImplementedError()
 
-    def get_output(self):
+    @abstractmethod
+    def get_output(self) -> object:
         return None
 
     @abstractmethod

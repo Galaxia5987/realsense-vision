@@ -1,4 +1,5 @@
 import cv2
+from models.detection_model import Detection, Point2d, Point3d
 import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
@@ -19,7 +20,7 @@ class DetectionDepthPipeline(PipelineBase):
         model_path = f"./{UPLOAD_FOLDER}/{model_path}"
         try:
             self.detector = YOLODetector(model_path)
-            self.detections = []
+            self.detections: list[Detection] = []
         except Exception as e:
             logger.exception(
                 f"Failed to initialize DetectionDepthPipeline: {e}", operation="init"
@@ -33,21 +34,19 @@ class DetectionDepthPipeline(PipelineBase):
             return None
 
         for detection in self.detections:
-            center = detection["center"]
-            point = detection["point"]
-            point = [round(coord, 2) for coord in point]
-            x, y = center
-            depth_text = f"{point}"
+            center = detection.center
+            point = detection.point
+            depth_text = str(point)
             cv2.putText(
                 detected,
                 depth_text,
-                (x, y - 10),
+                (center.x, center.y - 10),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.7,
                 (0, 255, 255),
                 2,
             )
-            cv2.circle(detected, center, 5, (0, 255, 255), -1)
+            cv2.circle(detected, (center.x, center.y), 5, (0, 255, 255), -1)
         return frames_to_jpeg_bytes(
             detected, resolution=(self.camera.width, self.camera.height)
         )
@@ -57,21 +56,19 @@ class DetectionDepthPipeline(PipelineBase):
         depth_frame = self.camera.latest_depth_frame
         if depth_frame is None:
             return None
-        if hasattr(self, "detections"):
-            for detection in self.detections:
-                center = detection["center"]
-                depth = detection["depth"]
-                x, y = center
-                cv2.putText(
-                    depth_frame,
-                    f"{depth / 1000.0:.2f}m",
-                    (x, y - 10),  # Put the text slightlu below the points
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.7,
-                    (0, 255, 255),
-                    2,
-                )
-                cv2.circle(depth_frame, center, 5, (0, 255, 255), -1)
+        for detection in self.detections:
+            center = detection.center
+            depth = detection.depth
+            cv2.putText(
+                depth_frame,
+                f"{depth:.2f}m",
+                (center.x, center.y - 10),  # Put the text slightly below the points
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 255, 255),
+                2,
+            )
+            cv2.circle(depth_frame, center, 5, (0, 255, 255), -1)
         return frames_to_jpeg_bytes(
             depth_frame, resolution=(self.camera.width, self.camera.height)
         )
@@ -81,7 +78,7 @@ class DetectionDepthPipeline(PipelineBase):
         frame = self.camera.latest_frame
         depth_frame = self.camera.latest_depth_data
 
-        if frame is None or depth_frame is None:
+        if None in (frame, depth_frame):
             logger.error("Camera frame is None!")
             self.detections = []
             return
@@ -127,19 +124,16 @@ class DetectionDepthPipeline(PipelineBase):
                 point = rs2_deproject_pixel_to_point(
                     intrinsics, [min_x, min_y], depth_meters
                 )
-
-                self.detections.append(
-                    {
-                        "bbox": bbox,
-                        "center": (center_x, center_y),
-                        "depth": min_value_mm,
-                        "point": point,
-                    }
-                )
+                y, z, x = point
+                self.detections.append(Detection(
+                    Point3d(x,y,z),
+                    Point2d(center_x, center_y),
+                    depth_meters
+                ))
             except Exception as e:
                 logger.warning(
                     f"Error processing detection bbox: {e}", operation="loop"
                 )
-
-    def get_output(self):
-        return getattr(self, "detections", None)
+                
+    def get_output(self) -> list[Detection]:
+        return self.detections
