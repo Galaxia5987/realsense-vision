@@ -25,9 +25,9 @@ class RealSenseCamera(AsyncLoopBase):
         # State variables
         self.pipeline = None
         self.align = None
-        self.latest_frame = None
-        self.latest_depth_frame = None
-        self.latest_depth_data = None
+        self._latest_frame = None
+        self._latest_depth_frame = None
+        self._latest_depth_data = None
         self.frame_count = 0
 
         # Filter placeholders
@@ -197,13 +197,13 @@ class RealSenseCamera(AsyncLoopBase):
                     depth_frame = filter.process(depth_frame)
 
             # 4. Process Data
-            self.latest_frame = np.asanyarray(color_frame.get_data())
-            self.latest_depth_data = depth_frame.as_depth_frame()
+            self._latest_frame = np.asanyarray(color_frame.get_data())
+            self._latest_depth_data = depth_frame.as_depth_frame()
 
             # 5. Create visual depth map
             color_map = rs.colorizer()
-            colorized_depth = color_map.process(self.latest_depth_data)
-            self.latest_depth_frame = np.asanyarray(colorized_depth.get_data()).astype(
+            colorized_depth = color_map.process(self._latest_depth_data)
+            self._latest_depth_frame = np.asanyarray(colorized_depth.get_data()).astype(
                 np.uint8
             )
 
@@ -214,21 +214,24 @@ class RealSenseCamera(AsyncLoopBase):
         except Exception as e:
             logger.error(f"Error in camera loop: {e}", operation="loop")
 
-    def get_latest_frame(self):
+    @property
+    def latest_frame(self):
         """Get the latest color frame."""
-        if self.latest_frame is None:
+        if self._latest_frame is None:
             return disabled_mat
-        return self.latest_frame
+        return self._latest_frame
 
-    def get_latest_depth_frame(self):
+    @property
+    def latest_depth_frame(self):
         """Get the latest visualized depth frame."""
-        if self.latest_depth_frame is None:
+        if self._latest_depth_frame is None:
             return disabled_mat
-        return self.latest_depth_frame
+        return self._latest_depth_frame
 
-    def get_latest_depth_data(self):
+    @property
+    def latest_depth_data(self):
         """Get the latest raw depth data object."""
-        return self.latest_depth_data
+        return self._latest_depth_data
 
     def stop_pipeline(self):
         """Stop the camera gracefully."""

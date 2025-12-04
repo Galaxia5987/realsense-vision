@@ -18,8 +18,8 @@ class RegularPipeline(PipelineBase):
 
     def iterate(self):
         """Main processing loop."""
-        self.frame = self.camera.get_latest_frame()
-        self.depth_frame = self.camera.get_latest_depth_frame()
+        self.frame = self.camera.latest_frame
+        self.depth_frame = self.camera.latest_depth_frame
 
     def get_depth_jpeg(self):
         """Get JPEG-encoded depth frame."""

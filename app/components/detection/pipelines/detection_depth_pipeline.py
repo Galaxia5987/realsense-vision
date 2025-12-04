@@ -54,7 +54,7 @@ class DetectionDepthPipeline(PipelineBase):
 
     def get_depth_jpeg(self):
         """Get JPEG-encoded depth frame with annotations."""
-        depth_frame = self.camera.get_latest_depth_frame()
+        depth_frame = self.camera.latest_depth_frame
         if depth_frame is None:
             return None
         if hasattr(self, "detections"):
@@ -78,8 +78,8 @@ class DetectionDepthPipeline(PipelineBase):
 
     def iterate(self):
         """Main detection loop with error handling."""
-        frame = self.camera.get_latest_frame()
-        depth_frame = self.camera.get_latest_depth_data()
+        frame = self.camera.latest_frame
+        depth_frame = self.camera.latest_depth_data
 
         if frame is None or depth_frame is None:
             logger.error("Camera frame is None!")
