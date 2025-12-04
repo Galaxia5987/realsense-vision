@@ -138,7 +138,7 @@ class RealSenseCamera(AsyncLoopBase):
         try:
             profile = self.pipeline.start(rs_config)
 
-            time.sleep(1)  # FUCKKKKKK
+            time.sleep(1)
 
             depth_sensor = profile.get_device().first_depth_sensor()
             try:
@@ -192,12 +192,9 @@ class RealSenseCamera(AsyncLoopBase):
                 return
 
             # 3. Apply Filters
-            if self.spatial:
-                depth_frame = self.spatial.process(depth_frame)
-            if self.temporal:
-                depth_frame = self.temporal.process(depth_frame)
-            if self.hole_filling:
-                depth_frame = self.hole_filling.process(depth_frame)
+            for filter in (self.spatial, self.temporal, self.hole_filling):  
+                if filter:  
+                    depth_frame = filter.process(depth_frame)
 
             # 4. Process Data
             self.latest_frame = np.asanyarray(color_frame.get_data())
