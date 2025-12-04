@@ -36,7 +36,7 @@ class RealSenseCamera(AsyncLoopBase):
 
         # Attempt initialization
         try:
-            if self.realsense_connected():
+            if self.is_connected():
                 self._initialize_pipeline()
             else:
                 logger.warning("No RealSense device detected on startup.")
@@ -48,8 +48,8 @@ class RealSenseCamera(AsyncLoopBase):
             operation="init",
         )
 
-    def realsense_connected(self) -> bool:
-        """Check if any device is connected without resetting."""
+    def is_connected(self) -> bool:
+        """Check if any device is connected"""
         try:
             ctx = rs.context()
             devices = ctx.query_devices()

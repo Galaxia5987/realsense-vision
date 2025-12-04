@@ -39,7 +39,7 @@ class Initializer:
         resolution_str = ConfigManager().get().camera.resolution.value
         res = list(map(int, resolution_str.split("x")))
         self.camera = RealSenseCamera(res[0], res[1], ConfigManager().get().camera.fps)
-        if self.camera.realsense_connected():
+        if self.camera.is_connected():
             self.camera.start()
         else:
             logger.warning("Realsense Camera not connected!")
