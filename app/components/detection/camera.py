@@ -60,7 +60,7 @@ class RealSenseCamera(AsyncLoopBase):
 
     def _load_config_onto_device(self, device, filename="camera_config.json"):
         """
-        Loads JSON config onto the device BEFORE pipeline start.
+        Load JSON config onto the device BEFORE pipeline start.
         """
         try:
             with open(filename, "r") as f:
