@@ -7,7 +7,7 @@ from utils import AsyncLoopBase, generate_stream_disabled_image
 import app.core.logging_config as logging_config
 
 logger = logging_config.get_logger(__name__)
-disabled_mat = generate_stream_disabled_image()
+disabled_mat = generate_stream_disabled_image() # an image with the text "Stream Disabled"
 
 LOOP_INTERVAL = 0.01  # 100 Hz
 
