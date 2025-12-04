@@ -18,14 +18,8 @@ class DetectionDepthPipeline(PipelineBase):
     def __init__(self, camera, model_path):
         self.camera = camera
         model_path = f"./{UPLOAD_FOLDER}/{model_path}"
-        try:
-            self.detector = YOLODetector(model_path)
-            self.detections: list[Detection] = []
-        except Exception as e:
-            logger.exception(
-                f"Failed to initialize DetectionDepthPipeline: {e}", operation="init"
-            )
-            raise
+        self.detections: list[Detection] = []
+        self.detector = YOLODetector(model_path)
 
     def get_jpeg(self):
         """Get JPEG-encoded annotated image."""
