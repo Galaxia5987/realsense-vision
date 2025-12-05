@@ -52,6 +52,11 @@ sudo apt install cmake build-essential python3-dev libllvm15 clang 1>/dev/null |
 log_info "Adding deadsnakes PPA..."
 sudo add-apt-repository -y ppa:deadsnakes/ppa 1>/dev/null || log_error "Failed to add PPA"
 
+log_info "Installing NetworkManager"
+sudo apt install network-manager -y || log_error "Failed to install NetworkManager"
+sudo systemctl enable NetworkManager || log_error "Failed to enable NetworkManager"
+sudo systemctl start NetworkManager || log_error "Failed to start NetworkManager"
+
 log_info "Updating apt after adding PPA..."
 sudo apt update 1>/dev/null || log_error "Second apt update failed"
 
