@@ -118,8 +118,26 @@ network:
        addresses: [8.8.8.8,8.8.4.4]
 ```
 Edit `addresses` to change the ip.
+Edit `end1` with the right interface after running `ip link`.
 
 Run `sudo netplan apply` to apply the changes without the need of a reboot.
+
+In case something goes wrong, this is the default config:
+```
+network:
+  version: 2
+  ethernets:
+    zz-all-en:
+      match:
+        name: "en*"
+      dhcp4: true
+      optional: true
+    zz-all-eth:
+      match:
+        name: "eth*"
+      dhcp4: true
+      optional: true
+```
 
 ## License
 
