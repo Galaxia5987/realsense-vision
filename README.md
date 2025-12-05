@@ -106,19 +106,29 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-    end1:
+    enP4p65s0:
       dhcp4: false
       dhcp6: false
       addresses:
-      - 10.59.87.11/24
+      - 10.59.87.12/24
       routes:
       - to: default
         via: 10.59.87.4
+        metric: 100
       nameservers:
        addresses: [8.8.8.8,8.8.4.4]
+  wifis:
+    wlan0:
+      dhcp4: true
+      access-points:
+        "Reali Beit Biram": {}
+      dhcp4-overrides:
+        route-metric: 75
+
+
 ```
 Edit `addresses` to change the ip.
-Edit `end1` with the right interface after running `ip link`.
+Edit `enP4p65s0` and `wlan0` with the right interface after running `ip link`.
 
 Run `sudo netplan apply` to apply the changes without the need of a reboot.
 
