@@ -67,8 +67,6 @@ class RealSenseCamera(AsyncLoopBase):
         try:
             file = Path(filename)
             json_content = file.read_text()
-            # Validate JSON
-            json.loads(json_content)
 
             advnc_mode = rs.rs400_advanced_mode(device)
             advnc_mode.load_json(json_content)
