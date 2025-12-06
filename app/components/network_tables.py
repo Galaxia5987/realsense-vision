@@ -1,11 +1,11 @@
 import json
 
-from models.detection_model import Detection
 import numpy as np
 
 import app.core.logging_config as logging_config
 from app.components.retry_utils import retry_with_backoff
 from app.config import ConfigManager
+from models.detection_model import Detection
 from utils import singleton
 
 logger = logging_config.get_logger(__name__)
@@ -30,9 +30,11 @@ class NumpyEncoder(json.JSONEncoder):
             return bool(o)
         return super().default(o)
 
+
 MATCH_NUMBER_TOPIC = "MatchNumber"
 EVENT_NAME_TOPIC = "EventName"
 DS_TABLE = "DriverStation"
+
 
 @singleton
 class NetworkTablesPublisher:
@@ -84,14 +86,20 @@ class NetworkTablesPublisher:
         )
 
         self.table = self.inst.getTable(table_name)
-        
+
         try:
             self.ds_table = self.inst.getTable(DS_TABLE)
-            self.match_number_subscriber = self.ds_table.getIntegerTopic(MATCH_NUMBER_TOPIC).subscribe(-1)
-            self.event_name_subscriber = self.ds_table.getStringTopic(EVENT_NAME_TOPIC).subscribe("unknown")
+            self.match_number_subscriber = self.ds_table.getIntegerTopic(
+                MATCH_NUMBER_TOPIC
+            ).subscribe(-1)
+            self.event_name_subscriber = self.ds_table.getStringTopic(
+                EVENT_NAME_TOPIC
+            ).subscribe("unknown")
         except Exception as e:
-            logger.exception(f"Failed to subscribe to DS topics: {e}", operation="init_connection")
-        
+            logger.exception(
+                f"Failed to subscribe to DS topics: {e}", operation="init_connection"
+            )
+
         logger.debug(
             f"NetworkTables table '{table_name}' acquired", operation="init_connection"
         )
@@ -113,7 +121,9 @@ class NetworkTablesPublisher:
             for i, det in enumerate(detections):
                 try:
                     point = det.point
-                    pose = Pose3d(Translation3d(point.x, point.y, -point.z), Rotation3d())
+                    pose = Pose3d(
+                        Translation3d(point.x, point.y, -point.z), Rotation3d()
+                    )
                     poses.append(pose)
                 except Exception as e:
                     logger.warning(
@@ -139,7 +149,7 @@ class NetworkTablesPublisher:
             logger.error(
                 f"Error publishing detections: {e}", operation="publish_detections"
             )
-    
+
     def get_match_number(self) -> int:
         if not NTCORE:
             return -1
@@ -147,9 +157,11 @@ class NetworkTablesPublisher:
             match_number = self.match_number_subscriber.get()
             return match_number
         except Exception as e:
-            logger.error(f"Error getting match number: {e}", operation="get_match_number")
+            logger.error(
+                f"Error getting match number: {e}", operation="get_match_number"
+            )
             return -1
-    
+
     def get_event_name(self) -> str:
         if not NTCORE:
             return "unknown"
@@ -160,7 +172,6 @@ class NetworkTablesPublisher:
         except Exception as e:
             logger.error(f"Error getting event name: {e}", operation="get_event_name")
             return "unknown"
-        
 
     def clear(self):
         """Clear published detections."""

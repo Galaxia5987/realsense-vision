@@ -20,7 +20,7 @@ class RegularPipeline(PipelineBase):
         """Main processing loop."""
         self.frame = self.camera.latest_frame
         self.depth_frame = self.camera.latest_depth_frame
-        
+
     def _convert_to_jpeg(self, frame):
         if frame is None:
             return None

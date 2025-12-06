@@ -1,5 +1,4 @@
 import cv2
-from models.detection_model import Detection, Point2d, Point3d
 import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
@@ -7,6 +6,7 @@ import app.core.logging_config as logging_config
 from app.components.detection.detector import YOLODetector
 from app.components.detection.pipelines.pipeline_base import PipelineBase
 from app.core.uploader import UPLOAD_FOLDER
+from models.detection_model import Detection, Point2d, Point3d
 from utils import frames_to_jpeg_bytes
 
 logger = logging_config.get_logger(__name__)
@@ -119,15 +119,15 @@ class DetectionDepthPipeline(PipelineBase):
                     intrinsics, [min_x, min_y], depth_meters
                 )
                 y, z, x = point
-                self.detections.append(Detection(
-                    Point3d(x,y,z),
-                    Point2d(center_x, center_y),
-                    depth_meters
-                ))
+                self.detections.append(
+                    Detection(
+                        Point3d(x, y, z), Point2d(center_x, center_y), depth_meters
+                    )
+                )
             except Exception as e:
                 logger.warning(
                     f"Error processing detection bbox: {e}", operation="loop"
                 )
-                
+
     def get_output(self) -> list[Detection]:
         return self.detections

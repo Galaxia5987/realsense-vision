@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import List
 
 from app.components.detection.camera import RealSenseCamera
 from app.core import logging_config
@@ -9,6 +8,7 @@ from models.models import Pipeline
 PIPELINE_REGISTRY: dict[str, type] = {}
 logger = logging_config.get_logger(__name__)
 
+
 class PipelineBase:
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses by their 'name' property."""
@@ -16,9 +16,11 @@ class PipelineBase:
         try:
             PIPELINE_REGISTRY[getattr(cls, "name")] = cls
         except AttributeError:
-            logger.warning(f"Pipeline {cls.__name__} doesn't have a name attribute, registering by module __name__")
+            logger.warning(
+                f"Pipeline {cls.__name__} doesn't have a name attribute, registering by module __name__"
+            )
             PIPELINE_REGISTRY[cls.__name__] = cls
-            
+
     @abstractmethod
     def get_jpeg(self) -> bytes | None:
         raise NotImplementedError()
@@ -45,6 +47,7 @@ def create_pipeline_by_name(
         return cls(camera, *pipeline.args)
     except KeyError | AssertionError:
         return None
+
 
 def get_all_pipeline_names() -> list[str]:
     return list(PIPELINE_REGISTRY.keys())

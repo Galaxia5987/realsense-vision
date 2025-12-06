@@ -1,4 +1,3 @@
-import json
 import time
 from pathlib import Path
 
@@ -10,7 +9,9 @@ from app.config import ConfigManager
 from utils import AsyncLoopBase, generate_stream_disabled_image
 
 logger = logging_config.get_logger(__name__)
-disabled_mat = generate_stream_disabled_image() # an image with the text "Stream Disabled"
+disabled_mat = (
+    generate_stream_disabled_image()
+)  # an image with the text "Stream Disabled"
 
 LOOP_INTERVAL = 0.01  # 100 Hz
 
@@ -192,8 +193,8 @@ class RealSenseCamera(AsyncLoopBase):
                 return
 
             # 3. Apply Filters
-            for filter in (self.spatial, self.temporal, self.hole_filling):  
-                if filter:  
+            for filter in (self.spatial, self.temporal, self.hole_filling):
+                if filter:
                     depth_frame = filter.process(depth_frame)
 
             # 4. Process Data

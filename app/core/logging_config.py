@@ -8,7 +8,6 @@ import logging
 import sys
 from datetime import datetime
 from io import StringIO
-from typing import Optional
 
 import colorlog
 
@@ -172,6 +171,7 @@ def setup_logging(level=logging.INFO):
     _root_logger = root_logger
 
     return root_logger
+
 
 def add_file_logging(log_file: str, level=logging.DEBUG):
     try:

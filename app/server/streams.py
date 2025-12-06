@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from typing import Callable, List, Tuple
+from typing import Callable, Tuple
 
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import HTMLResponse, StreamingResponse

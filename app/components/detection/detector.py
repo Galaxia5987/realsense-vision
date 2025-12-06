@@ -41,7 +41,6 @@ class YOLODetector:
                 f"Processed {self.detection_count} detections", operation="detect"
             )
 
-
     def get_annotated_image(self):
         """Get annotated image with detections."""
         try:

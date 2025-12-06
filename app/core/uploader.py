@@ -1,7 +1,7 @@
 import asyncio
 import os
 import time
-from typing import List
+from pathlib import Path
 
 from fastapi import File, HTTPException, UploadFile
 from fastapi.responses import RedirectResponse
@@ -9,7 +9,6 @@ from fastapi.responses import RedirectResponse
 from app.config import ConfigManager
 from app.core import logging_config
 from convert_model import async_convert_model
-from pathlib import Path
 
 UPLOAD_FOLDER = "uploads"
 
