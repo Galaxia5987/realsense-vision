@@ -166,7 +166,7 @@ def setup_logging(level=logging.INFO, log_file: str | None = None):
             file_handler.setFormatter(formatter)
             root_logger.addHandler(file_handler)
         except Exception as e:
-            root_logger.error(f"Failed to setup file logging to {log_file}: {e}")
+            root_logger.exception(f"Failed to setup file logging to {log_file}: {e}")
 
     def log_uncaught_exceptions(exc_type, exc_value, exc_traceback):
         if issubclass(exc_type, KeyboardInterrupt):
