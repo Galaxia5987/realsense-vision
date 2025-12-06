@@ -79,16 +79,16 @@ class Initializer:
         logger.info("Configuring stream routes", operation="reload_app")
 
         def video(depth: bool):
-            if self.runner:
-                img = None
-                if depth:
-                    img = self.runner.get_depth_jpeg()
-                else:
-                    img = self.runner.get_jpeg()
-                if not img:
-                    return disabled_jpeg
-                return img
-            return disabled_jpeg
+            if not self.runner:
+                return disabled_jpeg
+            img = None
+            if depth:
+                img = self.runner.get_depth_jpeg()
+            else:
+                img = self.runner.get_jpeg()
+            if not img:
+                return disabled_jpeg
+            return img
 
         def video_color():
             return video(False)
