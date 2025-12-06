@@ -46,5 +46,5 @@ def create_pipeline_by_name(
     except KeyError | AssertionError:
         return None
 
-def get_all_pipeline_names() -> List[str]:
+def get_all_pipeline_names() -> list[str]:
     return list(PIPELINE_REGISTRY.keys())
