@@ -20,19 +20,18 @@ class RegularPipeline(PipelineBase):
         """Main processing loop."""
         self.frame = self.camera.latest_frame
         self.depth_frame = self.camera.latest_depth_frame
+        
+    def _convert_to_jpeg(self, frame):
+        if frame is None:
+            return None
+        return frames_to_jpeg_bytes(
+            frame, resolution=(self.camera.width, self.camera.height)
+        )
 
     def get_depth_jpeg(self):
         """Get JPEG-encoded depth frame."""
-        if self.depth_frame is None:
-            return None
-        return frames_to_jpeg_bytes(
-            self.depth_frame, resolution=(self.camera.width, self.camera.height)
-        )
+        return self._convert_to_jpeg(self.depth_frame)
 
     def get_jpeg(self):
         """Get JPEG-encoded color frame."""
-        if self.frame is None:
-            return None
-        return frames_to_jpeg_bytes(
-            self.frame, resolution=(self.camera.width, self.camera.height)
-        )
+        return self._convert_to_jpeg(self.frame)
