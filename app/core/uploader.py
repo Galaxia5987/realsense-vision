@@ -9,6 +9,7 @@ from fastapi.responses import RedirectResponse
 from app.config import ConfigManager
 from app.core import logging_config
 from convert_model import async_convert_model
+from pathlib import Path
 
 UPLOAD_FOLDER = "uploads"
 
@@ -34,9 +35,8 @@ async def upload_model(file: UploadFile = File(...)):
             os.remove(file_path)
 
         # Save uploaded file
-        with open(file_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
+        content = await file.read()
+        Path(file_path).write_bytes(content)
 
         logger.info(f"Finished uploading {file_path}!", operation="upload")
 
