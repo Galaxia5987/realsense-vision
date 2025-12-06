@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 
 router = APIRouter(prefix="/streams")
 
-streams: List[Tuple[str, str]] = []
+streams: list[Tuple[str, str]] = []
 
 
 @router.get("/", response_class=HTMLResponse)
