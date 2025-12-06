@@ -20,7 +20,7 @@ class StructuredFormatter(logging.Formatter):
     """Pretty structured log formatter without colors."""
 
     def format(self, record):
-        timestamp = datetime.now().strftime("%H:%M:%S")
+        timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
         # Base log structure
         log_data = {
