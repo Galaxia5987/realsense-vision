@@ -17,8 +17,8 @@ class PipelineRunner(AsyncLoopBase):
     def __init__(self, pipeline: PipelineBase, set_output_callback: Callable):
         super().__init__(LOOP_INTERVAL)
         logger.info(
-            f"Initializing pipeline runner with {pipeline.name}",
-            operation="init",  # type: ignore
+            f"Initializing pipeline runner with {getattr(pipeline, 'name', '<unknown>')}",
+            operation="init",
         )
 
         self.config = ConfigManager().get()
@@ -37,15 +37,16 @@ class PipelineRunner(AsyncLoopBase):
             self.pipeline.iterate()
 
             output = self.pipeline.get_output()
-            if output:
-                try:
-                    self.set_output_callback(output)
-                except Exception as callback_exc:
-                    logger.error(
-                        f"set_output_callback failed: {callback_exc}",
-                        operation="loop",
-                        exc_info=True,
-                    )
+            if not output:
+                return
+            try:
+                self.set_output_callback(output)
+            except Exception as callback_exc:
+                logger.error(
+                    f"set_output_callback failed: {callback_exc}",
+                    operation="loop",
+                    exc_info=True,
+                )
         except Exception as e:
             logger.error(
                 f"Pipeline iteration failed: {e}", operation="loop", exc_info=True
