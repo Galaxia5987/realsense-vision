@@ -12,45 +12,35 @@ class YOLODetector:
             f"Initializing YOLO detector with model: {model_path}", operation="init"
         )
 
-        try:
-            self.model = YOLO(model_path, task="detect")
-            self.imgsz = imgsz
-            self.results = None
-            self.detection_count = 0
+        self.model = YOLO(model_path, task="detect")
+        self.imgsz = imgsz
+        self.results = None
+        self.detection_count = 0
 
-            logger.info(
-                f"YOLO detector initialized successfully (imgsz={imgsz})",
-                operation="init",
-                status="success",
-            )
-        except Exception as e:
-            logger.exception(
-                f"Failed to initialize YOLO detector: {e}", operation="init"
-            )
-            raise
+        logger.info(
+            f"YOLO detector initialized successfully (imgsz={imgsz})",
+            operation="init",
+            status="success",
+        )
 
     def detect(self, image):
-        """Run detection on an image with error handling."""
-        try:
-            if image is None:
-                logger.warning("Received None image for detection", operation="detect")
-                return
+        """Run detection on an image"""
+        if image is None:
+            logger.warning("Received None image for detection", operation="detect")
+            return
 
-            self.results = self.model(
-                image, imgsz=self.imgsz, conf=ConfigManager().get().min_confidence
-            )[0]
+        self.results = self.model(
+            image, imgsz=self.imgsz, conf=ConfigManager().get().min_confidence
+        )[0]
 
-            self.detection_count += 1
+        self.detection_count += 1
 
-            # Log periodically
-            if self.detection_count % 100 == 0:
-                logger.debug(
-                    f"Processed {self.detection_count} detections", operation="detect"
-                )
+        # Log periodically
+        if self.detection_count % 100 == 0:
+            logger.debug(
+                f"Processed {self.detection_count} detections", operation="detect"
+            )
 
-        except Exception as e:
-            logger.error(f"Error during detection: {e}", operation="detect")
-            raise
 
     def get_annotated_image(self):
         """Get annotated image with detections."""
