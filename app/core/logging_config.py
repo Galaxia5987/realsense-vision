@@ -114,7 +114,7 @@ class ComponentLogger:
         )
 
 
-def setup_logging(level=logging.INFO, log_file: Optional[str] = None):
+def setup_logging(level=logging.INFO, log_file: str | None = None):
     """
     Configure structured logging for the entire application.
 
