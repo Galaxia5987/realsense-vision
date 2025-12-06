@@ -1,3 +1,4 @@
+from app.core import logging_config
 from fastapi import FastAPI
 
 from app.components.detection.camera import RealSenseCamera
@@ -7,6 +8,7 @@ from app.components.network_tables import NetworkTablesPublisher
 from app.config import ConfigManager
 from app.core.logging_config import get_logger
 from app.server import streams
+from datetime import datetime
 
 logger = get_logger(__name__)
 
@@ -47,7 +49,16 @@ class Initializer:
     def init_network_tables_component(self):
         logger.info("Initializing NetworkTables", operation="reload_app")
         self.publisher = NetworkTablesPublisher()
-
+        
+    def setup_file_logging(self):
+        date = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+        match_string = "unknown"
+        if self.publisher:
+            match_string = self.publisher.get_event_name() + "-" + str(self.publisher.get_match_number())
+        logging_config.add_file_logging(
+            f"realsense-vision-{date}-{match_string}.log"
+        )
+        
     def init_pipeline_component(self):
         logger.info("Initializing pipeline runner", operation="reload_app")
 

@@ -30,6 +30,9 @@ class NumpyEncoder(json.JSONEncoder):
             return bool(o)
         return super().default(o)
 
+MATCH_NUMBER_TOPIC = "MatchNumber"
+EVENT_NAME_TOPIC = "EventName"
+DS_TABLE = "DriverStation"
 
 @singleton
 class NetworkTablesPublisher:
@@ -81,6 +84,14 @@ class NetworkTablesPublisher:
         )
 
         self.table = self.inst.getTable(table_name)
+        
+        try:
+            self.ds_table = self.inst.getTable(DS_TABLE)
+            self.match_number_subscriber = self.ds_table.getIntegerTopic(MATCH_NUMBER_TOPIC).subscribe(-1)
+            self.event_name_subscriber = self.ds_table.getStringTopic(EVENT_NAME_TOPIC).subscribe("unknown")
+        except Exception as e:
+            logger.exception(f"Failed to subscribe to DS topics: {e}", operation="init_connection")
+        
         logger.debug(
             f"NetworkTables table '{table_name}' acquired", operation="init_connection"
         )
@@ -128,6 +139,28 @@ class NetworkTablesPublisher:
             logger.error(
                 f"Error publishing detections: {e}", operation="publish_detections"
             )
+    
+    def get_match_number(self) -> int:
+        if not NTCORE:
+            return -1
+        try:
+            match_number = self.match_number_subscriber.get()
+            return match_number
+        except Exception as e:
+            logger.error(f"Error getting match number: {e}", operation="get_match_number")
+            return -1
+    
+    def get_event_name(self) -> str:
+        if not NTCORE:
+            return "unknown"
+
+        try:
+            event_name = self.event_name_subscriber.get()
+            return event_name
+        except Exception as e:
+            logger.error(f"Error getting event name: {e}", operation="get_event_name")
+            return "unknown"
+        
 
     def clear(self):
         """Clear published detections."""

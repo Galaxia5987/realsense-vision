@@ -114,7 +114,7 @@ class ComponentLogger:
         )
 
 
-def setup_logging(level=logging.INFO, log_file: str | None = None):
+def setup_logging(level=logging.INFO):
     """
     Configure structured logging for the entire application.
 
@@ -158,16 +158,6 @@ def setup_logging(level=logging.INFO, log_file: str | None = None):
     root_logger.addHandler(console_handler)
     root_logger.addHandler(live_handler)
 
-    # File handler (optional)
-    if log_file:
-        try:
-            file_handler = logging.FileHandler(log_file)
-            file_handler.setLevel(level)
-            file_handler.setFormatter(formatter)
-            root_logger.addHandler(file_handler)
-        except Exception as e:
-            root_logger.exception(f"Failed to setup file logging to {log_file}: {e}")
-
     def log_uncaught_exceptions(exc_type, exc_value, exc_traceback):
         if issubclass(exc_type, KeyboardInterrupt):
             # allow keyboard interrupts to exit normally
@@ -182,6 +172,15 @@ def setup_logging(level=logging.INFO, log_file: str | None = None):
     _root_logger = root_logger
 
     return root_logger
+
+def add_file_logging(log_file: str, level=logging.DEBUG):
+    try:
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(level)
+        file_handler.setFormatter(StructuredFormatter())
+        _root_logger.addHandler(file_handler)
+    except Exception as e:
+        _root_logger.exception(f"Failed to setup file logging to {log_file}: {e}")
 
 
 def set_root_level(level):
