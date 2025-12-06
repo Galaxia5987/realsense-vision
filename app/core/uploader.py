@@ -51,7 +51,7 @@ async def upload_model(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Error converting model: {e}")
 
 
-def get_all_rknn_models() -> List[str]:
+def get_all_rknn_models() -> list[str]:
     try:
         if not os.path.exists(UPLOAD_FOLDER):
             return []
