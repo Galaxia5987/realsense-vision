@@ -76,7 +76,7 @@ default_config = RootConfig(
     color_frame=ColorFrame(stream_enabled=True),
     depth_frame=DepthFrame(stream_enabled=True),
     min_confidence=0.85,
-    network_tables=NetworkTables(server="10.59.87.2", table="RealsenseVision"),
+    network_tables=NetworkTables(server="10.59.87.2", table="AdvantageKit/RealsenseVision"),
     pipeline=Pipeline(args=[], type="regular"),
     rknn_chip_type="rk3588",
 )

@@ -15,9 +15,9 @@ depth_frame:
 min_confidence: 0.85
 network_tables:
   server: 10.59.87.2
-  table: RealsenseVision
+  table: AdvantageKit/RealsenseVision
 pipeline:
   args:
-  - balls_rknn_model
+  - best_good_rknn_model
   type: DetectionDepthPipeline
 rknn_chip_type: rk3588
