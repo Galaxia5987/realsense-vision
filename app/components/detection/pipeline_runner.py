@@ -37,8 +37,6 @@ class PipelineRunner(AsyncLoopBase):
             self.pipeline.iterate()
 
             output = self.pipeline.get_output()
-            if not output:
-                return
             try:
                 self.set_output_callback(output)
             except Exception as callback_exc:
