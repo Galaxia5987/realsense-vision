@@ -14,7 +14,7 @@ class PipelineBase:
         """Automatically register subclasses by their 'name' property."""
         super().__init_subclass__(**kwargs)
         try:
-            PIPELINE_REGISTRY[getattr(cls, "name")] = cls
+            PIPELINE_REGISTRY[cls.__name__] = cls
         except AttributeError:
             logger.warning(
                 f"Pipeline {cls.__name__} doesn't have a name attribute, registering by module __name__"
