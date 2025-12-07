@@ -135,7 +135,7 @@ class RealSenseCamera(AsyncLoopBase):
         self._setup_filters()
 
         # Start Pipeline
-        logger.debug("Starting RealSense pipeline...", operation="init_pipeline")
+        logger.info("Starting RealSense pipeline...", operation="init_pipeline")
         try:
             profile = self.pipeline.start(rs_config)
 
