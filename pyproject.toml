@@ -34,3 +34,9 @@ pyntcore = { path = "./deps/pyntcore-2025.3.2.2.dev0+g094dd768.d20250829-cp310-c
 robotpy_wpinet = { path = "./deps/robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" }
 robotpy_wpiutil = { path = "./deps/robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" }
 robotpy_wpimath = { path = "./deps/robotpy_wpimath-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" }
+
+[dependency-groups]
+dev = [
+    "snakeviz>=2.1.0",
+    "pytest>=7.0.0"
+]
