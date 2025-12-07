@@ -6,7 +6,7 @@ import sys
 realtime = []
 
 
-def convert_model(model_path, chip="rk3588"):
+def convert_model(model_path, chip="rk3588", imgsz=640):
     global realtime
 
     cwd = os.path.dirname(model_path)
@@ -18,6 +18,7 @@ def convert_model(model_path, chip="rk3588"):
         f"model={model_file}",
         "format=rknn",
         f"name={chip}",
+        f"imgsz={str(imgsz)}"
     ]
 
     # Run CLI and capture stdout line by line

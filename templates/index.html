@@ -159,6 +159,13 @@
                                value="{{ cfg.min_confidence }}">
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label">Image Size</label>
+                        <input class="form-control" type="number" name="image_size"
+                               value="{{ cfg.image_size }}">
+                        <small class="form-text text-muted">Inference image dimension (e.g. 640).</small>
+                    </div>
+
                     <!-- Network Tables -->
                     <h4 class="mt-4">Network Tables</h4>
                     <div class="mb-3">

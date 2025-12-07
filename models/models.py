@@ -56,6 +56,7 @@ class RootConfig(BaseModel):
     camera: CameraSettings
     color_frame: ColorFrame
     depth_frame: DepthFrame
+    image_size: int
     min_confidence: float
     network_tables: NetworkTables
     pipeline: Pipeline
@@ -75,6 +76,7 @@ default_config = RootConfig(
     ),
     color_frame=ColorFrame(stream_enabled=True),
     depth_frame=DepthFrame(stream_enabled=True),
+    image_size=640,
     min_confidence=0.85,
     network_tables=NetworkTables(server="10.59.87.2", table="AdvantageKit/RealsenseVision"),
     pipeline=Pipeline(args=[], type="regular"),
