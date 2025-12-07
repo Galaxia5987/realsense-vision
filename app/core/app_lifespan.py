@@ -9,10 +9,11 @@ from app.core import logging_config
 from app.core.initializer import Initializer
 
 logger = logging_config.get_logger(__name__)
-
+initializer = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global initializer
     logger.info("Starting RealSense Vision...", operation="startup")
 
     # Discover and register all pipelines automaticlly

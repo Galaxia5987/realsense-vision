@@ -34,7 +34,34 @@ function submitFormJson() {
     });
 }
 
-cancelIntervalId = -1;
+let cancelIntervalId = -1;
+const latencyClasses = ["bg-success", "bg-warning", "bg-danger", "bg-secondary"];
+
+function updateLatencyIndicator(latencySeconds) {
+    const $indicator = $("#latencyIndicator");
+    if (!$indicator.length) return;
+
+    $indicator.removeClass(latencyClasses.join(" "));
+
+    if (latencySeconds === undefined || latencySeconds === null || isNaN(latencySeconds) || latencySeconds < 0) {
+        $indicator.addClass("bg-secondary").text("Latency: --");
+        return;
+    }
+
+    const latencyMs = latencySeconds * 1000;
+    let badgeClass = "bg-success";
+    if (latencyMs >= 200) {
+        badgeClass = "bg-danger";
+    } else if (latencyMs >= 120) {
+        badgeClass = "bg-warning";
+    }
+
+    const latencyText = latencyMs >= 1000
+        ? `${latencySeconds.toFixed(2)} s`
+        : `${Math.round(latencyMs)} ms`;
+
+    $indicator.addClass(badgeClass).text(`Latency: ${latencyText}`);
+}
 
 $(document).ready(function() {
     $("#configForm").on("submit", function(e) {
@@ -71,7 +98,7 @@ $(document).ready(function() {
 
     term.open(document.getElementById('logTerminal'));
 
-    function updateVisibleLog(text) {
+    function updateVisibleLog(text = "") {
         // clear visible screen, keep scrollback
         term.write('\x1b[2J');
         term.write('\x1b[H');
@@ -79,14 +106,23 @@ $(document).ready(function() {
     }
 
     // Optional polling loop
-    async function pollLogs() {
-        const res = await fetch('/logs'); // change to your endpoint
-        const txt = await res.text();
-        updateVisibleLog(txt);
+    async function pollLogs(forceLatest = false) {
+        if (logSettings.disabled) return;
+        try {
+            const res = await fetch(`/logs?force_latest=${forceLatest}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const { log, latency } = await res.json();
+            if(log != "")
+                updateVisibleLog(log);
+            updateLatencyIndicator(latency);
+        } catch (err) {
+            console.error("Failed to fetch logs", err);
+            updateLatencyIndicator(null);
+        }
     }
 
-    cancelIntervalId = setInterval(pollLogs, 1000);
-    pollLogs();
+    cancelIntervalId = setInterval(() => pollLogs(false), logSettings.interval || 100);
+    pollLogs(true);
 
     $("#logSettingsBtn").on("click", function() {
             bootbox.dialog({
@@ -150,8 +186,9 @@ $(document).ready(function() {
             }
         });
     });
-    $("#refreshLogBtn").on("click", function() {
-        pollLogs();
+
+    $(document).on("click", "#refreshLogBtn", function() {
+        pollLogs(true);
     });
 });
 

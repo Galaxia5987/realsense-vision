@@ -1,3 +1,4 @@
+import time
 from typing import Callable
 
 import app.core.logging_config as logging_config
@@ -24,6 +25,7 @@ class PipelineRunner(AsyncLoopBase):
         self.config = ConfigManager().get()
         self.pipeline = pipeline
         self.set_output_callback = set_output_callback
+        self.latency = -1
         assert set_output_callback, "set_output callback was empty! "
 
         logger.info(
@@ -34,7 +36,10 @@ class PipelineRunner(AsyncLoopBase):
 
     def on_iteration(self):
         try:
+            start = time.perf_counter()
             self.pipeline.iterate()
+            end = time.perf_counter()
+            self.latency = round(end-start,2)
 
             output = self.pipeline.get_output()
             try:

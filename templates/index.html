@@ -77,7 +77,10 @@
 
     <div class="card p-3 mt-5 shadow-sm">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0">Logs</h4>
+            <div class="d-flex align-items-center gap-2">
+                <h4 class="mb-0">Logs</h4>
+                <span id="latencyIndicator" class="badge bg-secondary">Latency: --</span>
+            </div>
             <button id="logSettingsBtn" type="button" class="btn btn-sm btn-outline-primary" title="Log settings">
                 Settings
             </button>

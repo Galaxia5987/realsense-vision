@@ -71,7 +71,7 @@ default_config = RootConfig(
             spatial=SpatialFilter(enabled=True),
             temporal=TemporalFilter(enabled=True),
         ),
-        fps=15,
+        fps=25,
         resolution=ResolutionEnum.r640x480,
     ),
     color_frame=ColorFrame(stream_enabled=True),

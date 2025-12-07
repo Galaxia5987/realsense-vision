@@ -12,6 +12,7 @@ from io import StringIO
 import colorlog
 
 log_stream = StringIO()
+last_log: str = ""
 _root_logger: logging.Logger = None  # type: ignore
 
 
@@ -205,3 +206,15 @@ def get_logger(component_name: str) -> ComponentLogger:
         ComponentLogger instance for the component
     """
     return ComponentLogger(component_name)
+
+def get_last_log(force_latest=False) -> str:
+    global last_log
+    data = log_stream.getvalue()
+    if force_latest:
+        return data
+    
+    if data != last_log:
+        last_log = data
+        return data
+    
+    return ""
