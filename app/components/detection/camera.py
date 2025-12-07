@@ -201,13 +201,6 @@ class RealSenseCamera(AsyncLoopBase):
             self._latest_frame = np.asanyarray(color_frame.get_data())
             self._latest_depth_data = depth_frame.as_depth_frame()
 
-            # 5. Create visual depth map
-            color_map = rs.colorizer()
-            colorized_depth = color_map.process(self._latest_depth_data)
-            self._latest_depth_frame = np.asanyarray(colorized_depth.get_data()).astype(
-                np.uint8
-            )
-
             self.frame_count += 1
 
         except RuntimeError as e:
@@ -227,6 +220,14 @@ class RealSenseCamera(AsyncLoopBase):
         """Get the latest visualized depth frame."""
         if self._latest_depth_frame is None:
             return disabled_mat
+        
+        # Create visual depth map
+        color_map = rs.colorizer()
+        colorized_depth = color_map.process(self._latest_depth_data)
+        self._latest_depth_frame = np.asanyarray(colorized_depth.get_data()).astype(
+            np.uint8
+        )
+
         return self._latest_depth_frame
 
     @property
