@@ -1,13 +1,13 @@
 import asyncio
 import uuid
-from typing import Callable, Tuple
+from typing import Callable
 
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import HTMLResponse, StreamingResponse
 
 router = APIRouter(prefix="/streams")
 
-streams: list[Tuple[str, str]] = []
+streams: list[tuple[str, str]] = []
 
 
 @router.get("/", response_class=HTMLResponse)
