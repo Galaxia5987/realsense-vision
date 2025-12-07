@@ -48,7 +48,7 @@ class NetworkTables(BaseModel):
 
 
 class Pipeline(BaseModel):
-    args: List[str]
+    args: list[str]
     type: str
 
 
