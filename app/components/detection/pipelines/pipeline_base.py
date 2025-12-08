@@ -44,10 +44,9 @@ def create_pipeline_by_name(
     pipeline: Pipeline, camera: RealSenseCamera
 ) -> PipelineBase | None:
     try:
-        cls = PIPELINE_REGISTRY.get(pipeline.type)
-        assert cls
+        cls = PIPELINE_REGISTRY[pipeline.type]
         return cls(camera, *pipeline.args)
-    except KeyError | AssertionError:
+    except KeyError:
         return None
 
 
