@@ -7,8 +7,8 @@ from app.components.detection.pipelines.pipeline_base import PipelineBase
 from app.config import ConfigManager
 from app.core.uploader import UPLOAD_FOLDER
 from models.detection_model import Detection, Point2d, Point3d
-from utils.utils import frames_to_jpeg_bytes
 from utils import drawing_utils
+from utils.utils import frames_to_jpeg_bytes
 
 logger = logging_config.get_logger(__name__)
 
@@ -29,7 +29,9 @@ class DetectionDepthPipeline(PipelineBase):
         if detected is None:
             return None
 
-        drawing_utils.annotate_detections(detected, self.detections, lambda det: str(det.point))
+        drawing_utils.annotate_detections(
+            detected, self.detections, lambda det: str(det.point)
+        )
 
         return frames_to_jpeg_bytes(
             detected, resolution=(self.camera.width, self.camera.height)
@@ -41,7 +43,9 @@ class DetectionDepthPipeline(PipelineBase):
         if depth_frame is None:
             return None
 
-        drawing_utils.annotate_detections(depth_frame, self.detections, lambda det: f"{det.depth:.2f}m")
+        drawing_utils.annotate_detections(
+            depth_frame, self.detections, lambda det: f"{det.depth:.2f}m"
+        )
 
         return frames_to_jpeg_bytes(
             depth_frame, resolution=(self.camera.width, self.camera.height)

@@ -1,6 +1,9 @@
 from typing import Callable
-from models.detection_model import Detection
+
 import cv2
+
+from models.detection_model import Detection
+
 
 def draw_depth_text(img, text, x, y, color=(0, 255, 255)):
     cv2.putText(
@@ -13,8 +16,10 @@ def draw_depth_text(img, text, x, y, color=(0, 255, 255)):
         2,
     )
 
+
 def draw_center_dot(img, x, y, color=(0, 255, 255)):
     cv2.circle(img, (x, y), 5, color, -1)
+
 
 def annotate_detections(img, detections, text_lambda: Callable[[Detection], str]):
     for det in detections:
