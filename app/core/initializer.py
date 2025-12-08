@@ -2,12 +2,12 @@ from datetime import datetime
 
 from fastapi import FastAPI
 
+from app.components.detection.pipeline_runner import PipelineRunner
+from app.components.detection.pipelines.pipeline_base import create_pipeline_by_name
 from app.components.detection.realsense_camera import (
     DISABLED_STREAM_IMAGE,
     RealSenseCamera,
 )
-from app.components.detection.pipeline_runner import PipelineRunner
-from app.components.detection.pipelines.pipeline_base import create_pipeline_by_name
 from app.components.network_tables import NetworkTablesPublisher
 from app.config import ConfigManager
 from app.core import logging_config

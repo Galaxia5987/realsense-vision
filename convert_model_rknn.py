@@ -1,5 +1,6 @@
-from rknn.api import RKNN
 import os
+
+from rknn.api import RKNN
 
 os.chdir("./calibration_images")
 rknn = RKNN()

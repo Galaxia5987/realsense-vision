@@ -3,9 +3,9 @@ import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
 import app.core.logging_config as logging_config
-from app.config import ConfigManager
 from app.components.detection.detector import YOLODetector
 from app.components.detection.pipelines.pipeline_base import PipelineBase
+from app.config import ConfigManager
 from app.core.uploader import UPLOAD_FOLDER
 from models.detection_model import Detection, Point2d, Point3d
 from utils import frames_to_jpeg_bytes
