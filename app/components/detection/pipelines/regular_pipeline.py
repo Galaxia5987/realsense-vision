@@ -32,6 +32,6 @@ class RegularPipeline(PipelineBase):
         """Get JPEG-encoded depth frame."""
         return self._convert_to_jpeg(self.depth_frame)
 
-    def get_jpeg(self):
+    def get_color_jpeg(self):
         """Get JPEG-encoded color frame."""
         return self._convert_to_jpeg(self.frame)

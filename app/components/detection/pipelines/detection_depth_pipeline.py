@@ -23,7 +23,7 @@ class DetectionDepthPipeline(PipelineBase):
         config = ConfigManager().get()
         self.detector = YOLODetector(model_path, imgsz=config.image_size)
 
-    def get_jpeg(self):
+    def get_color_jpeg(self):
         """Get JPEG-encoded annotated image."""
         detected = self.detector.get_annotated_image()
         if not detected:

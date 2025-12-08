@@ -100,7 +100,7 @@ class Initializer:
             if depth:
                 img = self.runner.get_depth_jpeg()
             else:
-                img = self.runner.get_jpeg()
+                img = self.runner.get_color_jpeg()
             if not img:
                 return DISABLED_STREAM_IMAGE
             return img

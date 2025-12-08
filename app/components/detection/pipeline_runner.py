@@ -52,10 +52,10 @@ class PipelineRunner(AsyncLoopBase):
                 f"Pipeline iteration failed: {e}", operation="loop", exc_info=True
             )
 
-    def get_jpeg(self):
+    def get_color_jpeg(self):
         """Get JPEG-encoded color frame."""
         if ConfigManager().get().color_frame.stream_enabled:
-            return self.pipeline.get_jpeg()
+            return self.pipeline.get_color_jpeg()
         return None
 
     def get_output(self):

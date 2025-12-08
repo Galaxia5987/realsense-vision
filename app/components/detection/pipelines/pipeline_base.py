@@ -24,7 +24,7 @@ class PipelineBase:
             PIPELINE_REGISTRY[cls.__name__] = cls
 
     @abstractmethod
-    def get_jpeg(self) -> bytes | None:
+    def get_color_jpeg(self) -> bytes | None:
         raise NotImplementedError()
 
     @abstractmethod
