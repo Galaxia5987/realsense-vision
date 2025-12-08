@@ -6,7 +6,8 @@ import pyrealsense2 as rs
 
 import app.core.logging_config as logging_config
 from app.config import ConfigManager
-from utils import AsyncLoopBase, generate_stream_disabled_image
+from utils import generate_stream_disabled_image
+from async_loop_base import AsyncLoopBase
 
 logger = logging_config.get_logger(__name__)
 DISABLED_STREAM_IMAGE = (
