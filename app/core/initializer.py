@@ -28,6 +28,7 @@ class Initializer:
 
         self.init_camera()
         self.init_network_tables_component()
+        self.setup_file_logging()
         self.init_pipeline_component()
         self.setup_stream_routes()
 
@@ -60,7 +61,7 @@ class Initializer:
                 + "-"
                 + str(self.publisher.get_match_number())
             )
-        logging_config.add_file_logging(f"rs-vision-{date}-{match_string}.log")
+        logging_config.add_file_logging(f"logs/rs-vision-{date}-{match_string}.log")
 
     def init_pipeline_component(self):
         logger.info("Initializing pipeline runner", operation="reload_app")
