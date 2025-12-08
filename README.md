@@ -12,6 +12,7 @@ Integrate Intel RealSense cameras with FRC robots seamlessly.
   * [Dataset](#dataset)
   * [Training and Uploading a Model](#training-and-uploading-a-model)
 * [Network Tables](#network-tables)
+* [Calibration](#calibration)
 * [Setting a static IP Address](#setting-a-static-ip-address)
 * [License](#license)
 
@@ -119,7 +120,13 @@ Refer to [Realsense Dynamic Calibration Docs](https://dev.realsenseai.com/docs/i
 This step calibrates the IMU(Inertial measurement unit) of the camera.
 In this step, You'll need to run the IMU calibration python script.
 
-Refer to []
+Refer to [IMU Calibration Docs](https://github.com/realsenseai/librealsense/tree/master/tools/rs-imu-calibration) for more info on using the script, and some tips.
+
+### Depth Quality Tool
+
+After calibrating everything it's best to check the accuracy using the `Depth Quality Tool`.
+
+See [Depth Quality Tool Docs](https://github.com/realsenseai/librealsense/tree/master/tools/depth-quality) for more information.
 
 
 ## Setting a static IP Address
