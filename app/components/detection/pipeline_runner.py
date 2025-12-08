@@ -23,7 +23,7 @@ class PipelineRunner(AsyncLoopBase):
         self.pipeline = pipeline
         self.set_output_callback = set_output_callback
         self.latency = -1
-        assert set_output_callback, "set_output callback was empty! "
+        assert set_output_callback, "set_output callback was empty!"
 
         logger.info(
             "Pipeline runner initialized successfully",
