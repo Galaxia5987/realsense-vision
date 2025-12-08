@@ -4,7 +4,7 @@ from typing import Callable
 import app.core.logging_config as logging_config
 from app.components.detection.pipelines.pipeline_base import PipelineBase
 from app.config import ConfigManager
-from async_loop_base import AsyncLoopBase
+from utils.async_loop_base import AsyncLoopBase
 
 logger = logging_config.get_logger(__name__)
 

@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 import app.core.logging_config as logging_config
 from models.models import RootConfig
-from utils import singleton
+from utils.utils import singleton
 
 logger = logging_config.get_logger(__name__)
 

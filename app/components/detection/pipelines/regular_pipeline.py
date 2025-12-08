@@ -1,6 +1,6 @@
 from app.components.detection.pipelines.pipeline_base import PipelineBase
 from app.core import logging_config
-from utils import frames_to_jpeg_bytes
+from utils.utils import frames_to_jpeg_bytes
 
 logger = logging_config.get_logger(__name__)
 

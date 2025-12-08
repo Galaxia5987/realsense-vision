@@ -17,7 +17,7 @@ from app.server import streams
 from convert_model import realtime
 from models.log_model import Log
 from models.models import RootConfig, default_config
-from utils import restart_service
+from utils.utils import restart_service
 
 logging_config.setup_logging()
 

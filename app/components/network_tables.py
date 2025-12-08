@@ -6,7 +6,7 @@ import app.core.logging_config as logging_config
 from app.components.retry_utils import retry_with_backoff
 from app.config import ConfigManager
 from models.detection_model import Detection
-from utils import singleton
+from utils.utils import singleton
 
 logger = logging_config.get_logger(__name__)
 NTCORE = True
