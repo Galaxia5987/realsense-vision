@@ -60,7 +60,7 @@ class Initializer:
                 + "-"
                 + str(self.publisher.get_match_number())
             )
-        logging_config.add_file_logging(f"realsense-vision-{date}-{match_string}.log")
+        logging_config.add_file_logging(f"rs-vision-{date}-{match_string}.log")
 
     def init_pipeline_component(self):
         logger.info("Initializing pipeline runner", operation="reload_app")
