@@ -62,21 +62,20 @@ class RealSenseCamera(AsyncLoopBase):
         except Exception:
             return False
 
-    def _load_config_onto_device(self, device, filename="camera_config.json"):
+    def _load_config_onto_device(self, device, file: Path = Path("camera_config.json")):
         """
         Load JSON config onto the device BEFORE pipeline start.
         """
         try:
-            file = Path(filename)
             json_content = file.read_text()
 
             advnc_mode = rs.rs400_advanced_mode(device)
             advnc_mode.load_json(json_content)
-            logger.info(f"Loaded configuration from {filename}", operation="init")
+            logger.info(f"Loaded configuration from {file}", operation="init")
 
         except FileNotFoundError:
             logger.warning(
-                f"Config file {filename} not found. Using camera defaults.",
+                f"Config file {file} not found. Using camera defaults.",
                 operation="init",
             )
         except Exception as e:
@@ -219,7 +218,7 @@ class RealSenseCamera(AsyncLoopBase):
     @property
     def latest_depth_frame(self):
         """Get the latest visualized depth frame."""
-        if self._latest_depth_frame is None:
+        if self._latest_depth_data is None:
             return DISABLED_STREAM_IMAGE
         
         # Create visual depth map
