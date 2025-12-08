@@ -188,7 +188,7 @@ class RealSenseCamera(AsyncLoopBase):
             color_frame = aligned_frames.get_color_frame()
             depth_frame = aligned_frames.get_depth_frame()
 
-            if not depth_frame or not color_frame:
+            if depth_frame is None or color_frame is None:
                 logger.debug("Frames dropped/incomplete")
                 return
 
