@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 
 from app.components.detection.camera import RealSenseCamera
@@ -5,7 +7,7 @@ from app.core import logging_config
 from models.models import Pipeline
 
 # Registry dictionary
-PIPELINE_REGISTRY: dict[str, type] = {}
+PIPELINE_REGISTRY: dict[str, type[PipelineBase]] = {}
 logger = logging_config.get_logger(__name__)
 
 
