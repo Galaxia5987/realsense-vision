@@ -11,18 +11,22 @@ dependencies = [
     "numpy",
     "torch==2.2.0",
     "torchvision==0.17.0",
-    "rknn-toolkit2",
-    "flask",
-    "pyntcore",
+    "fastapi",
+    "uvicorn",
+    "pydantic",
     "onnxslim>=0.1.61",
     "setuptools>=80.9.0",
-    "rknn-toolkit-lite2>=2.3.2",
     "websockets>=15.0.1",
     "pyrealsense2==2.56.5.9235",
+    "jinja2",
+    "python-multipart",
+    "colorlog",
+    "rknn-toolkit-lite2>=2.3.2",
+    "rknn-toolkit2",
+    "pyntcore",
     "robotpy_wpinet",
     "robotpy_wpiutil",
     "robotpy_wpimath",
-    "apscheduler>=3.11.0",
 ]
 
 [tool.uv.sources]
@@ -30,3 +34,9 @@ pyntcore = { path = "./deps/pyntcore-2025.3.2.2.dev0+g094dd768.d20250829-cp310-c
 robotpy_wpinet = { path = "./deps/robotpy_wpinet-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" }
 robotpy_wpiutil = { path = "./deps/robotpy_wpiutil-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" }
 robotpy_wpimath = { path = "./deps/robotpy_wpimath-2025.3.2.2.dev0+g094dd768.d20250829-cp310-cp310-manylinux_2_36_aarch64.whl" }
+
+[dependency-groups]
+dev = [
+    "snakeviz>=2.1.0",
+    "pytest>=7.0.0"
+]

@@ -1,17 +1,54 @@
+import asyncio
 import os
-from flask import flash
-from ultralytics import YOLO
-import scheduler
+import subprocess
+import sys
 
-def convert_model(model_path, chip='rk3588', flash_after=True):
-    os.chdir(os.path.dirname(model_path))
-    model = YOLO(model_path)
-    
-    out_path = model.export(format='rknn', name=chip)
-    if flash_after:
-        scheduler.flash_scheduler_message = f'Model converted and saved to {out_path}'
-    os.chdir('..')
-    return out_path
+realtime = []
+
+
+def convert_model(model_path, chip="rk3588", imgsz=640):
+    global realtime
+
+    cwd = os.path.dirname(model_path)
+    model_file = os.path.basename(model_path)
+
+    cmd = [
+        os.path.dirname(sys.executable) + "/yolo",
+        "export",
+        f"model={model_file}",
+        "format=rknn",
+        f"name={chip}",
+        f"imgsz={imgsz}",
+    ]
+
+    # Run CLI and capture stdout line by line
+    with subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    ) as process:
+        for line in process.stdout:  # type: ignore
+            realtime.append(line)
+            print(line, end="")
+
+        process.wait()
+
+
+def reset_realtime():
+    global realtime
+    realtime = []
+
+
+async def async_convert_model(model_path, chip="rk3588s"):
+    await asyncio.to_thread(
+        convert_model,
+        model_path,
+        chip,
+    )
+
 
 if __name__ == "__main__":
-    convert_model("best.pt")
+    convert_model("./uploads/best.pt")

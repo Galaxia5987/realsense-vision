@@ -1,129 +1,253 @@
-{% macro render_config(key_path, value) %}
-    {% if value is mapping and 'enum' in value and 'value' in value %}
-        <label for="{{ key_path }}">
-            {{ key_path.split('.')[-1] | replace('_', ' ') | capitalize }}:
-            <select name="{{ key_path }}.value" id="{{ key_path }}">
-                {% for option in value.enum %}
-                    <option value="{{ option }}" {% if option == value.value %}selected{% endif %}>
-                        {{ option }}
-                    </option>
-                {% endfor %}
-            </select>
-        </label><br>
-
-    {% elif value is mapping %}
-        <fieldset>
-            <legend>{{ key_path.split('.')[-1] if key_path else 'Config' }}</legend>
-            {% for subkey, subval in value.items() %}
-                {{ render_config(key_path ~ '.' ~ subkey if key_path else subkey, subval) }}
-            {% endfor %}
-        </fieldset>
-
-    {% else %}
-        <label for="{{ key_path }}">
-            {{ key_path.split('.')[-1] | replace('_', ' ') | capitalize }}:
-            {% if value is boolean %}
-                <input type="checkbox" name="{{ key_path }}" id="{{ key_path }}"
-                       value="true" {% if value %}checked{% endif %}>
-            {% elif value is number %}
-                <input type="number" name="{{ key_path }}" id="{{ key_path }}" value="{{ value }}">
-            {% else %}
-                <input type="text" name="{{ key_path }}" id="{{ key_path }}" value="{{ value }}">
-            {% endif %}
-        </label><br>
-    {% endif %}
-{% endmacro %}
-
 <!DOCTYPE html>
-<html lang="en">
+<html data-bs-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <title>RealSense Interface</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Realsense Vision</title>
+    <link rel="icon" href="favicon.png" type="image/x-icon"/>
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon"/>
+
+    <link href="static/bootstrap.min.css" rel="stylesheet">
+    <link href="static/xterm.css", rel="stylesheet">
+
+    <script src="static/jquery.min.js"></script>
+    <script src="static/xterm.js"></script>
+    <script>
+        var logSettings = {
+            level: "{{log_level}}",
+            interval: 1000,
+            disabled: false
+        }
+    </script>
+    <script src="static/main.js"></script>
 </head>
 <body>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <div class="flashes">
-        {% for category, message in messages %}
-            <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-        </div>
-    {% endif %}
-    {% endwith %}
-    <h1>RealSense Vision Interface</h1>
 
-    <section>
-        <h2>Video Streams</h2>
-        <div class="streams">
-            <div>
-                <h3>Depth Stream</h3>
-                <img src="/streams/depth_feed" alt="Depth Stream">
+<div style="position:relative;margin-left: 50px">
+    <div style="position:absolute; left:0; top:0; z-index:1000;">
+        <div class="d-flex align-items-center">
+            <img src="favicon.png" alt="Realsense Logo" width="48" height="48" class="me-2 rounded">
+            <h4 class="mb-0 text-primary fw-bold">Realsense Vision</h4>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <h4 class="text-center mb-4">Streams</h4>
+    
+    <div class="row justify-content-center g-4">
+        <!-- COLOR STREAM -->
+        <div class="col-md-5 text-center">
+            <div class="form-check mb-2">
+                <input class="form-check-input stream-img-toggle"
+                       type="checkbox"
+                       id="colorStreamToggle"
+                       name="color_frame.stream_enabled"
+                       data-target="#colorStreamImage"
+                       checked>
+                <label class="form-check-label" for="colorStreamToggle">
+                    Enable Color Stream
+                </label>
             </div>
-            <div>
-                <h3>YOLO Detection Stream</h3>
-                <img src="/streams/video_feed" alt="Detection Stream">
+            <div id="colorStreamImage">
+                <img src="/streams/video_feed"
+                     class="img-fluid rounded border"
+                     alt="Color Stream Preview">
             </div>
         </div>
-        </script>
-    </section>
 
-    <section>
-        <h2>Configuration</h2>
-        <form action="/update_config" method="post">
-            {{ render_config('', config) }}
-            <button type="submit">Update Configuration</button>
-        </form>
-    </section>
-
-    <section>
-        <h2>Upload Model and Convert to RKNN</h2>
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept=".pt" required>
-            <button type="submit">Upload & Convert</button>
-        </form>
-        <div>
-            <h3>Uploaded Models</h3>
-            <ul>
-                {% for model in models %}
-                    <li>{{ model }}</li>
-                {% else %}
-                    <li>No models uploaded.</li>
-                {% endfor %}
-            </ul>
+        <!-- DEPTH STREAM -->
+        <div class="col-md-5 text-center">
+            <div class="form-check mb-2">
+                <input class="form-check-input stream-img-toggle"
+                       type="checkbox"
+                       id="depthStreamToggle"
+                       name="depth_frame.stream_enabled"
+                       data-target="#depthStreamImage"
+                       checked>
+                <label class="form-check-label" for="depthStreamToggle">
+                    Enable Depth Stream
+                </label>
+            </div>
+            <div id="depthStreamImage">
+                <img src="/streams/depth_feed"
+                     class="img-fluid rounded border"
+                     alt="Depth Stream Preview">
+            </div>
         </div>
-    </section>
+    </div>
 
-    <section>
-        <h2>Logs</h2>
-        <div id="logs"></div>
-    </section>
+    <div class="card p-3 mt-5 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <h4 class="mb-0">Logs</h4>
+                <span id="latencyIndicator" class="badge bg-secondary">Latency: --</span>
+            </div>
+            <button id="logSettingsBtn" type="button" class="btn btn-sm btn-outline-primary" title="Log settings">
+                Settings
+            </button>
+        </div>
+        <div id="logTerminal"
+            style="height:300px, width:100%, border:1px solid #ccc, border-radius:6px, overflow:hidden">
+        </div>
+    </div>
 
-    <section>
-        <h2>Reload</h2>
-        <form action="/reload" method="post">
-            <button type="submit">Reload</button>
-        </form>
-    </section>
 
-    <section>
-        <h2>Restart Service</h2>
-        <form action="/restart" method="post">
-            <button type="submit">Restart Service</button>
-        </form>
-    </section>
-    <script>
-        const logDiv = document.getElementById("logs");
-        const ws = new WebSocket("ws://" + location.hostname + ":8765");
+    <hr class="my-5">
 
-        ws.onmessage = (event) => {
-            logDiv.innerText += event.data + "\n";
-            logDiv.scrollTop = logDiv.scrollHeight;
-        };
+    <div class="row">
+        <!-- Edit Configuration Panel -->
+        <div class="col-lg-7">
+            <div class="card p-4 shadow-sm">
+                <div class="text-center mb-4">
+                    <h2>Edit Configuration</h2>
+                </div>
+                
+                <form id="configForm">
+                    <h4 class="text-center mb-3">Camera</h4>
+                    <!-- Filters -->
+                    <h5 class="mt-3">Filters</h5>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="camera.filters.hole_filling.enabled"
+                               {% if cfg.camera.filters.hole_filling.enabled %}checked{% endif %}>
+                        <label class="form-check-label">Hole Filling Enabled</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="camera.filters.spatial.enabled"
+                               {% if cfg.camera.filters.spatial.enabled %}checked{% endif %}>
+                        <label class="form-check-label">Spatial Enabled</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="camera.filters.temporal.enabled"
+                               {% if cfg.camera.filters.temporal.enabled %}checked{% endif %}>
+                        <label class="form-check-label">Temporal Enabled</label>
+                    </div>
 
-        ws.onclose = () => {
-            logDiv.innerText += "[DISCONNECTED FROM LOG SERVER]\n";
-        };
-    </script>
+                    <div class="mb-3">
+                        <label class="form-label">FPS</label>
+                        <input class="form-control" type="number" name="camera.fps"
+                               value="{{ cfg.camera.fps }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Resolution</label>
+                        <select class="form-select" name="camera.resolution">
+                            {% for res in ["640x480", "1280x720", "848x640"] %}
+                                <option value="{{ res }}"
+                                    {% if cfg.camera.resolution.value == res %}selected{% endif %}>
+                                    {{ res }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Color & Depth Frames -->
+                    <h4 class="mt-4">Color Frame</h4>
+                    <div class="mb-3 text-center">
+                        <input class="form-check-input ms-2" type="checkbox"
+                               name="color_frame.stream_enabled"
+                               {% if cfg.color_frame.stream_enabled %}checked{% endif %}>
+                        <label class="form-label ms-2">Stream Enabled</label>
+                    </div>
+
+                    <h4 class="mt-4">Depth Frame</h4>
+                    <div class="mb-3 text-center">
+                        <input class="form-check-input ms-2" type="checkbox"
+                               name="depth_frame.stream_enabled"
+                               {% if cfg.depth_frame.stream_enabled %}checked{% endif %}>
+                        <label class="form-label ms-2">Stream Enabled</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Min Confidence</label>
+                        <input class="form-control" type="number" step="0.01" name="min_confidence"
+                               value="{{ cfg.min_confidence }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Image Size</label>
+                        <input class="form-control" type="number" name="image_size"
+                               value="{{ cfg.image_size }}">
+                        <small class="form-text text-muted">Inference image dimension (e.g. 640).</small>
+                    </div>
+
+                    <!-- Network Tables -->
+                    <h4 class="mt-4">Network Tables</h4>
+                    <div class="mb-3">
+                        <label class="form-label">Server</label>
+                        <input class="form-control" type="text" name="network_tables.server"
+                               value="{{ cfg.network_tables.server }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Table</label>
+                        <input class="form-control" type="text" name="network_tables.table"
+                               value="{{ cfg.network_tables.table }}">
+                    </div>
+
+                    <!-- Pipeline -->
+                    <h4 class="mt-4">Pipeline</h4>
+                    <div class="mb-3">
+                        <label class="form-label">Args</label>
+                        <input class="form-control" type="text" name="pipeline.args"
+                               value="{{ cfg.pipeline.args|join(',') }}">
+                        <small class="form-text text-muted">Comma separated list of arguments</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" name="pipeline.type">
+                            {% for pipeline in pipelines %}
+                                <option value="{{ pipeline }}"
+                                    {% if cfg.pipeline.type == pipeline %}selected{% endif %}>
+                                    {{ pipeline }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">RKNN Chip Type</label>
+                        <input class="form-control" type="text" name="rknn_chip_type"
+                               value="{{ cfg.rknn_chip_type }}">
+                    </div>
+
+                    <div class="text-center">
+                        <button class="btn btn-primary" type="button" onclick="submitFormJson()">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Side Panel: Upload Model + Danger Zone -->
+        <div class="col-lg-5">
+            <div class="card p-4 shadow-sm mb-4">
+                <h4 class="text-center mb-3">Upload Model</h4>
+                <form id="uploadModelForm" action="/upload" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input class="form-control" type="file" name="file" accept=".pt" required>
+                    </div>
+                    <div class="mb-3 text-center">
+                        <button class="btn btn-success" type="submit">Upload Model</button>
+                    </div>
+                </form>
+                <h5 class="mt-4">Available Models</h5>
+                <ul class="list-group" id="modelList">
+                    {% for model in models %}
+                        <li class="list-group-item">{{ model }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="card p-4 shadow-sm">
+                <h4 class="text-center mb-3">Danger Zone</h4>
+                <div class="text-center">
+                    <button class="btn btn-primary" type="button" onclick="restartService()">Restart Service</button>
+                    <br/>
+                    <br/>
+                    <button class="btn btn-danger" type="button" onclick="restoreConfig()">Restore Default Configuration</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="static/bootstrap.bundle.min.js"></script>
+<script src="static/bootbox.min.js"></script>
 </body>
 </html>

@@ -6,25 +6,19 @@ camera:
       enabled: true
     temporal:
       enabled: true
-  fps: 30
-  resolution:
-    enum:
-    - 640x480
-    - 1280x720
-    - 848x640
-    value: 640x480
+  fps: 15
+  resolution: 640x480
 color_frame:
-  stream:
-    enabled: true
+  stream_enabled: true
 depth_frame:
-  stream:
-    enabled: true
-max_fail_count: 5
+  stream_enabled: true
+image_size: 640
 min_confidence: 0.85
 network_tables:
   server: 10.59.87.2
-  table: RealsenseVision
+  table: AdvantageKit/RealsenseVision
 pipeline:
-  args: ./uploads/best_rknn_model
-  type: detection
+  args:
+  - best_good_rknn_model
+  type: DetectionDepthPipeline
 rknn_chip_type: rk3588
