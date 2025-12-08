@@ -23,28 +23,43 @@ class DetectionDepthPipeline(PipelineBase):
         config = ConfigManager().get()
         self.detector = YOLODetector(model_path, imgsz=config.image_size)
 
+    def draw_depth_text(self, img, text, x, y, color=(0, 255, 255)):
+        cv2.putText(
+            img,
+            text,
+            (x, y - 10),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.7,
+            color,
+            2,
+        )
+
+    def draw_center_dot(self,img, x, y, color=(0, 255, 255)):
+        cv2.circle(img, (x, y), 5, color, -1)
+
+    def annotate_detections(self, img, detections, is_depth=False):
+        for det in detections:
+            cx, cy = det.center.x, det.center.y
+
+            if is_depth:
+                text = f"{det.depth:.2f}m"
+            else:
+                text = str(det.point)
+
+            self.draw_depth_text(img, text, cx, cy)
+            self.draw_center_dot(img, cx, cy)
+
     def get_color_jpeg(self):
         """Get JPEG-encoded annotated image."""
         detected = self.detector.get_annotated_image()
-        if not detected:
+        if detected is None:
             return None
 
-        for detection in self.detections:
-            center = detection.center
-            point = detection.point
-            depth_text = str(point)
-            cv2.putText(
-                detected,
-                depth_text,
-                (center.x, center.y - 10),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.7,
-                (0, 255, 255),
-                2,
-            )
-            cv2.circle(detected, (center.x, center.y), 5, (0, 255, 255), -1)
+        self.annotate_detections(detected, self.detections, is_depth=False)
+
         return frames_to_jpeg_bytes(
-            detected, resolution=(self.camera.width, self.camera.height)
+            detected,
+            resolution=(self.camera.width, self.camera.height)
         )
 
     def get_depth_jpeg(self):
@@ -52,23 +67,14 @@ class DetectionDepthPipeline(PipelineBase):
         depth_frame = self.camera.latest_depth_frame
         if depth_frame is None:
             return None
-        for detection in self.detections:
-            center = detection.center
-            depth = detection.depth
-            cv2.putText(
-                depth_frame,
-                f"{depth:.2f}m",
-                (center.x, center.y - 10),  # Put the text slightly below the points
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.7,
-                (0, 255, 255),
-                2,
-            )
-            cv2.circle(depth_frame, center, 5, (0, 255, 255), -1)
-        return frames_to_jpeg_bytes(
-            depth_frame, resolution=(self.camera.width, self.camera.height)
-        )
 
+        self.annotate_detections(depth_frame, self.detections, is_depth=True)
+
+        return frames_to_jpeg_bytes(
+            depth_frame,
+            resolution=(self.camera.width, self.camera.height)
+        )
+    
     def iterate(self):
         """Main detection loop with error handling."""
         frame = self.camera.latest_frame
