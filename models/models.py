@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import List
 
 from pydantic import BaseModel
 
@@ -78,7 +77,9 @@ default_config = RootConfig(
     depth_frame=DepthFrame(stream_enabled=True),
     image_size=640,
     min_confidence=0.85,
-    network_tables=NetworkTables(server="10.59.87.2", table="AdvantageKit/RealsenseVision"),
+    network_tables=NetworkTables(
+        server="10.59.87.2", table="AdvantageKit/RealsenseVision"
+    ),
     pipeline=Pipeline(args=[], type="regular"),
     rknn_chip_type="rk3588",
 )

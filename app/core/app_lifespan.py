@@ -11,6 +11,7 @@ from app.core.initializer import Initializer
 logger = logging_config.get_logger(__name__)
 initializer = None
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global initializer

@@ -220,7 +220,7 @@ class RealSenseCamera(AsyncLoopBase):
         """Get the latest visualized depth frame."""
         if self._latest_depth_data is None:
             return DISABLED_STREAM_IMAGE
-        
+
         # Create visual depth map
         color_map = rs.colorizer()
         colorized_depth = color_map.process(self._latest_depth_data)

@@ -44,10 +44,7 @@ async def upload_model(file: UploadFile = File(...)):
 
     except Exception as e:
         logger.exception("Model conversion failed", operation="upload")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error converting model: {e}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error converting model: {e}")
 
 
 def get_all_rknn_models() -> list[str]:
@@ -58,8 +55,7 @@ def get_all_rknn_models() -> list[str]:
         return [
             name
             for name in os.listdir(UPLOAD_FOLDER)
-            if name.endswith("rknn_model")
-            and (UPLOAD_FOLDER / name).is_dir()
+            if name.endswith("rknn_model") and (UPLOAD_FOLDER / name).is_dir()
         ]
 
     except Exception:

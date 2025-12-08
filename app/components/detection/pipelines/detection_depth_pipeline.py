@@ -34,7 +34,7 @@ class DetectionDepthPipeline(PipelineBase):
             2,
         )
 
-    def draw_center_dot(self,img, x, y, color=(0, 255, 255)):
+    def draw_center_dot(self, img, x, y, color=(0, 255, 255)):
         cv2.circle(img, (x, y), 5, color, -1)
 
     def annotate_detections(self, img, detections, is_depth=False):
@@ -58,8 +58,7 @@ class DetectionDepthPipeline(PipelineBase):
         self.annotate_detections(detected, self.detections, is_depth=False)
 
         return frames_to_jpeg_bytes(
-            detected,
-            resolution=(self.camera.width, self.camera.height)
+            detected, resolution=(self.camera.width, self.camera.height)
         )
 
     def get_depth_jpeg(self):
@@ -71,10 +70,9 @@ class DetectionDepthPipeline(PipelineBase):
         self.annotate_detections(depth_frame, self.detections, is_depth=True)
 
         return frames_to_jpeg_bytes(
-            depth_frame,
-            resolution=(self.camera.width, self.camera.height)
+            depth_frame, resolution=(self.camera.width, self.camera.height)
         )
-    
+
     def iterate(self):
         """Main detection loop with error handling."""
         frame = self.camera.latest_frame

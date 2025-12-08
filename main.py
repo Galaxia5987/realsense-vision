@@ -11,8 +11,8 @@ from fastapi.templating import Jinja2Templates
 from app.components.detection.pipelines.pipeline_base import get_all_pipeline_names
 from app.config import ConfigManager
 from app.core import logging_config
-from app.core.app_lifespan import lifespan,initializer
-from app.core.logging_config import get_last_log, log_stream
+from app.core.app_lifespan import lifespan, initializer
+from app.core.logging_config import get_last_log
 from app.core.uploader import get_all_rknn_models, upload_model
 from app.server import streams
 from convert_model import realtime
@@ -100,10 +100,7 @@ async def restore_config():
 @app.get("/logs")
 async def log_endpoint(force_latest: bool):
     assert initializer.runner
-    return Log(
-        log=get_last_log(force_latest),
-        latency=initializer.runner.latency
-    )
+    return Log(log=get_last_log(force_latest), latency=initializer.runner.latency)
 
 
 @app.post("/set_log_level")

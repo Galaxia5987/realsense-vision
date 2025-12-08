@@ -1,5 +1,6 @@
 from rknn.api import RKNN
 import os
+
 os.chdir("./calibration_images")
 rknn = RKNN()
 # rknn.config(
@@ -12,7 +13,9 @@ rknn = RKNN()
 #     quantized_method='channel',
 # )
 
-rknn.config(mean_values=[[0, 0, 0]], std_values=[[255, 255, 255]], target_platform="rk3588")
+rknn.config(
+    mean_values=[[0, 0, 0]], std_values=[[255, 255, 255]], target_platform="rk3588"
+)
 
 # Load ONNX model
 rknn.load_onnx(model="../uploads/best.onnx")
@@ -20,4 +23,4 @@ rknn.load_onnx(model="../uploads/best.onnx")
 rknn.build(do_quantization=False)
 # Export RKNN model
 rknn.export_rknn("../uploads/balls_rknn_optimized_v2.rknn")
-print(f"Hybrid quantized RKNN model saved at: uploads/balls_rknn_optimized.rknn")
+print("Hybrid quantized RKNN model saved at: uploads/balls_rknn_optimized.rknn")

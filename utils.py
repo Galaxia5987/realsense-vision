@@ -1,7 +1,5 @@
-import asyncio
 import logging
 import subprocess
-import threading
 
 import cv2
 import numpy as np

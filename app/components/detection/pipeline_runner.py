@@ -36,7 +36,7 @@ class PipelineRunner(AsyncLoopBase):
             start = time.perf_counter()
             self.pipeline.iterate()
             end = time.perf_counter()
-            self.latency = round(end-start,2)
+            self.latency = round(end - start, 2)
 
             output = self.pipeline.get_output()
             try:

@@ -1,4 +1,3 @@
-
 # Global background loop
 _background_loop = None
 _background_thread = None
