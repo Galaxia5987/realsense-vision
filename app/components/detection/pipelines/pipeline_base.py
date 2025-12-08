@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
-from app.components.detection.camera import RealSenseCamera
+from app.components.detection.realsense_camera import RealSenseCamera
 from app.core import logging_config
 from models.models import Pipeline
 
