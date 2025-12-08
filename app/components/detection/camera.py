@@ -9,7 +9,7 @@ from app.config import ConfigManager
 from utils import AsyncLoopBase, generate_stream_disabled_image
 
 logger = logging_config.get_logger(__name__)
-disabled_mat = (
+DISABLED_STREAM_IMAGE = (
     generate_stream_disabled_image()
 )  # an image with the text "Stream Disabled"
 
@@ -212,14 +212,14 @@ class RealSenseCamera(AsyncLoopBase):
     def latest_frame(self):
         """Get the latest color frame."""
         if self._latest_frame is None:
-            return disabled_mat
+            return DISABLED_STREAM_IMAGE
         return self._latest_frame
 
     @property
     def latest_depth_frame(self):
         """Get the latest visualized depth frame."""
         if self._latest_depth_frame is None:
-            return disabled_mat
+            return DISABLED_STREAM_IMAGE
         
         # Create visual depth map
         color_map = rs.colorizer()

@@ -4,12 +4,9 @@ from typing import Callable
 import app.core.logging_config as logging_config
 from app.components.detection.pipelines.pipeline_base import PipelineBase
 from app.config import ConfigManager
-from utils import AsyncLoopBase, frames_to_jpeg_bytes, generate_stream_disabled_image
+from utils import AsyncLoopBase
 
 logger = logging_config.get_logger(__name__)
-
-""" Retarded JPEG """
-disabled_jpeg = frames_to_jpeg_bytes(generate_stream_disabled_image())
 
 LOOP_INTERVAL = 0.01  # 100 Hz
 

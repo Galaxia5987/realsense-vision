@@ -2,8 +2,8 @@ from datetime import datetime
 
 from fastapi import FastAPI
 
-from app.components.detection.camera import RealSenseCamera
-from app.components.detection.pipeline_runner import PipelineRunner, disabled_jpeg
+from app.components.detection.camera import DISABLED_STREAM_IMAGE, RealSenseCamera
+from app.components.detection.pipeline_runner import PipelineRunner
 from app.components.detection.pipelines.pipeline_base import create_pipeline_by_name
 from app.components.network_tables import NetworkTablesPublisher
 from app.config import ConfigManager
@@ -94,14 +94,14 @@ class Initializer:
 
         def video(depth: bool):
             if not self.runner:
-                return disabled_jpeg
+                return DISABLED_STREAM_IMAGE
             img = None
             if depth:
                 img = self.runner.get_depth_jpeg()
             else:
                 img = self.runner.get_jpeg()
             if not img:
-                return disabled_jpeg
+                return DISABLED_STREAM_IMAGE
             return img
 
         def video_color():
