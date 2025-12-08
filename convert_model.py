@@ -18,7 +18,7 @@ def convert_model(model_path, chip="rk3588", imgsz=640):
         f"model={model_file}",
         "format=rknn",
         f"name={chip}",
-        f"imgsz={str(imgsz)}"
+        f"imgsz={imgsz}"
     ]
 
     # Run CLI and capture stdout line by line
