@@ -122,7 +122,7 @@ class NetworkTablesPublisher:
                 try:
                     point = det.point
                     pose = Pose3d(
-                        Translation3d(point.x, point.y, -point.z), Rotation3d()
+                        Translation3d(point.x, -point.y, -point.z), Rotation3d()
                     )
                     poses.append(pose)
                 except Exception as e:
