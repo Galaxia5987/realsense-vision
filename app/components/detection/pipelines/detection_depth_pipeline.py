@@ -26,7 +26,7 @@ class DetectionDepthPipeline(PipelineBase):
     def get_jpeg(self):
         """Get JPEG-encoded annotated image."""
         detected = self.detector.get_annotated_image()
-        if not detected:
+        if detected is None:
             return None
 
         for detection in self.detections:
@@ -64,7 +64,7 @@ class DetectionDepthPipeline(PipelineBase):
                 (0, 255, 255),
                 2,
             )
-            cv2.circle(depth_frame, center, 5, (0, 255, 255), -1)
+            cv2.circle(depth_frame, (center.x, center.y), 5, (0, 255, 255), -1)
         return frames_to_jpeg_bytes(
             depth_frame, resolution=(self.camera.width, self.camera.height)
         )
@@ -74,7 +74,7 @@ class DetectionDepthPipeline(PipelineBase):
         frame = self.camera.latest_frame
         depth_frame = self.camera.latest_depth_data
 
-        if None in (frame, depth_frame):
+        if frame is None or depth_frame is None:
             logger.error("Camera frame is None!")
             self.detections = []
             return

@@ -218,7 +218,7 @@ class RealSenseCamera(AsyncLoopBase):
     @property
     def latest_depth_frame(self):
         """Get the latest visualized depth frame."""
-        if self._latest_depth_frame is None:
+        if self._latest_depth_data is None:
             return disabled_mat
         
         # Create visual depth map
