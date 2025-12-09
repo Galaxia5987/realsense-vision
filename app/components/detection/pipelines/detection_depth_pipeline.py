@@ -56,7 +56,7 @@ class DetectionDepthPipeline(PipelineBase):
         frame = self.camera.latest_frame
         depth_frame = self.camera.latest_depth_data
 
-        if None in (frame, depth_frame):
+        if frame is None or depth_frame is None:
             logger.error("Camera frame is None!")
             self.detections = []
             return

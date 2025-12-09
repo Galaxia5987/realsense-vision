@@ -9,12 +9,9 @@ from app.core import logging_config
 from app.core.initializer import Initializer
 
 logger = logging_config.get_logger(__name__)
-initializer = None
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global initializer
     logger.info("Starting RealSense Vision...", operation="startup")
 
     # Discover and register all pipelines automaticlly
@@ -23,8 +20,8 @@ async def lifespan(app: FastAPI):
             continue
         importlib.import_module(f"app.components.detection.pipelines.{module_name}")
 
-    initializer = Initializer(app)
-    initializer.load_app()
+    app.state.initializer = Initializer(app)
+    app.state.initializer.load_app()
 
     logger.info("System startup complete", operation="startup", status="ready")
 
@@ -33,5 +30,5 @@ async def lifespan(app: FastAPI):
 
     # Shutdown section
     logger.info("Shutting down RealSense Vision", operation="shutdown")
-    initializer.stop_app()
+    app.state.initializer.stop_app()
     logger.info("Shutdown complete", operation="shutdown")
