@@ -5,6 +5,7 @@ Provides detailed, consistent logging across all components.
 
 import json
 import logging
+import os
 import sys
 from datetime import datetime
 from io import StringIO
@@ -176,6 +177,7 @@ def setup_logging(level=logging.INFO):
 
 def add_file_logging(log_file: str, level=logging.DEBUG):
     try:
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(level)
         file_handler.setFormatter(StructuredFormatter())
