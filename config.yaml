@@ -12,7 +12,7 @@ color_frame:
   stream_enabled: true
 depth_frame:
   stream_enabled: true
-image_size: 640
+image_size: 320
 min_confidence: 0.85
 network_tables:
   server: 10.59.87.2
