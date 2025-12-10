@@ -9,9 +9,9 @@ camera:
   fps: 15
   resolution: 640x480
 color_frame:
-  stream_enabled: true
+  stream_enabled: false
 depth_frame:
-  stream_enabled: true
+  stream_enabled: false
 image_size: 320
 min_confidence: 0.85
 network_tables:
