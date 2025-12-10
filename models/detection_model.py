@@ -22,3 +22,4 @@ class Detection(NamedTuple):
     point: Point3d
     center: Point2d
     depth: float
+    label: str = ""

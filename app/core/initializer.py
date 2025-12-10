@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import FastAPI
 
 from app.components.detection.pipeline_runner import PipelineRunner
-from app.components.detection.pipelines.pipeline_base import create_pipeline_by_name
+from app.components.detection.pipelines.pipeline_base import create_pipeline_by_name, get_pipline_stream_type_by_name
 from app.components.detection.realsense_camera import (
     DISABLED_STREAM_IMAGE,
     RealSenseCamera,
@@ -45,7 +45,8 @@ class Initializer:
         """Initialize camera component."""
         resolution_str = ConfigManager().get().camera.resolution.value
         width, height = list(map(int, resolution_str.split("x")))
-        self.camera = RealSenseCamera(width, height, ConfigManager().get().camera.fps)
+        stream_type = get_pipline_stream_type_by_name(ConfigManager().get().pipeline)
+        self.camera = RealSenseCamera(width, height, ConfigManager().get().camera.fps, stream_type=stream_type)
         if self.camera.is_connected():
             self.camera.start()
         else:

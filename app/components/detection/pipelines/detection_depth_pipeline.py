@@ -1,4 +1,5 @@
 import numpy as np
+from app.components.detection.realsense_camera import StreamType
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
 import app.core.logging_config as logging_config
@@ -15,6 +16,7 @@ logger = logging_config.get_logger(__name__)
 
 class DetectionDepthPipeline(PipelineBase):
     name = "DetectionDepthPipeline"
+    required_stream = StreamType.RGB
 
     def __init__(self, camera, model_path):
         self.camera = camera

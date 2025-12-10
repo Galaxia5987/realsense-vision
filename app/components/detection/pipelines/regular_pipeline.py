@@ -1,4 +1,5 @@
 from app.components.detection.pipelines.pipeline_base import PipelineBase
+from app.components.detection.realsense_camera import StreamType
 from app.core import logging_config
 from utils.utils import frames_to_jpeg_bytes
 
@@ -7,6 +8,7 @@ logger = logging_config.get_logger(__name__)
 
 class RegularPipeline(PipelineBase):
     name = "RegularPipeline"
+    required_stream = StreamType.INFRARED
 
     def __init__(self, camera):
         super().__init__()

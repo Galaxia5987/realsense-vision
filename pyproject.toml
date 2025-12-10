@@ -27,6 +27,7 @@ dependencies = [
     "robotpy_wpinet",
     "robotpy_wpiutil",
     "robotpy_wpimath",
+    "pupil-apriltags"
 ]
 
 [tool.uv.sources]

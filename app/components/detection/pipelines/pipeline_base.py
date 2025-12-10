@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
-from app.components.detection.realsense_camera import RealSenseCamera
+from app.components.detection.realsense_camera import RealSenseCamera, StreamType
 from app.core import logging_config
 from models.models import Pipeline
 
@@ -52,3 +52,12 @@ def create_pipeline_by_name(
 
 def get_all_pipeline_names() -> list[str]:
     return list(PIPELINE_REGISTRY.keys())
+
+def get_pipline_stream_type_by_name(
+    pipeline: Pipeline
+) -> StreamType:
+    try:
+        cls = PIPELINE_REGISTRY[pipeline.type]
+        return getattr(cls, "stream_type", StreamType.RGB)
+    except KeyError:
+        return StreamType.RGB
