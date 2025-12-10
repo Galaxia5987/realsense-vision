@@ -192,7 +192,7 @@ class AprilTagDetectionPipeline(PipelineBase):
                 depth_meters = min_value_mm * self.camera.depth_scale
 
                 if depth_meters > 0.1:
-                    x, y, z = rs2_deproject_pixel_to_point(rs_intrinsics, [min_x, min_y], depth_meters)
+                    y, z, x = rs2_deproject_pixel_to_point(rs_intrinsics, [min_x, min_y], depth_meters)
                     temp_detections.append(Detection(
                         point=Point3d(x, y, z),
                         center=Point2d(center_x, center_y),
@@ -233,7 +233,7 @@ class AprilTagDetectionPipeline(PipelineBase):
                     point=Point3d(x, y, z),
                     center=Point2d(center_x, center_y),
                     depth=depth,
-                    label=str(tag_id)
+                    label=str(tag_id) + "F"
                 ))
         else:
             self.detections = temp_detections
