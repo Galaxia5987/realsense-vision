@@ -100,7 +100,7 @@ class AprilTagDetector:
 
 class AprilTagDetectionPipeline(PipelineBase):
     name = "AprilTagPipeline"
-    required_stream = StreamType.INFRARED
+    stream_type = StreamType.INFRARED
 
     TAG_FAMILY = "tag36h11"
     TAG_SIZE = 0.05  # METERS

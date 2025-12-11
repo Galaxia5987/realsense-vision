@@ -8,7 +8,7 @@ logger = logging_config.get_logger(__name__)
 
 class RegularPipeline(PipelineBase):
     name = "RegularPipeline"
-    required_stream = StreamType.INFRARED
+    stream_type = StreamType.INFRARED
 
     def __init__(self, camera):
         super().__init__()

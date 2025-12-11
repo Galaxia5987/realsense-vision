@@ -58,6 +58,11 @@ def get_pipline_stream_type_by_name(
 ) -> StreamType:
     try:
         cls = PIPELINE_REGISTRY[pipeline.type]
+
         return getattr(cls, "stream_type", StreamType.RGB)
     except KeyError:
+        logger.warning(f"Pipeline with the name {pipeline.type} was not found")
+        return StreamType.RGB
+    except AttributeError:
+        logger.warning(f"Pipeline {pipeline.type} doesn't have a 'stream_type' attribute, using the RGB stream")
         return StreamType.RGB

@@ -16,7 +16,7 @@ logger = logging_config.get_logger(__name__)
 
 class DetectionDepthPipeline(PipelineBase):
     name = "DetectionDepthPipeline"
-    required_stream = StreamType.RGB
+    stream_type = StreamType.RGB
 
     def __init__(self, camera, model_path):
         self.camera = camera
