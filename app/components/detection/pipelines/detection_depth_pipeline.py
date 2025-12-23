@@ -89,18 +89,20 @@ class DetectionDepthPipeline(PipelineBase):
                 mask = depth_crop != 0
 
                 if np.any(mask):
+                    valid_depths = depth_crop[mask]
+                    median_idx = np.argsort(valid_depths)[len(valid_depths) // 2]
+                    # Get coordinates of the median depth pixel
                     mask_coords = np.argwhere(mask)
-                    min_idx = np.argmin(depth_crop[mask])
-                    min_y_local, min_x_local = mask_coords[min_idx]
-                    min_x, min_y = x_min + min_x_local, y_min + min_y_local
-                    min_value_mm = depth_mat[min_y, min_x]
+                    median_y_local, median_x_local = mask_coords[median_idx]
+                    median_x, median_y = x_min + median_x_local, y_min + median_y_local
+                    median_value_mm = depth_mat[median_y, median_x]
                 else:
-                    min_x, min_y = center_x, center_y
-                    min_value_mm = 0
+                    median_x, median_y = center_x, center_y
+                    median_value_mm = 0
 
-                depth_meters = min_value_mm / 1000.0
+                depth_meters = median_value_mm / 1000.0
                 point = rs2_deproject_pixel_to_point(
-                    intrinsics, [min_x, min_y], depth_meters
+                    intrinsics, [median_x, median_y], depth_meters
                 )
                 y, z, x = point
                 self.detections.append(
