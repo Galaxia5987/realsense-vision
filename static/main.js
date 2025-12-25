@@ -137,6 +137,26 @@ $(document).ready(function() {
         submitFormJson();
     });
 
+    const $cameraType = $("#cameraTypeSelect");
+    const $usbDeviceIndexGroup = $("#usbDeviceIndexGroup");
+    const updateCameraTypeVisibility = () => {
+        if (!$cameraType.length || !$usbDeviceIndexGroup.length) return;
+        const isUsb = $cameraType.val() === "usb";
+        $usbDeviceIndexGroup.toggleClass("d-none", !isUsb);
+    };
+    updateCameraTypeVisibility();
+    $cameraType.on("change", updateCameraTypeVisibility);
+
+    const $autoExposure = $("#autoExposureToggle");
+    const $exposureValueGroup = $("#exposureValueGroup");
+    const updateExposureVisibility = () => {
+        if (!$autoExposure.length || !$exposureValueGroup.length) return;
+        const isAuto = $autoExposure.is(":checked");
+        $exposureValueGroup.toggleClass("d-none", isAuto);
+    };
+    updateExposureVisibility();
+    $autoExposure.on("change", updateExposureVisibility);
+
     $("#colorStreamToggle").on("change", function() {
         const target = $("#colorStreamImage");
 

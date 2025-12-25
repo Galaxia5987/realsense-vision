@@ -10,6 +10,11 @@ class ResolutionEnum(str, Enum):
     r848x640 = "848x640"
 
 
+class CameraType(str, Enum):
+    realsense = "realsense"
+    usb = "usb"
+
+
 class HoleFillingFilter(BaseModel):
     enabled: bool
 
@@ -32,6 +37,10 @@ class CameraSettings(BaseModel):
     filters: Filters
     fps: int
     resolution: ResolutionEnum
+    type: CameraType = CameraType.realsense
+    usb_device_index: int = 0
+    auto_exposure: bool = True
+    exposure: int = 10000
 
 
 class ColorFrame(BaseModel):
@@ -75,6 +84,10 @@ default_config = RootConfig(
         ),
         fps=25,
         resolution=ResolutionEnum.r640x480,
+        type=CameraType.realsense,
+        usb_device_index=0,
+        auto_exposure=True,
+        exposure=10000,
     ),
     color_frame=ColorFrame(stream_enabled=True),
     depth_frame=DepthFrame(stream_enabled=True),
