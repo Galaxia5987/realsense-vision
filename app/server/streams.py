@@ -2,8 +2,12 @@ import asyncio
 import uuid
 from typing import Callable
 
+import numpy as np
+
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import HTMLResponse, StreamingResponse
+
+from utils.utils import frames_to_jpeg_bytes
 
 router = APIRouter(prefix="/streams")
 
@@ -39,13 +43,22 @@ def create_stream_route(
                 # Run the frame source in an executor if it's blocking
                 frame = await asyncio.to_thread(frame_source_func)
 
-                if frame:
-                    yield (
-                        b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n"
-                    )
-                else:
-                    # Small delay if no frame to prevent tight loop
+                if frame is None:
                     await asyncio.sleep(0.01)
+                    continue
+
+                if isinstance(frame, np.ndarray):
+                    height, width = frame.shape[:2]
+                    frame = frames_to_jpeg_bytes(frame, resolution=(width, height))
+
+                if isinstance(frame, (bytearray, memoryview)):
+                    frame = bytes(frame)
+
+                if frame is None or not isinstance(frame, bytes):
+                    await asyncio.sleep(0.01)
+                    continue
+
+                yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n"
 
         return StreamingResponse(
             generate(), media_type="multipart/x-mixed-replace; boundary=frame"

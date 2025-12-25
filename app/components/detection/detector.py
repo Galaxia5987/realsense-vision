@@ -11,8 +11,10 @@ class YOLODetector:
         logger.info(
             f"Initializing YOLO detector with model: {model_path}", operation="init"
         )
-
-        self.model = YOLO(model_path, task="detect")
+        try:
+            self.model = YOLO(model_path, task="detect")
+        except FileNotFoundError:
+            logger.warning(f"Model {model_path} not found")
         self.imgsz = imgsz
         self.results = None
         self.detection_count = 0

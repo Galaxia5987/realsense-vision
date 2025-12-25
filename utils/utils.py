@@ -4,6 +4,58 @@ import subprocess
 import cv2
 import numpy as np
 
+from pydantic import BaseModel
+
+from copy import deepcopy
+
+def pydantic_schema_to_bootstrap_json_forms(model: type[BaseModel]) -> dict:
+    raw_schema = model.model_json_schema()
+    defs = raw_schema.get("$defs", {})
+
+    def deref(schema: dict) -> dict:
+        if "$ref" in schema:
+            ref_name = schema["$ref"].split("/")[-1]
+            return deref(deepcopy(defs[ref_name]))
+
+        if schema.get("type") == "object":
+            schema["properties"] = {
+                k: deref(v) for k, v in schema.get("properties", {}).items()
+            }
+
+        if schema.get("type") == "array":
+            schema["items"] = deref(schema["items"])
+
+        return schema
+
+    # Fully inline the schema
+    schema = deref(deepcopy(raw_schema))
+    schema.pop("$defs", None)
+
+    def walk(subschema: dict, prefix: str = "") -> list[str]:
+        result = []
+        t = subschema.get("type")
+
+        if t == "object":
+            for prop, prop_schema in subschema.get("properties", {}).items():
+                path = f"{prefix}.{prop}" if prefix else prop
+                result.extend(walk(prop_schema, path))
+
+        elif t == "array":
+            result.append(prefix)
+
+        else:
+            result.append(prefix)
+
+        return result
+
+    form = []
+    for key, prop_schema in schema.get("properties", {}).items():
+        form.extend(walk(prop_schema, key))
+
+    return {
+        "schema": schema,
+        "form": form
+    }
 
 def frames_to_jpeg_bytes(frame, resolution=(640, 480)):
     resized = cv2.resize(frame, resolution)
@@ -88,7 +140,9 @@ def restart_service():
     except subprocess.CalledProcessError as e:
         logging.exception("Failed to restart service: %s", e)
         return False
-
+    
+class EmptyModel(BaseModel):
+    pass
 
 def singleton(class_):
     instances = {}

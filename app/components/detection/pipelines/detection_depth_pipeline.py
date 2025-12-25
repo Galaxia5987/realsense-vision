@@ -1,4 +1,5 @@
 import numpy as np
+from pydantic import BaseModel
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
 import app.core.logging_config as logging_config
@@ -14,11 +15,14 @@ logger = logging_config.get_logger(__name__)
 
 
 class DetectionDepthPipeline(PipelineBase):
+    class Properties(BaseModel):
+        model_path: str
     name = "DetectionDepthPipeline"
+    props = Properties
 
-    def __init__(self, camera, model_path):
+    def __init__(self, camera, props: Properties):
         self.camera = camera
-        model_path = f"./{UPLOAD_FOLDER}/{model_path}"
+        model_path = f"./{UPLOAD_FOLDER}/{props.model_path}"
         self.detections: list[Detection] = []
         config = ConfigManager().get()
         self.detector = YOLODetector(model_path, imgsz=config.image_size)

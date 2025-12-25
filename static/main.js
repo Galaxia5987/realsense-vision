@@ -1,3 +1,9 @@
+let pipelineFormConfig = {
+    schemaByType: {},
+    initialType: "",
+    initialProps: {}
+};
+
 function setDeep(obj, path, value) {
     const parts = path.split(".");
     let cur = obj;
@@ -8,23 +14,45 @@ function setDeep(obj, path, value) {
     cur[parts[parts.length - 1]] = value;
 }
 
-function submitFormJson() {
+function readPrimitiveFormFields($formRoot) {
     const data = {};
-
-    $("#configForm").find(":input[name]").each(function() {
+    $formRoot.find(":input[name]").not("#propertiesForm :input").each(function() {
         const $el = $(this);
-        let value;
-
-        if ($el.is(":checkbox")) {
-            value = $el.is(":checked");
-        } else {
-            value = $el.val();
-        }
-
+        const value = $el.is(":checkbox") ? $el.is(":checked") : $el.val();
         setDeep(data, $el.attr("name"), value);
     });
+    return data;
+}
 
-    data["pipeline"]["args"] = data["pipeline"]["args"].split(",").filter(arg => arg.trim() !== "");
+function getPipelineSchema(selectedType) {
+    if (!pipelineFormConfig.schemaByType) return null;
+    return pipelineFormConfig.schemaByType[selectedType];
+}
+
+function readPipelineProperties(selectedType) {
+    const schemaForType = getPipelineSchema(selectedType);
+    const hasSchema =
+        schemaForType &&
+        schemaForType.schema &&
+        schemaForType.schema.properties &&
+        Object.keys(schemaForType.schema.properties).length > 0;
+
+    if (hasSchema && typeof JSONForm !== "undefined") {
+        return JSONForm.getFormValue($("#propertiesForm")) || {};
+    }
+
+    if (selectedType === pipelineFormConfig.initialType) {
+        return pipelineFormConfig.initialProps || {};
+    }
+
+    return {};
+}
+
+function submitFormJson() {
+    const data = readPrimitiveFormFields($("#configForm"));
+    const selectedPipelineType = $("#pipelineTypeSelect").val();
+    const props = readPipelineProperties(selectedPipelineType);
+    setDeep(data, "pipeline.properties", props);
 
     $.ajax({
         url: "/update_config",
@@ -32,6 +60,39 @@ function submitFormJson() {
         contentType: "application/json",
         data: JSON.stringify(data),
     });
+}
+
+function renderPipelineProperties(selectedType) {
+    const $container = $("#propertiesForm");
+    const schemaForType = getPipelineSchema(selectedType);
+    if (!schemaForType || _.isEmpty(schemaForType.schema?.properties)) {
+        $container
+            .removeData("jsonform-tree")
+            .html('<p class="text-muted mb-0 small">This pipeline has no configurable properties.</p>');
+        return;
+    }
+
+    $container
+        .removeData("jsonform-tree")
+        .empty()
+        .jsonForm({
+        schema: schemaForType.schema,
+        form: (schemaForType.form && schemaForType.form.length) ? schemaForType.form : ["*"],
+        value: selectedType === pipelineFormConfig.initialType ? pipelineFormConfig.initialProps : {}
+    });
+}
+
+function initPipelineSection(options) {
+    pipelineFormConfig = {
+        schemaByType: options.jsonSchema || {},
+        initialType: options.initialPipelineType || "",
+        initialProps: options.initialPipelineProps || {}
+    };
+
+    const $pipelineSelect = $("#pipelineTypeSelect");
+    const onTypeChange = () => renderPipelineProperties($pipelineSelect.val());
+    $pipelineSelect.off("change.pipeline").on("change.pipeline", onTypeChange);
+    onTypeChange();
 }
 
 let cancelIntervalId = -1;
@@ -61,6 +122,13 @@ function updateLatencyIndicator(latencySeconds) {
         : `${Math.round(latencyMs)} ms`;
 
     $indicator.addClass(badgeClass).text(`Latency: ${latencyText}`);
+}
+
+function showAlert(message){
+    bootbox.alert({
+        message: message,
+        size: 'small'
+    });
 }
 
 $(document).ready(function() {

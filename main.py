@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.components.detection.pipelines.pipeline_base import get_all_pipeline_names
+from app.components.detection.pipelines.pipeline_base import get_all_pipeline_names, get_pipeline_properties_by_name, get_pipeline_type_by_name
 from app.config import ConfigManager
 from app.core import logging_config
 from app.core.app_lifespan import lifespan
@@ -17,7 +17,7 @@ from app.server import streams
 from convert_model import realtime
 from models.log_model import Log
 from models.models import RootConfig, default_config
-from utils.utils import restart_service
+from utils.utils import pydantic_schema_to_bootstrap_json_forms, restart_service
 
 logging_config.setup_logging()
 
@@ -42,14 +42,24 @@ app.include_router(streams.router)
 
 @app.get("/")
 async def root(request: Request):
+    pipeline_props = {name:pydantic_schema_to_bootstrap_json_forms(get_pipeline_properties_by_name(name)) for name in get_all_pipeline_names()}
+    cfg = ConfigManager().get()
+    pipeline_properties = cfg.pipeline.properties
+    initial_pipeline_props = (
+        pipeline_properties.model_dump(mode="json")
+        if hasattr(pipeline_properties, "model_dump")
+        else pipeline_properties or {}
+    )
     return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
-            "cfg": ConfigManager().get(),
+            "cfg": cfg,
             "pipelines": get_all_pipeline_names(),
             "log_level": logging_config.get_root_level(),
             "models": get_all_rknn_models(),
+            "configSchema": pipeline_props,
+            "initialPipelineProps": initial_pipeline_props,
         },
     )
 
@@ -99,7 +109,11 @@ async def restore_config():
 
 @app.get("/logs")
 async def log_endpoint(force_latest: bool):
-    return Log(log=get_last_log(force_latest), latency=app.state.initializer.runner.latency)
+    if app.state.initializer.runner:
+        latency = app.state.initializer.runner.latency
+    else:
+        latency = 0
+    return Log(log=get_last_log(force_latest), latency=latency)
 
 
 @app.post("/set_log_level")
