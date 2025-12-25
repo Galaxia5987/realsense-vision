@@ -1,7 +1,8 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from typing import Any
 
+from pydantic import BaseModel
 
 class ResolutionEnum(str, Enum):
     r640x480 = "640x480"
@@ -47,7 +48,9 @@ class NetworkTables(BaseModel):
 
 
 class Pipeline(BaseModel):
-    args: list[str]
+    # Properties vary per pipeline; store as plain dict so validation doesn't try to
+    # instantiate BaseModel directly (which pydantic forbids).
+    properties: dict[str, Any] | None = None
     type: str
 
 
@@ -80,6 +83,6 @@ default_config = RootConfig(
     network_tables=NetworkTables(
         server="10.59.87.2", table="AdvantageKit/RealsenseVision"
     ),
-    pipeline=Pipeline(args=[], type="regular"),
+    pipeline=Pipeline(type="RegularPipeline"),
     rknn_chip_type="rk3588",
 )

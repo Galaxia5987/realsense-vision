@@ -1,26 +1,24 @@
-from pydantic import BaseModel
+import time
 from app.components.detection.pipelines.pipeline_base import PipelineBase
+from app.components.detection.realsense_camera import DISABLED_STREAM_IMAGE
 from app.core import logging_config
 from utils.utils import EmptyModel, frames_to_jpeg_bytes
 
 logger = logging_config.get_logger(__name__)
 
-class RegularPipeline(PipelineBase):
-    name = "RegularPipeline"
+class EmptyPipeline(PipelineBase):
+    name = "EmptyPipeline"
     props = EmptyModel
 
     def __init__(self, camera):
         super().__init__()
         logger.info("Initializing RegularPipeline", operation="init")
         self.camera = camera
-        self.frame = None
-        self.depth_frame = None
         logger.info("RegularPipeline initialized", operation="init", status="success")
 
     def iterate(self):
         """Main processing loop."""
-        self.frame = self.camera.latest_frame
-        self.depth_frame = self.camera.latest_depth_frame
+        time.sleep(0.09)
 
     def _convert_to_jpeg(self, frame):
         if frame is None:
@@ -31,8 +29,8 @@ class RegularPipeline(PipelineBase):
 
     def get_depth_jpeg(self):
         """Get JPEG-encoded depth frame."""
-        return self._convert_to_jpeg(self.depth_frame)
+        return self._convert_to_jpeg(DISABLED_STREAM_IMAGE)
 
     def get_color_jpeg(self):
         """Get JPEG-encoded color frame."""
-        return self._convert_to_jpeg(self.frame)
+        return self._convert_to_jpeg(DISABLED_STREAM_IMAGE)
