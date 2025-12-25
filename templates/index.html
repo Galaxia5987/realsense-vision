@@ -164,6 +164,20 @@
                         </select>
                     </div>
 
+                    <div class="mb-3">
+                        <input class="form-check-input" type="checkbox" name="camera.auto_exposure"
+                               id="autoExposureToggle"
+                               {% if cfg.camera.auto_exposure %}checked{% endif %}>
+                        <label class="form-label ms-2">Auto Exposure</label>
+                    </div>
+
+                    <div class="mb-3" id="exposureValueGroup">
+                        <label class="form-label">Exposure</label>
+                        <input class="form-control" type="number" name="camera.exposure"
+                               value="{{ cfg.camera.exposure }}">
+                        <small class="form-text text-muted">RealSense uses microseconds. USB values vary by driver.</small>
+                    </div>
+
                     <!-- Color & Depth Frames -->
                     <h4 class="mt-4">Color Frame</h4>
                     <div class="mb-3 text-center">

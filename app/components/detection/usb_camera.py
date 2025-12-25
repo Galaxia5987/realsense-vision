@@ -4,6 +4,7 @@ import cv2
 
 import app.core.logging_config as logging_config
 from app.components.detection.camera_base import CameraBase
+from app.config import ConfigManager
 
 logger = logging_config.get_logger(__name__)
 
@@ -18,6 +19,8 @@ class UsbCamera(CameraBase):
         self.device_index = device_index
         self.capture = None
         self._last_connect_attempt = 0.0
+        self._last_exposure_settings = None
+        self._last_exposure_apply = 0.0
 
         self._initialize_capture()
         logger.info(
@@ -54,6 +57,8 @@ class UsbCamera(CameraBase):
             time.sleep(1)
             return
 
+        self._apply_exposure_settings()
+
         ok, frame = self.capture.read()
         if not ok or frame is None:
             logger.warning("Failed to read frame from USB camera", operation="loop")
@@ -61,6 +66,30 @@ class UsbCamera(CameraBase):
 
         self._latest_frame = frame
         self.frame_count += 1
+
+    def _apply_exposure_settings(self):
+        if not self.capture:
+            return
+
+        now = time.time()
+        if now - self._last_exposure_apply < 0.5:
+            return
+
+        camera_config = ConfigManager().get().camera
+        settings = (camera_config.auto_exposure, camera_config.exposure)
+        if settings == self._last_exposure_settings:
+            return
+
+        try:
+            if camera_config.auto_exposure:
+                self.capture.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)
+            else:
+                self.capture.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+                self.capture.set(cv2.CAP_PROP_EXPOSURE, float(camera_config.exposure))
+            self._last_exposure_settings = settings
+            self._last_exposure_apply = now
+        except Exception as e:
+            logger.warning(f"Failed to apply exposure settings: {e}", operation="loop")
 
     def stop_pipeline(self):
         super().stop_pipeline()
