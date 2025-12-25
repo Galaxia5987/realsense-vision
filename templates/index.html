@@ -103,6 +103,31 @@
                 
                 <form id="configForm">
                     <h4 class="text-center mb-3">Camera</h4>
+                    {% if cfg.camera.type is string %}
+                        {% set cam_type = cfg.camera.type %}
+                    {% else %}
+                        {% set cam_type = cfg.camera.type.value %}
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Camera Type</label>
+                        <select class="form-select" name="camera.type" id="cameraTypeSelect">
+                            <option value="realsense" {% if cam_type == "realsense" %}selected{% endif %}>
+                                Realsense
+                            </option>
+                            <option value="usb" {% if cam_type == "usb" %}selected{% endif %}>
+                                USB
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3 {% if cam_type != 'usb' %}d-none{% endif %}" id="usbDeviceIndexGroup">
+                        <label class="form-label">USB Device Index</label>
+                        <input class="form-control" type="number" name="camera.usb_device_index"
+                               value="{{ cfg.camera.usb_device_index }}">
+                        <small class="form-text text-muted">Use 0 for the default USB camera.</small>
+                    </div>
+
                     <!-- Filters -->
                     <h5 class="mt-3">Filters</h5>
                     <div class="form-check mb-2">

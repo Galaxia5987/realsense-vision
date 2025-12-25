@@ -8,6 +8,8 @@ camera:
       enabled: true
   fps: 15
   resolution: 640x480
+  type: usb
+  usb_device_index: 0
 color_frame:
   stream_enabled: true
 depth_frame:
@@ -18,7 +20,6 @@ network_tables:
   server: 10.59.87.2
   table: AdvantageKit/RealsenseVision
 pipeline:
-  properties:
-    model_path: test
-  type: EmptyPipeline
+  properties: {}
+  type: RegularPipeline
 rknn_chip_type: rk3588

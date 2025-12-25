@@ -1,6 +1,10 @@
 import numpy as np
 from pydantic import BaseModel
-from pyrealsense2 import rs2_deproject_pixel_to_point
+
+try:
+    from pyrealsense2 import rs2_deproject_pixel_to_point
+except Exception:
+    rs2_deproject_pixel_to_point = None
 
 import app.core.logging_config as logging_config
 from app.components.detection.detector import YOLODetector
@@ -26,6 +30,14 @@ class DetectionDepthPipeline(PipelineBase):
         self.detections: list[Detection] = []
         config = ConfigManager().get()
         self.detector = YOLODetector(model_path, imgsz=config.image_size)
+        self._depth_enabled = bool(
+            getattr(camera, "supports_depth", False) and rs2_deproject_pixel_to_point
+        )
+        if not self._depth_enabled:
+            logger.warning(
+                "DetectionDepthPipeline requires a depth-capable camera.",
+                operation="init",
+            )
 
     def get_color_jpeg(self):
         """Get JPEG-encoded annotated image."""
@@ -43,6 +55,8 @@ class DetectionDepthPipeline(PipelineBase):
 
     def get_depth_jpeg(self):
         """Get JPEG-encoded depth frame with annotations."""
+        if not self._depth_enabled:
+            return None
         depth_frame = self.camera.latest_depth_frame
         if depth_frame is None:
             return None
@@ -57,6 +71,9 @@ class DetectionDepthPipeline(PipelineBase):
 
     def iterate(self):
         """Main detection loop with error handling."""
+        if not self._depth_enabled:
+            self.detections = []
+            return
         frame = self.camera.latest_frame
         depth_frame = self.camera.latest_depth_data
 
