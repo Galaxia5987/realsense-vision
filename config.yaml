@@ -18,7 +18,7 @@ network_tables:
   server: 10.59.87.2
   table: AdvantageKit/RealsenseVision
 pipeline:
-  args:
-  - best_good_rknn_model
-  type: DetectionDepthPipeline
+  properties:
+    model_path: test
+  type: EmptyPipeline
 rknn_chip_type: rk3588

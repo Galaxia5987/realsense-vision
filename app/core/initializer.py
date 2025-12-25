@@ -13,6 +13,7 @@ from app.config import ConfigManager
 from app.core import logging_config
 from app.core.logging_config import get_logger
 from app.server import streams
+from utils.utils import frames_to_jpeg_bytes
 
 logger = get_logger(__name__)
 
@@ -96,17 +97,20 @@ class Initializer:
     def setup_stream_routes(self):
         logger.info("Configuring stream routes", operation="reload_app")
 
+        resolution_str = ConfigManager().get().camera.resolution.value
+        width, height = list(map(int, resolution_str.split("x")))
+        disabled_frame = frames_to_jpeg_bytes(
+            DISABLED_STREAM_IMAGE, resolution=(width, height)
+        )
+
         def video(depth: bool):
             if not self.runner:
-                return DISABLED_STREAM_IMAGE
-            img = None
+                return disabled_frame
             if depth:
                 img = self.runner.get_depth_jpeg()
             else:
                 img = self.runner.get_color_jpeg()
-            if img is None:
-                return DISABLED_STREAM_IMAGE
-            return img
+            return img or disabled_frame
 
         def video_color():
             return video(False)

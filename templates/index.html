@@ -185,14 +185,12 @@
                     <!-- Pipeline -->
                     <h4 class="mt-4">Pipeline</h4>
                     <div class="mb-3">
-                        <label class="form-label">Args</label>
-                        <input class="form-control" type="text" name="pipeline.args"
-                               value="{{ cfg.pipeline.args|join(',') }}">
-                        <small class="form-text text-muted">Comma separated list of arguments</small>
+                        <div id="propertiesForm">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Type</label>
-                        <select class="form-select" name="pipeline.type">
+                        <select class="form-select" name="pipeline.type" id="pipelineTypeSelect">
                             {% for pipeline in pipelines %}
                                 <option value="{{ pipeline }}"
                                     {% if cfg.pipeline.type == pipeline %}selected{% endif %}>
@@ -249,5 +247,15 @@
 </div>
 <script src="static/bootstrap.bundle.min.js"></script>
 <script src="static/bootbox.min.js"></script>
+<script src="static/underscore.js"></script>
+<script src="static/jsonform.js"></script>
+<script>
+    window.pageConfig = {
+        jsonSchema: {{configSchema | tojson}},
+        initialPipelineType: "{{ cfg.pipeline.type }}",
+        initialPipelineProps: {{ initialPipelineProps | tojson }}
+    };
+    initPipelineSection(window.pageConfig);
+</script>
 </body>
 </html>
