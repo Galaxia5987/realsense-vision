@@ -5,9 +5,10 @@ logger = logging_config.get_logger(__name__)
 
 
 def _resolve_camera_type(camera_type) -> str:
-    if hasattr(camera_type, "value"):
+    try:
         return camera_type.value
-    return str(camera_type)
+    except AttributeError:
+        return str(camera_type)
 
 
 def create_camera():
