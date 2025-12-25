@@ -4,7 +4,7 @@ from abc import abstractmethod
 
 from pydantic import BaseModel
 
-from app.components.detection.realsense_camera import RealSenseCamera
+from app.components.detection.camera_base import CameraBase
 from app.core import logging_config
 from models.models import Pipeline
 from utils.utils import EmptyModel
@@ -59,12 +59,14 @@ def get_pipeline_properties_by_name(pipeline: Pipeline | str) -> type[BaseModel]
         return EmptyModel
 
 def create_pipeline_by_name(
-    pipeline: Pipeline, camera: RealSenseCamera
+    pipeline: Pipeline, camera: CameraBase
 ) -> PipelineBase | None:
     try:
         cls = get_pipeline_type_by_name(pipeline)
         model = get_pipeline_properties_by_name(pipeline)
-        return cls(camera, model.model_validate(pipeline.properties))
+        if model is not EmptyModel:
+            return cls(camera, model.model_validate(pipeline.properties))
+        return cls(camera)
     except KeyError:
         return None
 

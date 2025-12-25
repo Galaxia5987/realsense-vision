@@ -2,12 +2,10 @@ from datetime import datetime
 
 from fastapi import FastAPI
 
+from app.components.detection.camera_base import DISABLED_STREAM_IMAGE
+from app.components.detection.camera_factory import create_camera
 from app.components.detection.pipeline_runner import PipelineRunner
 from app.components.detection.pipelines.pipeline_base import create_pipeline_by_name
-from app.components.detection.realsense_camera import (
-    DISABLED_STREAM_IMAGE,
-    RealSenseCamera,
-)
 from app.components.network_tables import NetworkTablesPublisher
 from app.config import ConfigManager
 from app.core import logging_config
@@ -44,13 +42,11 @@ class Initializer:
 
     def init_camera(self):
         """Initialize camera component."""
-        resolution_str = ConfigManager().get().camera.resolution.value
-        width, height = list(map(int, resolution_str.split("x")))
-        self.camera = RealSenseCamera(width, height, ConfigManager().get().camera.fps)
-        if self.camera.is_connected():
+        self.camera = create_camera()
+        if self.camera and self.camera.is_connected():
             self.camera.start()
         else:
-            logger.warning("Realsense Camera not connected!")
+            logger.warning("Camera not connected!")
 
     def init_network_tables_component(self):
         logger.info("Initializing NetworkTables", operation="reload_app")

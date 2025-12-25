@@ -5,34 +5,22 @@ import numpy as np
 import pyrealsense2 as rs
 
 import app.core.logging_config as logging_config
+from app.components.detection.camera_base import CameraBase, DISABLED_STREAM_IMAGE
 from app.config import ConfigManager
-from utils.async_loop_base import AsyncLoopBase
-from utils.utils import generate_stream_disabled_image
 
 logger = logging_config.get_logger(__name__)
-DISABLED_STREAM_IMAGE = (
-    generate_stream_disabled_image()
-)  # an image with the text "Stream Disabled"
-
-LOOP_INTERVAL = 0.01  # 100 Hz
 
 
-class RealSenseCamera(AsyncLoopBase):
+class RealSenseCamera(CameraBase):
+    supports_depth = True
+
     def __init__(self, width=640, height=480, fps=30, frame_timeout_ms=5000):
-        super().__init__(LOOP_INTERVAL)
-        self.width = width
-        self.height = height
-        self.fps = fps
-        self.frame_timeout_ms = frame_timeout_ms
+        super().__init__(width, height, fps, frame_timeout_ms)
         self.config = ConfigManager().get()
 
         # State variables
         self.pipeline = None
         self.align = None
-        self._latest_frame = None
-        self._latest_depth_frame = None
-        self._latest_depth_data = None
-        self.frame_count = 0
 
         # Filter placeholders
         self.spatial = None
@@ -230,14 +218,9 @@ class RealSenseCamera(AsyncLoopBase):
 
         return self._latest_depth_frame
 
-    @property
-    def latest_depth_data(self):
-        """Get the latest raw depth data object."""
-        return self._latest_depth_data
-
     def stop_pipeline(self):
         """Stop the camera gracefully."""
-        super().stop_sync()
+        super().stop_pipeline()
 
         if self.pipeline:
             try:

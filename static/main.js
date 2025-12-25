@@ -137,6 +137,16 @@ $(document).ready(function() {
         submitFormJson();
     });
 
+    const $cameraType = $("#cameraTypeSelect");
+    const $usbDeviceIndexGroup = $("#usbDeviceIndexGroup");
+    const updateCameraTypeVisibility = () => {
+        if (!$cameraType.length || !$usbDeviceIndexGroup.length) return;
+        const isUsb = $cameraType.val() === "usb";
+        $usbDeviceIndexGroup.toggleClass("d-none", !isUsb);
+    };
+    updateCameraTypeVisibility();
+    $cameraType.on("change", updateCameraTypeVisibility);
+
     $("#colorStreamToggle").on("change", function() {
         const target = $("#colorStreamImage");
 

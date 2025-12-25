@@ -1,6 +1,6 @@
 import time
+from app.components.detection.camera_base import DISABLED_STREAM_IMAGE
 from app.components.detection.pipelines.pipeline_base import PipelineBase
-from app.components.detection.realsense_camera import DISABLED_STREAM_IMAGE
 from app.core import logging_config
 from utils.utils import EmptyModel, frames_to_jpeg_bytes
 
