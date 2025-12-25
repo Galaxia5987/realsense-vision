@@ -147,6 +147,16 @@ $(document).ready(function() {
     updateCameraTypeVisibility();
     $cameraType.on("change", updateCameraTypeVisibility);
 
+    const $autoExposure = $("#autoExposureToggle");
+    const $exposureValueGroup = $("#exposureValueGroup");
+    const updateExposureVisibility = () => {
+        if (!$autoExposure.length || !$exposureValueGroup.length) return;
+        const isAuto = $autoExposure.is(":checked");
+        $exposureValueGroup.toggleClass("d-none", isAuto);
+    };
+    updateExposureVisibility();
+    $autoExposure.on("change", updateExposureVisibility);
+
     $("#colorStreamToggle").on("change", function() {
         const target = $("#colorStreamImage");
 

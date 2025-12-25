@@ -21,6 +21,9 @@ class RealSenseCamera(CameraBase):
         # State variables
         self.pipeline = None
         self.align = None
+        self._exposure_sensor = None
+        self._last_exposure_settings = None
+        self._last_exposure_apply = 0.0
 
         # Filter placeholders
         self.spatial = None
@@ -126,6 +129,7 @@ class RealSenseCamera(CameraBase):
         logger.info("Starting RealSense pipeline...", operation="init_pipeline")
         try:
             profile = self.pipeline.start(rs_config)
+            self._exposure_sensor = self._get_exposure_sensor(profile.get_device())
 
             time.sleep(1)
 
@@ -158,6 +162,43 @@ class RealSenseCamera(CameraBase):
                 )
             raise e
 
+    def _get_exposure_sensor(self, device):
+        for sensor in device.query_sensors():
+            if sensor.supports(rs.option.exposure):
+                return sensor
+        return None
+
+    def _apply_exposure_settings(self):
+        if not self._exposure_sensor:
+            return
+
+        now = time.time()
+        if now - self._last_exposure_apply < 0.5:
+            return
+
+        camera_config = ConfigManager().get().camera
+        settings = (camera_config.auto_exposure, camera_config.exposure)
+        if settings == self._last_exposure_settings:
+            return
+
+        try:
+            if self._exposure_sensor.supports(rs.option.enable_auto_exposure):
+                self._exposure_sensor.set_option(
+                    rs.option.enable_auto_exposure,
+                    1.0 if camera_config.auto_exposure else 0.0,
+                )
+            if (
+                not camera_config.auto_exposure
+                and self._exposure_sensor.supports(rs.option.exposure)
+            ):
+                self._exposure_sensor.set_option(
+                    rs.option.exposure, float(camera_config.exposure)
+                )
+            self._last_exposure_settings = settings
+            self._last_exposure_apply = now
+        except Exception as e:
+            logger.warning(f"Failed to apply exposure settings: {e}", operation="loop")
+
     def on_iteration(self):
         """
         Main loop iteration.
@@ -168,6 +209,7 @@ class RealSenseCamera(CameraBase):
             return
 
         try:
+            self._apply_exposure_settings()
             # 1. Wait for frames
             frames = self.pipeline.wait_for_frames(timeout_ms=self.frame_timeout_ms)
 

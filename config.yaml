@@ -1,4 +1,6 @@
 camera:
+  auto_exposure: false
+  exposure: 10000
   filters:
     hole_filling:
       enabled: false
