@@ -5,34 +5,25 @@ import numpy as np
 import pyrealsense2 as rs
 
 import app.core.logging_config as logging_config
+from app.components.detection.camera_base import CameraBase, DISABLED_STREAM_IMAGE
 from app.config import ConfigManager
-from utils.async_loop_base import AsyncLoopBase
-from utils.utils import generate_stream_disabled_image
 
 logger = logging_config.get_logger(__name__)
-DISABLED_STREAM_IMAGE = (
-    generate_stream_disabled_image()
-)  # an image with the text "Stream Disabled"
-
-LOOP_INTERVAL = 0.01  # 100 Hz
 
 
-class RealSenseCamera(AsyncLoopBase):
+class RealSenseCamera(CameraBase):
+    supports_depth = True
+
     def __init__(self, width=640, height=480, fps=30, frame_timeout_ms=5000):
-        super().__init__(LOOP_INTERVAL)
-        self.width = width
-        self.height = height
-        self.fps = fps
-        self.frame_timeout_ms = frame_timeout_ms
+        super().__init__(width, height, fps, frame_timeout_ms)
         self.config = ConfigManager().get()
 
         # State variables
         self.pipeline = None
         self.align = None
-        self._latest_frame = None
-        self._latest_depth_frame = None
-        self._latest_depth_data = None
-        self.frame_count = 0
+        self._exposure_sensor = None
+        self._last_exposure_settings = None
+        self._last_exposure_apply = 0.0
 
         # Filter placeholders
         self.spatial = None
@@ -138,6 +129,7 @@ class RealSenseCamera(AsyncLoopBase):
         logger.info("Starting RealSense pipeline...", operation="init_pipeline")
         try:
             profile = self.pipeline.start(rs_config)
+            self._exposure_sensor = self._get_exposure_sensor(profile.get_device())
 
             time.sleep(1)
 
@@ -170,6 +162,43 @@ class RealSenseCamera(AsyncLoopBase):
                 )
             raise e
 
+    def _get_exposure_sensor(self, device):
+        for sensor in device.query_sensors():
+            if sensor.supports(rs.option.exposure):
+                return sensor
+        return None
+
+    def _apply_exposure_settings(self):
+        if not self._exposure_sensor:
+            return
+
+        now = time.time()
+        if now - self._last_exposure_apply < 0.5:
+            return
+
+        camera_config = ConfigManager().get().camera
+        settings = (camera_config.auto_exposure, camera_config.exposure)
+        if settings == self._last_exposure_settings:
+            return
+
+        try:
+            if self._exposure_sensor.supports(rs.option.enable_auto_exposure):
+                self._exposure_sensor.set_option(
+                    rs.option.enable_auto_exposure,
+                    1.0 if camera_config.auto_exposure else 0.0,
+                )
+            if (
+                not camera_config.auto_exposure
+                and self._exposure_sensor.supports(rs.option.exposure)
+            ):
+                self._exposure_sensor.set_option(
+                    rs.option.exposure, float(camera_config.exposure)
+                )
+            self._last_exposure_settings = settings
+            self._last_exposure_apply = now
+        except Exception as e:
+            logger.warning(f"Failed to apply exposure settings: {e}", operation="loop")
+
     def on_iteration(self):
         """
         Main loop iteration.
@@ -180,6 +209,7 @@ class RealSenseCamera(AsyncLoopBase):
             return
 
         try:
+            self._apply_exposure_settings()
             # 1. Wait for frames
             frames = self.pipeline.wait_for_frames(timeout_ms=self.frame_timeout_ms)
 
@@ -230,14 +260,9 @@ class RealSenseCamera(AsyncLoopBase):
 
         return self._latest_depth_frame
 
-    @property
-    def latest_depth_data(self):
-        """Get the latest raw depth data object."""
-        return self._latest_depth_data
-
     def stop_pipeline(self):
         """Stop the camera gracefully."""
-        super().stop_sync()
+        super().stop_pipeline()
 
         if self.pipeline:
             try:

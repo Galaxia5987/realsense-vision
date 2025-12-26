@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
+from app.components.detection.camera_base import CameraBase
 from app.components.detection.realsense_camera import RealSenseCamera
 from app.core import logging_config
 from models.models import Pipeline
@@ -41,7 +42,7 @@ class PipelineBase:
 
 
 def create_pipeline_by_name(
-    pipeline: Pipeline, camera: RealSenseCamera
+    pipeline: Pipeline, camera: CameraBase
 ) -> PipelineBase | None:
     try:
         cls = PIPELINE_REGISTRY[pipeline.type]
