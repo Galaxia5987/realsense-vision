@@ -143,7 +143,7 @@ class RealSenseCamera(AsyncLoopBase):
 
             depth_sensor = profile.get_device().first_depth_sensor()
             try:
-                depth_sensor.set_option(rs.option.visual_preset, 1)
+                depth_sensor.set_option(rs.option.visual_preset, 3)
                 depth_sensor.set_option(rs.option.enable_auto_exposure, 1)
                 depth_sensor.set_option(rs.option.laser_power, 150)
                 depth_sensor.set_option(rs.option.emitter_enabled, 1)
