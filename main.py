@@ -12,7 +12,7 @@ from app.config import ConfigManager
 from app.core import logging_config
 from app.core.app_lifespan import lifespan
 from app.core.logging_config import get_last_log
-from app.core.uploader import get_all_rknn_models, upload_model
+from app.core.uploader import get_all_models, upload_model
 from app.server import streams
 from convert_model import realtime
 from models.log_model import Log
@@ -49,7 +49,7 @@ async def root(request: Request):
             "cfg": ConfigManager().get(),
             "pipelines": get_all_pipeline_names(),
             "log_level": logging_config.get_root_level(),
-            "models": get_all_rknn_models(),
+            "models": get_all_models(),
         },
     )
 

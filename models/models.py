@@ -8,6 +8,9 @@ class ResolutionEnum(str, Enum):
     r1280x720 = "1280x720"
     r848x640 = "848x640"
 
+class ChipType(str, Enum):
+    qcs6490 = "qcs6490"
+    rk3588 = "rk3588"
 
 class HoleFillingFilter(BaseModel):
     enabled: bool
@@ -59,7 +62,7 @@ class RootConfig(BaseModel):
     min_confidence: float
     network_tables: NetworkTables
     pipeline: Pipeline
-    rknn_chip_type: str
+    chip_type: ChipType
 
 
 # Default configuration instance
@@ -81,5 +84,5 @@ default_config = RootConfig(
         server="10.59.87.2", table="AdvantageKit/RealsenseVision"
     ),
     pipeline=Pipeline(args=[], type="regular"),
-    rknn_chip_type="rk3588",
+    chip_type=ChipType.rk3588,
 )
