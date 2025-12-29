@@ -63,20 +63,14 @@ def get_all_models() -> list[str]:
         if not UPLOAD_FOLDER.exists():
             return []
         config = ConfigManager().get()
-        if config.chip_type == ChipType.rk3588:
-            return [
-                name
-                for name in os.listdir(UPLOAD_FOLDER)
-                if name.endswith("rknn_model") and (UPLOAD_FOLDER / name).is_dir()
-            ]
-        elif config.chip_type == ChipType.qcs6490:
-            return [
-                name
-                for name in os.listdir(UPLOAD_FOLDER)
-                if name.endswith(".tflite") and (UPLOAD_FOLDER / name).is_file()
-            ]
-        
-        return []
+        model_suffix = {ChipType.rk3588: "rknn_model", ChipType.qcs6490: ".tflite"}[config.chip_type]
+        if config.chip_type not in model_suffix:
+            return []
+        return [
+            path.name
+            for path in UPLOAD_FOLDER.iterdir()
+            if path.name.endswith(model_suffix)
+        ]        
 
     except Exception:
         logger.exception("Failed to list rknn models", operation="list_models")
