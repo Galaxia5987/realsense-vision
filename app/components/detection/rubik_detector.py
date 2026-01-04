@@ -4,6 +4,7 @@ import cv2
 from dataclasses import dataclass
 from typing import List
 from app.core import logging_config
+from app.components.detection.detector_base import DetectorBase
 
 try:
     from tensorflow.lite.python.interpreter import Interpreter
@@ -78,7 +79,7 @@ def optimized_nms(candidates: List[DetectResult], threshold: float):
     return results
 
 
-class RubikDetector:
+class RubikDetector(DetectorBase):
     def __init__(self, model_path: str):
         delegates = []
 
@@ -105,6 +106,8 @@ class RubikDetector:
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
+        self._last_results: list[DetectResult] | None = None
+        self._last_image = None
 
     def is_quantized(self) -> bool:
         return self.input_details[0]["dtype"] == np.uint8
@@ -112,6 +115,8 @@ class RubikDetector:
     def detect(self, image_bgr: np.ndarray, box_thresh=0.25, nms_thresh=0.45):
         input_info = self.input_details[0]
         _, h, w, c = input_info["shape"]
+        image_bgr = cv2.resize(image_bgr, (h, w))
+        self._last_image = image_bgr.copy()
 
         if image_bgr.shape[:2] != (h, w):
             raise ValueError(f"Input image size mismatch, expected {w},{h} but got {image_bgr.shape[:2]}")
@@ -181,4 +186,48 @@ class RubikDetector:
                 )
             )
         
-        return optimized_nms(results, nms_thresh)
+        self._last_results = optimized_nms(results, nms_thresh)
+        return self._last_results
+
+    def get_detections(self):
+        if not self._last_results:
+            return None
+
+        boxes = np.array(
+            [
+                [det.box.left, det.box.top, det.box.right, det.box.bottom]
+                for det in self._last_results
+            ],
+            dtype=np.float32,
+        )
+        confs = np.array([det.obj_conf for det in self._last_results], dtype=np.float32)
+        classes = np.array([det.id for det in self._last_results], dtype=np.int32)
+        return boxes, confs, classes
+
+    def get_annotated_image(self):
+        if self._last_image is None or not self._last_results:
+            return None
+
+        annotated = self._last_image.copy()
+        for det in self._last_results:
+            box = det.box
+            cv2.rectangle(
+                annotated,
+                (box.left, box.top),
+                (box.right, box.bottom),
+                (0, 255, 0),
+                2,
+            )
+            label = f"{det.id}:{det.obj_conf:.2f}"
+            cv2.putText(
+                annotated,
+                label,
+                (box.left, max(box.top - 6, 0)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (0, 255, 0),
+                1,
+                cv2.LINE_AA,
+            )
+
+        return annotated

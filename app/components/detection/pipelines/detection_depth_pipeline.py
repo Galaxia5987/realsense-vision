@@ -1,16 +1,15 @@
 import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
-from app.components.detection.rubik_detector import RubikDetector
 import app.core.logging_config as logging_config
-from app.components.detection.detector import TFLiteDetector
+from app.components.detection.detector_base import DetectorBase
+from app.components.detection.detector_factory import create_detector
 from app.components.detection.pipelines.pipeline_base import PipelineBase
 from app.config import ConfigManager
 from app.core.uploader import UPLOAD_FOLDER
 from models.detection_model import Detection, Point2d, Point3d
 from utils import drawing_utils
 from utils.utils import frames_to_jpeg_bytes
-import cv2
 
 logger = logging_config.get_logger(__name__)
 
@@ -23,12 +22,13 @@ class DetectionDepthPipeline(PipelineBase):
         model_path = f"./{UPLOAD_FOLDER}/{model_path}"
         self.detections: list[Detection] = []
         config = ConfigManager().get()
-        self.detector = RubikDetector(model_path)
+        self.detector: DetectorBase = create_detector(
+            model_path, imgsz=config.image_size
+        )
 
     def get_color_jpeg(self):
         """Get JPEG-encoded annotated image."""
-        # detected = self.detector.get_annotated_image()
-        detected = None
+        detected = self.detector.get_annotated_image()
         if detected is None:
             return None
 
@@ -58,9 +58,6 @@ class DetectionDepthPipeline(PipelineBase):
         """Main detection loop with error handling."""
         frame = self.camera.latest_frame
         depth_frame = self.camera.latest_depth_data
-        stretched = cv2.resize(frame, (640, 640))
-        logger.info(self.detector.detect(stretched))
-        return
 
         if frame is None or depth_frame is None:
             logger.error("Camera frame is None!")
