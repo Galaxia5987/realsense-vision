@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import List
 from app.core import logging_config
 from app.components.detection.detector_base import DetectorBase
+from utils.utils import frames_to_jpeg_bytes
 
 try:
     from tensorflow.lite.python.interpreter import Interpreter
@@ -205,8 +206,14 @@ class RubikDetector(DetectorBase):
         return boxes, confs, classes
 
     def get_annotated_image(self):
-        if self._last_image is None or not self._last_results:
+        if self._last_image is None:
             return None
+        
+        if not self._last_results:
+            return self._last_image
+
+        # if self._last_image is None or not self._last_results:
+            # return None
 
         annotated = self._last_image.copy()
         for det in self._last_results:

@@ -39,7 +39,7 @@ def create_stream_route(
                 # Run the frame source in an executor if it's blocking
                 frame = await asyncio.to_thread(frame_source_func)
 
-                if frame:
+                if frame is not None:
                     yield (
                         b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n"
                     )
