@@ -1,6 +1,7 @@
 import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
+from app.components.detection.rubik_detector import RubikDetector
 import app.core.logging_config as logging_config
 from app.components.detection.detector import TFLiteDetector
 from app.components.detection.pipelines.pipeline_base import PipelineBase
@@ -21,11 +22,12 @@ class DetectionDepthPipeline(PipelineBase):
         model_path = f"./{UPLOAD_FOLDER}/{model_path}"
         self.detections: list[Detection] = []
         config = ConfigManager().get()
-        self.detector = TFLiteDetector(model_path, imgsz=config.image_size)
+        self.detector = RubikDetector(model_path)
 
     def get_color_jpeg(self):
         """Get JPEG-encoded annotated image."""
-        detected = self.detector.get_annotated_image()
+        # detected = self.detector.get_annotated_image()
+        detected = None
         if detected is None:
             return None
 
@@ -55,6 +57,9 @@ class DetectionDepthPipeline(PipelineBase):
         """Main detection loop with error handling."""
         frame = self.camera.latest_frame
         depth_frame = self.camera.latest_depth_data
+
+        logger.info(self.detector.detect(frame))
+        return
 
         if frame is None or depth_frame is None:
             logger.error("Camera frame is None!")
