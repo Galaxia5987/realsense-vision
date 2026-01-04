@@ -1586,7 +1586,7 @@ dependencies = [
     { name = "ultralytics-thop" },
 ]
 wheels = [
-    { filename = "ultralytics-8.3.241-py3-none-any.whl", hash = "sha256:3281cb613ccbde9ae9c4914ceaae59bab0c1f08e80cb53dc1c1a6eba0b97aa22" },
+    { filename = "ultralytics-8.3.241-py3-none-any.whl", hash = "sha256:be85951218451ca2be19ca1a5da77d839826571a2ece02a5d6776013f048f2ec" },
 ]
 
 [package.metadata]

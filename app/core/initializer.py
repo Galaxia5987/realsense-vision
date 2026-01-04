@@ -86,9 +86,9 @@ class Initializer:
 
             self.runner = PipelineRunner(self.pipeline, _publish)
             self.runner.start()
-        except TypeError:
+        except TypeError as e:
             logger.warning(
-                "Incompatible number of arguments were passed to the pipeline"
+                f"Incompatible number of arguments were passed to the pipeline {e}"
             )
         except AssertionError:
             logger.warning(f"Pipline named {self.config.pipeline} was not found.")

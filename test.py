@@ -1,8 +1,11 @@
-import pyrealsense2 as rs
+from ultralytics import YOLO
 
-ctx = rs.context()
-devices = ctx.query_devices()
-print(f"Found {len(devices)} device(s)")
-for dev in devices:
-    print("Device name:", dev.get_info(rs.camera_info.name))
-    print("Serial number:", dev.get_info(rs.camera_info.serial_number))
+model = YOLO('uploads/best.pt')
+
+model.export(
+    format='saved_model',
+    half=False,
+    # int8=True,
+    # data="dataset/data.yaml",
+    # imgsz=640
+)

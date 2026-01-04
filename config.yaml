@@ -20,5 +20,5 @@ network_tables:
   table: AdvantageKit/RealsenseVision
 pipeline:
   args:
-  - best_model_ever_float32.tflite
+  - best_int8.tflite
   type: DetectionDepthPipeline
