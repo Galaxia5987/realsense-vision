@@ -2,7 +2,7 @@ import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
 import app.core.logging_config as logging_config
-from app.components.detection.detector import YOLODetector
+from app.components.detection.detector import TFLiteDetector
 from app.components.detection.pipelines.pipeline_base import PipelineBase
 from app.config import ConfigManager
 from app.core.uploader import UPLOAD_FOLDER
@@ -21,7 +21,7 @@ class DetectionDepthPipeline(PipelineBase):
         model_path = f"./{UPLOAD_FOLDER}/{model_path}"
         self.detections: list[Detection] = []
         config = ConfigManager().get()
-        self.detector = YOLODetector(model_path, imgsz=config.image_size)
+        self.detector = TFLiteDetector(model_path, imgsz=config.image_size)
 
     def get_color_jpeg(self):
         """Get JPEG-encoded annotated image."""
