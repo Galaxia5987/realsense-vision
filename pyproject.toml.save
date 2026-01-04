@@ -1,3 +1,10 @@
+cc
+
+
+
+
+';sad
+
 [project]
 name = "realsense-vision"
 version = "0.1.0"
@@ -27,8 +34,6 @@ dependencies = [
     "robotpy_wpinet",
     "robotpy_wpiutil",
     "robotpy_wpimath",
-    "tensorflow",
-    "tflite_runtime"
 ]
 
 [tool.uv.sources]

@@ -63,9 +63,7 @@ def get_all_models() -> list[str]:
         if not UPLOAD_FOLDER.exists():
             return []
         config = ConfigManager().get()
-        model_suffix = {ChipType.rk3588: "rknn_model", ChipType.qcs6490: ".tflite"}[config.chip_type]
-        if config.chip_type not in model_suffix:
-            return []
+        model_suffix = {"rk3588": "rknn_model", "qcs6490": ".tflite"}[config.chip_type]
         return [
             path.name
             for path in UPLOAD_FOLDER.iterdir()
