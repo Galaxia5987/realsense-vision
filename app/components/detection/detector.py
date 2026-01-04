@@ -7,9 +7,9 @@ from app.config import ConfigManager
 logger = logging_config.get_logger(__name__)
 
 try:
-    from tflite_runtime.interpreter import Interpreter
+    from tflite_runtime.interpreter import Interpreter, load_delegate
 except ImportError:  # pragma: no cover - fallback for dev environments
-    from tensorflow.lite.python.interpreter import Interpreter
+    from tensorflow.lite.python.interpreter import Interpreter, load_delegate
 
 
 class TFLiteDetector:
@@ -18,7 +18,7 @@ class TFLiteDetector:
             f"Initializing TFLite detector with model: {model_path}", operation="init"
         )
 
-        self.interpreter = Interpreter(model_path=str(model_path), experimental_delegates=["libQnnTFLiteDelegate.so"])
+        self.interpreter = Interpreter(model_path=str(model_path), experimental_delegates=[load_delegate("libQnnTFLiteDelegate.so", {"backend_type": "htp"})])
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()

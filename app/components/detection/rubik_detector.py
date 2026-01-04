@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from dataclasses import dataclass
 from typing import List
+from app.core import logging_config
 
 try:
     from tensorflow.lite.python.interpreter import Interpreter
@@ -10,6 +11,7 @@ try:
 except ImportError:
     from tflite_runtime.interpreter import Interpreter, load_delegate
 
+logger = logging_config.get_logger(__name__)
 
 @dataclass
 class BoxRect:
@@ -27,9 +29,11 @@ class DetectResult:
 
 
 def dequant_value(data, idx, zero_point, scale, dtype):
+    value = data.flatten()[idx]
+    
     if dtype == np.uint8:
-        return (float(data[idx]) - zero_point) * scale
-    return float(data[idx])
+        return (float(value) - zero_point) * scale
+    return float(value)
 
 
 def calculate_iou(a: BoxRect, b: BoxRect) -> float:
@@ -110,7 +114,7 @@ class RubikDetector:
         _, h, w, c = input_info["shape"]
 
         if image_bgr.shape[:2] != (h, w):
-            raise ValueError("Input image size mismatch")
+            raise ValueError(f"Input image size mismatch, expected {w},{h} but got {image_bgr.shape[:2]}")
 
         if image_bgr.shape[2] != 3:
             raise ValueError("Expected 3-channel image")
@@ -130,50 +134,51 @@ class RubikDetector:
         elapsed = (time.monotonic() - start) * 1000.0
         print(f"INFO: Inference time {elapsed:.2f} ms")
 
-        boxes = self.interpreter.get_tensor(self.output_details[0]["index"])
-        scores = self.interpreter.get_tensor(self.output_details[1]["index"])
-        classes = self.interpreter.get_tensor(self.output_details[2]["index"])
+        boxes = self.interpreter.get_tensor(self.output_details[0]["index"])[0]
+        scores = self.interpreter.get_tensor(self.output_details[1]["index"])[0]
+        classes = self.interpreter.get_tensor(self.output_details[2]["index"])[0]
 
-        box_q = self.output_details[0].get("quantization", (0.0, 0))
-        score_q = self.output_details[1].get("quantization", (0.0, 0))
-
-        box_scale, box_zp = box_q
-        score_scale, score_zp = score_q
-
-        num_boxes = boxes.shape[1]
+        # Flatten boxes if needed
+        boxes_flat = boxes.ravel()
+        
+        # Dequantize ALL values at once
+        if scores.dtype == np.uint8:
+            score_scale, score_zp = self.output_details[1].get("quantization", (1.0, 0))
+            scores = (scores.astype(np.float32) - score_zp) * score_scale
+        
+        if boxes.dtype == np.uint8:
+            box_scale, box_zp = self.output_details[0].get("quantization", (1.0, 0))
+            boxes_flat = (boxes_flat.astype(np.float32) - box_zp) * box_scale
+        
+        # Determine number of boxes
+        num_boxes = len(scores)
+        
+        # Filter by threshold
+        mask = scores >= box_thresh
+        
         results = []
-
-        for i in range(num_boxes):
-            score = dequant_value(
-                scores[0], i, score_zp, score_scale, scores.dtype
-            )
-            if score < box_thresh:
-                continue
-
-            x1 = dequant_value(boxes[0], i * 4 + 0, box_zp, box_scale, boxes.dtype)
-            y1 = dequant_value(boxes[0], i * 4 + 1, box_zp, box_scale, boxes.dtype)
-            x2 = dequant_value(boxes[0], i * 4 + 2, box_zp, box_scale, boxes.dtype)
-            y2 = dequant_value(boxes[0], i * 4 + 3, box_zp, box_scale, boxes.dtype)
-
+        for i in np.where(mask)[0]:
+            x1, y1, x2, y2 = boxes_flat[i * 4 : i * 4 + 4]
+            
             x1 = np.clip(x1, 0, w)
             y1 = np.clip(y1, 0, h)
             x2 = np.clip(x2, 0, w)
             y2 = np.clip(y2, 0, h)
-
+            
             if x1 >= x2 or y1 >= y2:
                 continue
-
+            
             results.append(
                 DetectResult(
-                    id=int(classes[0][i]),
-                    obj_conf=float(score),
+                    id=int(classes[i]),
+                    obj_conf=float(scores[i]),
                     box=BoxRect(
                         left=int(round(x1)),
                         top=int(round(y1)),
                         right=int(round(x2)),
                         bottom=int(round(y2)),
-                    ),
+                    )
                 )
             )
-
+        
         return optimized_nms(results, nms_thresh)

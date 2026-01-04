@@ -10,6 +10,7 @@ from app.core.uploader import UPLOAD_FOLDER
 from models.detection_model import Detection, Point2d, Point3d
 from utils import drawing_utils
 from utils.utils import frames_to_jpeg_bytes
+import cv2
 
 logger = logging_config.get_logger(__name__)
 
@@ -57,8 +58,8 @@ class DetectionDepthPipeline(PipelineBase):
         """Main detection loop with error handling."""
         frame = self.camera.latest_frame
         depth_frame = self.camera.latest_depth_data
-
-        logger.info(self.detector.detect(frame))
+        stretched = cv2.resize(frame, (640, 640))
+        logger.info(self.detector.detect(stretched))
         return
 
         if frame is None or depth_frame is None:
