@@ -41,7 +41,11 @@ def create_stream_route(
 
                 if frame is not None:
                     yield (
-                        b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n"
+                        b"--frame\r\n"
+                        b"Content-Type: image/jpeg\r\n"
+                        b"Content-Length: " + str(len(frame)).encode() + b"\r\n\r\n"
+                        + frame +
+                        b"\r\n"
                     )
                 else:
                     # Small delay if no frame to prevent tight loop
