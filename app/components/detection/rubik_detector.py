@@ -6,13 +6,14 @@ from typing import List
 from app.core import logging_config
 from app.components.detection.detector_base import DetectorBase
 from utils.utils import frames_to_jpeg_bytes
-import rubik_detector
+import rubik_detector as rubik
 
 class RubikPiDetector(DetectorBase):
     def __init__(self, model_path: str):
-        self.model = rubik_detector
+        self.model = rubik.RubikDetector(model_path, True)
+
     def is_quantized(self) -> bool:
-        return self.input_details[0]["dtype"] == np.uint8
+        return self.model.is_quantized()
 
     def detect(self, image_bgr: np.ndarray, box_thresh=0.25, nms_thresh=0.45):
         input_info = self.input_details[0]

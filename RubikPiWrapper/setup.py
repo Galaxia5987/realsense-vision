@@ -3,6 +3,7 @@ from setuptools.command.build_ext import build_ext
 import os
 import sys
 import subprocess
+import shutil
 from build_tflite import tflite_available, build_tflite
 
 class CMakeExtension(Extension):
@@ -17,8 +18,6 @@ class CMakeBuild(build_ext):
             build_tflite()
 
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        
-        # Required for auto-detection of auxiliary "native" libs
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
 
@@ -30,48 +29,36 @@ class CMakeBuild(build_ext):
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
-
         cmake_args += [f'-DCMAKE_BUILD_TYPE={cfg}']
-        
-        # Detect architecture for OpenCV download
+
         import platform
         machine = platform.machine().lower()
-        if 'aarch64' in machine or 'arm64' in machine:
-            opencv_arch = 'linuxarm64'
-        elif 'x86_64' in machine or 'amd64' in machine:
-            opencv_arch = 'linuxx86-64'
-        else:
-            opencv_arch = 'linuxx86-64'  # default
-        
+        opencv_arch = 'linuxarm64' if 'aarch64' in machine or 'arm64' in machine else 'linuxx86-64'
         cmake_args += [f'-DOPENCV_ARCH={opencv_arch}']
 
-        # Add parallel build
         if hasattr(self, 'parallel') and self.parallel:
             build_args += [f'-j{self.parallel}']
         else:
             build_args += ['-j4']
 
-        if not os.path.exists(self.build_temp):
-            os.makedirs(self.build_temp)
+        os.makedirs(self.build_temp, exist_ok=True)
 
-        # Configure
-        subprocess.check_call(
-            ['cmake', ext.sourcedir] + cmake_args,
-            cwd=self.build_temp
-        )
-        
-        # Build
-        subprocess.check_call(
-            ['cmake', '--build', '.'] + build_args,
-            cwd=self.build_temp
-        )
+        # Configure and build
+        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp)
+        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
+
+        # Copy stub next to the .so
+        stub_src = os.path.join(self.build_temp, 'stubs', f'{ext.name}.pyi')
+        if os.path.exists(stub_src):
+            stub_dst = os.path.join(extdir, f'{ext.name}.pyi')
+            shutil.copy(stub_src, stub_dst)
+            print(f"Copied stub {stub_src} -> {stub_dst}")
 
 setup(
     name='rubik_detector',
     version='0.1.0',
     author='AdarWa,rakrakon',
     description='Tensorflow YOLOv11 wrapper for the Rubik Pi 3, utilizing its NPU',
-    long_description='',
     ext_modules=[CMakeExtension('rubik_detector')],
     cmdclass={'build_ext': CMakeBuild},
     install_requires=[
@@ -80,10 +67,5 @@ setup(
     ],
     python_requires='>=3.7',
     zip_safe=False,
-    classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: C++',
-    ],
+    data_files=[('', ['stubs/rubik_detector.pyi'])],  # installs the stub next to the module
 )
