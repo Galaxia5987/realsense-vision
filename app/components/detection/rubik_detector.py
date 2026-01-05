@@ -41,12 +41,14 @@ class RubikPiDetector(DetectorBase):
             return None
         
         if not self.detections:
-            return self.last_image
+            return self.last_image.copy()
+
+        annotated = self.last_image.copy()        
 
         for det in self.detections:
             box = det.box
             cv2.rectangle(
-                self.last_image,
+                annotated,
                 (box.left, box.top),
                 (box.right, box.bottom),
                 (0, 255, 0),
@@ -54,7 +56,7 @@ class RubikPiDetector(DetectorBase):
             )
             label = f"{det.id}:{det.confidence:.2f}"
             cv2.putText(
-                self.last_image,
+                annotated,
                 label,
                 (box.left, max(box.top - 6, 0)),
                 cv2.FONT_HERSHEY_SIMPLEX,
@@ -64,4 +66,4 @@ class RubikPiDetector(DetectorBase):
                 cv2.LINE_AA,
             )
 
-        return self.last_image
+        return annotated

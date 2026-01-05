@@ -1,3 +1,4 @@
+import time
 import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
@@ -32,10 +33,9 @@ class DetectionDepthPipeline(PipelineBase):
         if detected is None:
             return None
 
-        drawing_utils.annotate_detections(
-            detected, self.detections, lambda det: str(det.point)
-        )
-
+        # drawing_utils.annotate_detections(
+            # detected, self.detections, lambda det: str(det.point)
+        # )
         return frames_to_jpeg_bytes(
             detected, resolution=(self.camera.width, self.camera.height)
         )
@@ -65,7 +65,6 @@ class DetectionDepthPipeline(PipelineBase):
             return
 
         self.detector.detect(frame)
-        return
         detections = self.detector.get_detections()
 
         if not detections or detections[0] is None:

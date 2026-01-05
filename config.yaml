@@ -6,7 +6,7 @@ camera:
       enabled: true
     temporal:
       enabled: true
-  fps: 15
+  fps: 30
   resolution: 640x480
 chip_type: qcs6490
 color_frame:
