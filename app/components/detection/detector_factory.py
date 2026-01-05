@@ -10,9 +10,9 @@ def create_detector(model_path: str, imgsz: int = 640) -> DetectorBase:
     chip_type = ConfigManager().get().chip_type
 
     if chip_type == ChipType.qcs6490:
-        from app.components.detection.rubik_detector import RubikDetector
+        from app.components.detection.rubik_detector import RubikPiDetector
 
-        return RubikDetector(model_path)
+        return RubikPiDetector(model_path)
 
     if chip_type == ChipType.rk3588:
         from app.components.detection.detector import YOLODetector
