@@ -65,6 +65,7 @@ class DetectionDepthPipeline(PipelineBase):
             return
 
         self.detector.detect(frame)
+        return
         detections = self.detector.get_detections()
 
         if not detections or detections[0] is None:

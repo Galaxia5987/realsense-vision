@@ -137,6 +137,33 @@ std::vector<DetectionResult> optimizedNMS(std::vector<DetectionResult> &candidat
     return results;
 }
 
+cv::Mat letterbox(const cv::Mat& img, int target_size = 640) {
+    int original_h = img.rows;
+    int original_w = img.cols;
+
+    // Compute scaling factor
+    float scale = static_cast<float>(target_size) / std::max(original_h, original_w);
+
+    int new_w = static_cast<int>(original_w * scale);
+    int new_h = static_cast<int>(original_h * scale);
+
+    // Resize the image
+    cv::Mat resized;
+    cv::resize(img, resized, cv::Size(new_w, new_h));
+
+    // Create a square black image
+    cv::Mat output = cv::Mat::zeros(cv::Size(target_size, target_size), img.type());
+
+    // Compute top-left corner to place the resized image
+    int top = (target_size - new_h) / 2;
+    int left = (target_size - new_w) / 2;
+
+    // Copy resized image into the square canvas
+    resized.copyTo(output(cv::Rect(left, top, new_w, new_h)));
+
+    return output;
+}
+
 // Main RubikDetector class
 class RubikDetector {
 private:
@@ -238,15 +265,15 @@ public:
         if (!tensor_image_dims(input, &in_w, &in_h, &in_c)) {
             throw std::runtime_error("Invalid input tensor shape");
         }
-
-        if (img_w != in_w || img_h != in_h) {
-            throw std::runtime_error("Image dimensions don't match model input");
-        }
+    
 
         // Convert BGR to RGB if needed (assuming input is BGR like OpenCV)
         cv::Mat img_mat(img_h, img_w, CV_8UC3, buf.ptr);
         cv::Mat rgb;
         cv::cvtColor(img_mat, rgb, cv::COLOR_BGR2RGB);
+        if (img_w != in_w || img_h != in_h) {
+            img_mat = letterbox(img_mat, in_w);
+        }
 
         // Copy to input tensor
         std::memcpy(TfLiteTensorData(input), rgb.data, TfLiteTensorByteSize(input));

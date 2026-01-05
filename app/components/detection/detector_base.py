@@ -19,5 +19,5 @@ class DetectorBase(ABC):
         """Return detection results as (boxes, confs, classes)."""
 
     @abstractmethod
-    def get_annotated_image(self):
+    def get_annotated_image(self) -> np.ndarray | None:
         """Return an annotated image if supported by the detector."""
