@@ -13,6 +13,7 @@ from app.config import ConfigManager
 from app.core import logging_config
 from app.core.logging_config import get_logger
 from app.server import streams
+from utils.async_loop_base import shutdown_background_loop
 
 logger = get_logger(__name__)
 
@@ -40,6 +41,8 @@ class Initializer:
             self.runner.stop_sync()
         if self.camera:
             self.camera.stop_pipeline()
+        streams.stop_all_streams()
+        shutdown_background_loop()
 
     def init_camera(self):
         """Initialize camera component."""

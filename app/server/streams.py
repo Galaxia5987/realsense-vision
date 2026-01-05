@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+from dataclasses import dataclass
 from typing import Callable
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -8,6 +9,17 @@ import threading
 
 router = APIRouter(prefix="/streams")
 streams: list[tuple[str, str]] = []
+_stream_workers = {}
+
+
+@dataclass
+class _StreamWorker:
+    stop_event: threading.Event
+    thread: threading.Thread
+
+    def stop(self, timeout: float = 1.0):
+        self.stop_event.set()
+        self.thread.join(timeout=timeout)
 
 def create_stream_route(
     app_instance: FastAPI,
@@ -19,6 +31,10 @@ def create_stream_route(
     Dynamically create a streaming route for video frames.
     """
     endpoint = endpoint or f"stream_{uuid.uuid4().hex}"
+
+    if path in _stream_workers:
+        # Avoid spawning duplicate capture threads on reloads.
+        return
     
     # Shared frame buffer with fixed size to prevent memory buildup
     frame_queue = queue.Queue(maxsize=2)  # Only keep latest 2 frames
@@ -46,6 +62,7 @@ def create_stream_route(
     # Start background thread once
     capture_thread = threading.Thread(target=frame_capture_worker, daemon=True)
     capture_thread.start()
+    _stream_workers[path] = _StreamWorker(stop_event=stop_event, thread=capture_thread)
     
     async def dynamic_stream():
         async def generate():
@@ -79,3 +96,10 @@ def create_stream_route(
         response_class=StreamingResponse,
     )
     streams.append((path, endpoint))
+
+
+def stop_all_streams(timeout: float = 1.0):
+    """Stop all background capture threads."""
+    for worker in list(_stream_workers.values()):
+        worker.stop(timeout=timeout)
+    _stream_workers.clear()
