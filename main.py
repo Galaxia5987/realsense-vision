@@ -42,6 +42,9 @@ app.include_router(streams.router)
 
 @app.get("/")
 async def root(request: Request):
+    import threading
+    for t in threading.enumerate():
+        print(t.name, t.daemon)
     return templates.TemplateResponse(
         "index.html",
         {
