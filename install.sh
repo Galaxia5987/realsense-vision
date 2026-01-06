@@ -113,14 +113,25 @@ uv sync 1>/dev/null && log_success "Environment setup complete!" || log_error "u
 if [ "$BOARD_TYPE" = "rubik_pi" ]; then
     log_info "Installing shitty Qualcomm wrapper stuff."
     log_info "Hold on while we shit your computer."
+    log_info "Downloading bazelisk(which is a fancy wrapper for the shitty bazel)"
     wget https://github.com/bazelbuild/bazelisk/releases/download/v1.27.0/bazelisk-arm64.deb 1> /dev/null || log_error "Failed to get bazelisk from github"
+    log_info "Installing bazelisk.."
     sudo dpkg -i bazelisk-arm64.deb || log_error "Failed to install bazelisk"
+    log_info "Installing opencv..."
     sudo apt install -y libopencv-dev 1> /dev/null || log_error "Failed to install OpenCV"
+    log_info "Installing pybind11 using uv"
     uv pip install pybind11 1> /dev/null || log_error "Failed to install pybind11 using pip"
+    log_info "Starting the build process(oh boi)"
     cd RubikPiWrapper
     python3 setup.py install || log_error "Failed to build Tensorflow and other shit(try running this again, probably a RAM thing)"
     cd ..
+    log_info "Finished building the wrapper(by a miracle), even the stubs!"
 fi
+
+log_info "Installing Realsense udev rules..."
+wget https://github.com/realsenseai/librealsense/raw/refs/heads/master/scripts/setup_udev_rules.sh
+chmod +x ./setup_udev_rules.sh
+./setup_udev_rules.sh || log_error "Failed to apply udev rules..."
 
 echo
 while read -t 0; do read -n 1 -s; done
