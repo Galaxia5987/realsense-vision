@@ -1,8 +1,12 @@
+import asyncio
+import time
+import cv2
 import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
 import app.core.logging_config as logging_config
-from app.components.detection.detector import YOLODetector
+from app.components.detection.detector_base import DetectorBase
+from app.components.detection.detector_factory import create_detector
 from app.components.detection.pipelines.pipeline_base import PipelineBase
 from app.config import ConfigManager
 from app.core.uploader import UPLOAD_FOLDER
@@ -21,7 +25,9 @@ class DetectionDepthPipeline(PipelineBase):
         model_path = f"./{UPLOAD_FOLDER}/{model_path}"
         self.detections: list[Detection] = []
         config = ConfigManager().get()
-        self.detector = YOLODetector(model_path, imgsz=config.image_size)
+        self.detector: DetectorBase = create_detector(
+            model_path, imgsz=config.image_size
+        )
 
     def get_color_jpeg(self):
         """Get JPEG-encoded annotated image."""
@@ -32,7 +38,6 @@ class DetectionDepthPipeline(PipelineBase):
         drawing_utils.annotate_detections(
             detected, self.detections, lambda det: str(det.point)
         )
-
         return frames_to_jpeg_bytes(
             detected, resolution=(self.camera.width, self.camera.height)
         )

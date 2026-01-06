@@ -13,6 +13,8 @@ from app.config import ConfigManager
 from app.core import logging_config
 from app.core.logging_config import get_logger
 from app.server import streams
+from utils.async_loop_base import shutdown_background_loop
+from utils.utils import frames_to_jpeg_bytes
 
 logger = get_logger(__name__)
 
@@ -40,6 +42,8 @@ class Initializer:
             self.runner.stop_sync()
         if self.camera:
             self.camera.stop_pipeline()
+        streams.stop_all_streams()
+        shutdown_background_loop()
 
     def init_camera(self):
         """Initialize camera component."""
@@ -86,9 +90,9 @@ class Initializer:
 
             self.runner = PipelineRunner(self.pipeline, _publish)
             self.runner.start()
-        except TypeError:
+        except TypeError as e:
             logger.warning(
-                "Incompatible number of arguments were passed to the pipeline"
+                f"Incompatible number of arguments were passed to the pipeline {e}"
             )
         except AssertionError:
             logger.warning(f"Pipline named {self.config.pipeline} was not found.")
@@ -116,6 +120,7 @@ class Initializer:
 
         streams.create_stream_route(self.app_instance, "/video_feed", video_color)
         streams.create_stream_route(self.app_instance, "/depth_feed", video_depth)
+        streams.create_stream_route(self.app_instance, "/test_feed", lambda: frames_to_jpeg_bytes(self.camera.latest_frame))
 
         logger.info(
             "Stream routes configured successfully",

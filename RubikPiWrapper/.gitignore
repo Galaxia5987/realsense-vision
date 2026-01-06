@@ -1,0 +1,4 @@
+lib
+*.egg-info
+build
+third_party

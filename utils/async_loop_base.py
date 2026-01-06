@@ -15,7 +15,10 @@ def _ensure_background_loop():
     _background_loop = asyncio.new_event_loop()
 
     def run_loop():
-        _background_loop.run_forever()  # type: ignore
+        try:
+            _background_loop.run_forever()  # type: ignore
+        finally:
+            _background_loop.close()  # type: ignore
 
     _background_thread = threading.Thread(target=run_loop, daemon=True)
     _background_thread.start()
@@ -23,10 +26,24 @@ def _ensure_background_loop():
     return _background_loop
 
 
+def shutdown_background_loop(timeout: float = 1.0):
+    """Stop the global background loop and thread if they are running."""
+    global _background_loop, _background_thread
+    if _background_loop is None:
+        return
+    if _background_loop.is_running():
+        _background_loop.call_soon_threadsafe(_background_loop.stop)
+    if _background_thread is not None:
+        _background_thread.join(timeout=timeout)
+    _background_loop = None
+    _background_thread = None
+
+
 class AsyncLoopBase:
     def __init__(self, interval):
         self.interval = interval
         self._task = None
+        self._loop = None
         self._stop = asyncio.Event()
 
     def on_iteration(self):
@@ -62,6 +79,7 @@ class AsyncLoopBase:
             # No running loop, sync context
             loop = _ensure_background_loop()
             self._task = asyncio.run_coroutine_threadsafe(self._runner(), loop)
+        self._loop = loop
 
     async def stop(self):
         """Async stop, awaits the task."""
@@ -72,10 +90,14 @@ class AsyncLoopBase:
                 await self._task
             except asyncio.CancelledError:
                 pass
+        self._task = None
 
     def stop_sync(self):
         """Sync stop that waits for completion."""
-        self._stop.set()
+        if self._loop and self._loop.is_running():
+            self._loop.call_soon_threadsafe(self._stop.set)
+        else:
+            self._stop.set()
 
         if not self._task:
             return
@@ -86,3 +108,4 @@ class AsyncLoopBase:
                 self._task.result()
             except Exception:
                 pass
+        self._task = None

@@ -11,7 +11,7 @@ venv/
 .vscode/
 .idea/
 build/
-uploads/
+uploads
 dist/
 *.egg-info/
 .DS_Store
@@ -19,3 +19,4 @@ Thumbs.db
 .ruff_cache
 calibration_images/
 *.out
+logs

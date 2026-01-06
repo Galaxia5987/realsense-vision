@@ -2,11 +2,12 @@ from ultralytics import YOLO
 
 import app.core.logging_config as logging_config
 from app.config import ConfigManager
+from app.components.detection.detector_base import DetectorBase
 
 logger = logging_config.get_logger(__name__)
 
 
-class YOLODetector:
+class YOLODetector(DetectorBase):
     def __init__(self, model_path, imgsz=640):
         logger.info(
             f"Initializing YOLO detector with model: {model_path}", operation="init"
