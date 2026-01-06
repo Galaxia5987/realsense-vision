@@ -19,3 +19,4 @@ Thumbs.db
 .ruff_cache
 calibration_images/
 *.out
+logs

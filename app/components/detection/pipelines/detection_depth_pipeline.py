@@ -1,4 +1,6 @@
+import asyncio
 import time
+import cv2
 import numpy as np
 from pyrealsense2 import rs2_deproject_pixel_to_point
 
@@ -33,9 +35,9 @@ class DetectionDepthPipeline(PipelineBase):
         if detected is None:
             return None
 
-        # drawing_utils.annotate_detections(
-            # detected, self.detections, lambda det: str(det.point)
-        # )
+        drawing_utils.annotate_detections(
+            detected, self.detections, lambda det: str(det.point)
+        )
         return frames_to_jpeg_bytes(
             detected, resolution=(self.camera.width, self.camera.height)
         )

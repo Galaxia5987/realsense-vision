@@ -272,7 +272,7 @@ public:
         cv::Mat rgb;
         cv::cvtColor(img_mat, rgb, cv::COLOR_BGR2RGB);
         if (img_w != in_w || img_h != in_h) {
-            img_mat = letterbox(img_mat, in_w);
+            img_mat = letterbox(rgb, in_w);
         }
 
         // Copy to input tensor

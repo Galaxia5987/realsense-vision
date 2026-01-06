@@ -39,6 +39,8 @@ class RealSenseCamera(AsyncLoopBase):
         self.temporal = None
         self.hole_filling = None
 
+        self.color_map = rs.colorizer()
+
         # Attempt initialization
         try:
             if self.is_connected():
@@ -143,7 +145,7 @@ class RealSenseCamera(AsyncLoopBase):
 
             depth_sensor = profile.get_device().first_depth_sensor()
             try:
-                depth_sensor.set_option(rs.option.visual_preset, 1)
+                depth_sensor.set_option(rs.option.visual_preset, 3)
                 depth_sensor.set_option(rs.option.laser_power, 360)
             except Exception as e:
                 logger.error(
@@ -169,7 +171,9 @@ class RealSenseCamera(AsyncLoopBase):
                     "Device Busy: Check if another process is using the camera or if USB cable is loose."
                 )
             raise e
-
+        
+    # Profiling - kernprof -l main.py -> python3 -m line_profiler main.py.lprof
+    # @profile
     def on_iteration(self):
         """
         Main loop iteration.
@@ -182,6 +186,7 @@ class RealSenseCamera(AsyncLoopBase):
         try:
             # 1. Wait for frames
             frames = self.pipeline.wait_for_frames(timeout_ms=self.frame_timeout_ms)
+
 
             # 2. Align Depth to Color
             aligned_frames = self.align.process(frames)
@@ -208,6 +213,7 @@ class RealSenseCamera(AsyncLoopBase):
         except Exception as e:
             logger.error(f"Error in camera loop: {e}", operation="loop")
 
+
     @property
     def latest_frame(self):
         """Get the latest color frame."""
@@ -222,8 +228,7 @@ class RealSenseCamera(AsyncLoopBase):
             return DISABLED_STREAM_IMAGE
 
         # Create visual depth map
-        color_map = rs.colorizer()
-        colorized_depth = color_map.process(self._latest_depth_data)
+        colorized_depth = self.color_map.process(self._latest_depth_data)
         self._latest_depth_frame = np.asanyarray(colorized_depth.get_data()).astype(
             np.uint8
         )

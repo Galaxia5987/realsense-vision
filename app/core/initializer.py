@@ -14,6 +14,7 @@ from app.core import logging_config
 from app.core.logging_config import get_logger
 from app.server import streams
 from utils.async_loop_base import shutdown_background_loop
+from utils.utils import frames_to_jpeg_bytes
 
 logger = get_logger(__name__)
 
@@ -119,6 +120,7 @@ class Initializer:
 
         streams.create_stream_route(self.app_instance, "/video_feed", video_color)
         streams.create_stream_route(self.app_instance, "/depth_feed", video_depth)
+        streams.create_stream_route(self.app_instance, "/test_feed", lambda: frames_to_jpeg_bytes(self.camera.latest_frame))
 
         logger.info(
             "Stream routes configured successfully",
