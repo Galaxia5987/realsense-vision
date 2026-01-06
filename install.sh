@@ -37,6 +37,29 @@ else
     log_info "main.py found, assuming correct directory"
 fi
 
+echo
+while read -t 0; do read -n 1 -s; done
+
+echo -e "${YELLOW}Select your board:${RESET}"
+echo -e "${CYAN}1) Rubik Pi${RESET}"
+echo -e "${CYAN}2) Orange Pi${RESET}"
+read -rp "$(echo -e "${YELLOW}Enter choice (1 or 2): ${RESET}")" BOARD_CHOICE
+
+case "$BOARD_CHOICE" in
+    1)
+        BOARD_TYPE="rubik_pi"
+        log_info "Using Rubik Pi configuration"
+        ;;
+    2)
+        BOARD_TYPE="orange_pi"
+        log_info "Using Orange Pi configuration"
+        ;;
+    *)
+        log_error "Invalid selection, exiting"
+        exit 1
+        ;;
+esac
+
 log_info "Updating apt..."
 sudo apt update 1>/dev/null || log_error "apt update failed"
 
@@ -49,16 +72,22 @@ sudo apt install -y build-essential 1>/dev/null || log_error "Failed to install 
 log_info "Installing tools..."
 sudo apt install cmake build-essential python3-dev libllvm15 clang 1>/dev/null || log_error "Failed to install tools"
 
-log_info "Installing librknn shared object..."
-sudo wget -P /usr/lib/ https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so
+if [ "$BOARD_TYPE" = "orange_pi" ]; then
+    log_info "Installing librknn shared object..."
+    sudo wget -P /usr/lib/ https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so
+fi
+
 
 log_info "Adding deadsnakes PPA..."
 sudo add-apt-repository -y ppa:deadsnakes/ppa 1>/dev/null || log_error "Failed to add PPA"
 
-log_info "Installing NetworkManager"
-sudo apt install network-manager -y || log_error "Failed to install NetworkManager"
-sudo systemctl enable NetworkManager || log_error "Failed to enable NetworkManager"
-sudo systemctl start NetworkManager || log_error "Failed to start NetworkManager"
+if [ "$BOARD_TYPE" = "orange_pi" ]; then
+    log_info "Installing NetworkManager"
+    sudo apt install network-manager -y || log_error "Failed to install NetworkManager"
+    sudo systemctl enable NetworkManager || log_error "Failed to enable NetworkManager"
+    sudo systemctl start NetworkManager || log_error "Failed to start NetworkManager"
+fi
+
 
 log_info "Updating apt after adding PPA..."
 sudo apt update 1>/dev/null || log_error "Second apt update failed"
@@ -80,6 +109,18 @@ pip install uv 1>/dev/null || { log_error "Failed to install uv"; exit 1; }
 
 log_info "Syncing dependencies with uv..."
 uv sync 1>/dev/null && log_success "Environment setup complete!" || log_error "uv sync failed"
+
+if [ "$BOARD_TYPE" = "rubik_pi" ]; then
+    log_info "Installing shitty Qualcomm wrapper stuff."
+    log_info "Hold on while we shit your computer."
+    wget https://github.com/bazelbuild/bazelisk/releases/download/v1.27.0/bazelisk-arm64.deb 1> /dev/null || log_error "Failed to get bazelisk from github"
+    sudo dpkg -i bazelisk-arm64.deb || log_error "Failed to install bazelisk"
+    sudo apt install -y libopencv-dev 1> /dev/null || log_error "Failed to install OpenCV"
+    uv pip install pybind11 1> /dev/null || log_error "Failed to install pybind11 using pip"
+    cd RubikPiWrapper
+    python3 setup.py install || log_error "Failed to build Tensorflow and other shit(try running this again, probably a RAM thing)"
+    cd ..
+fi
 
 echo
 while read -t 0; do read -n 1 -s; done
