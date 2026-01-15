@@ -102,6 +102,8 @@ async def restore_config():
 
 @app.get("/logs")
 async def log_endpoint(force_latest: bool):
+    if not app.state.initializer.runner:
+        return Log(log="", latency=0)
     return Log(log=get_last_log(force_latest), latency=app.state.initializer.runner.latency)
 
 

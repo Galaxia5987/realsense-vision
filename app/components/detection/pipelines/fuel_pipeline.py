@@ -3,7 +3,7 @@ import numpy as np
 from typing import Optional
 from app.components.detection.realsense_camera import RealSenseCamera
 from app.core import logging_config
-from components.detection.pipelines.pipeline_base import PipelineBase
+from app.components.detection.pipelines.pipeline_base import PipelineBase
 from models.models import Pipeline
 
 from utils.utils import frames_to_jpeg_bytes
@@ -92,6 +92,9 @@ class FuelPipeline(PipelineBase):
             # Calculate contour properties
             area = cv2.contourArea(contour)
             
+            if area < 1000:
+                continue
+
             # Get bounding box
             x, y, w, h = cv2.boundingRect(contour)
             

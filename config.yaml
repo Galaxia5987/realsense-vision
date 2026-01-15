@@ -10,7 +10,7 @@ camera:
   resolution: 640x480
 chip_type: qcs6490
 color_frame:
-  stream_enabled: false
+  stream_enabled: true
 depth_frame:
   stream_enabled: true
 image_size: 640
@@ -19,6 +19,5 @@ network_tables:
   server: 10.59.87.2
   table: AdvantageKit/RealsenseVision
 pipeline:
-  args: 
-    - best.tflite
-  type: DetectionDepthPipeline
+  args: []
+  type: fuel

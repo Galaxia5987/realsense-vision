@@ -146,15 +146,11 @@ class RealSenseCamera(AsyncLoopBase):
             depth_sensor = profile.get_device().first_depth_sensor()
             try:
                 depth_sensor.set_option(rs.option.visual_preset, 3)
-<<<<<<< feature/rubik-pi-support
-                depth_sensor.set_option(rs.option.laser_power, 360)
-=======
                 depth_sensor.set_option(rs.option.enable_auto_exposure, 1)
                 depth_sensor.set_option(rs.option.laser_power, 150)
                 depth_sensor.set_option(rs.option.emitter_enabled, 1)
                 depth_sensor.set_option(rs.option.gain, 16)
                 depth_sensor.set_option(rs.option.depth_units, 0.001)
->>>>>>> main
             except Exception as e:
                 logger.error(
                     f"Exception while loading preset config onto camera: {e}",
