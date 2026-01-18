@@ -5,6 +5,7 @@ from app.components.detection.realsense_camera import RealSenseCamera
 from app.core import logging_config
 from components.detection.pipelines.pipeline_base import PipelineBase
 from models.models import Pipeline
+from sklearn.cluster import DBSCAN
 
 from utils.utils import frames_to_jpeg_bytes
 
@@ -16,7 +17,7 @@ class FuelPipeline(PipelineBase):
     
     def __init__(self, camera):
         super().__init__()
-        self.camera = camera
+        self.camera: RealSenseCamera = camera
         
         # HSV threshold parameters for fuel
         self.lower = np.array([19.424460431654676, 98.60611510791367, 98.60611510791367])
@@ -44,6 +45,9 @@ class FuelPipeline(PipelineBase):
             return
         
         self._color_frame = color_frame
+
+        if self.camera.latest_depth_frame:
+            self._depth_frame = self.camera.latest_depth_frame
         
         self.process(color_frame)
         
@@ -52,12 +56,6 @@ class FuelPipeline(PipelineBase):
             
 
     def process(self, frame):
-        """
-        Runs the pipeline and sets all outputs to new values.
-        
-        Args:
-            source0: Input BGR image from camera
-        """
         # Step HSV_Threshold0:
         self.hsv_threshold_output = self.__hsv_threshold(
             frame, 
@@ -77,10 +75,10 @@ class FuelPipeline(PipelineBase):
 
     def get_depth_jpeg(self) -> Optional[bytes]:
         """No Depth Frame"""
-        return None        
+        return frames_to_jpeg_bytes(self._depth_frame)
 
     def get_output(self) -> dict:
-        """Return pipeline output data including contours and detections."""
+        """Return pipeline output data including contours and depth-based detections."""
         if self.find_contours_output is None:
             return {
                 "contours_found": 0,
@@ -103,11 +101,24 @@ class FuelPipeline(PipelineBase):
             else:
                 cx, cy = x + w // 2, y + h // 2
             
+            depth_value = None
+            avg_depth = None
+            if self._depth_frame is not None:
+                depth_value = self._depth_frame[cy, cx]
+                
+                # Calculate average depth over the contour region
+                mask = np.zeros(self._depth_frame.shape, dtype=np.uint8)
+                cv2.drawContours(mask, [contour], -1, (0,255,0), -1)
+                depth_values = self._depth_frame[mask == 255]
+                avg_depth = np.median(depth_values[depth_values > 0])
+            
             detections.append({
                 "center": (cx, cy),
                 "bounding_box": (x, y, w, h),
                 "area": area,
-                "contour_points": len(contour)
+                "contour_points": len(contour),
+                "depth": depth_value,
+                "avg_depth": avg_depth
             })
         
         return {
@@ -115,51 +126,99 @@ class FuelPipeline(PipelineBase):
             "detections": detections,
         }
 
+    def cluster_by_depth(self, detections, eps=50, min_samples=1):
+        """
+        Cluster detections in 3D space using DBSCAN.
+        
+        Args:
+            detections: List of detection dictionaries
+            eps: Maximum distance between points in same cluster (in mm)
+            min_samples: Minimum points to form a cluster
+            
+        Returns:
+            List of clusters with their detections
+        """
+        if not detections:
+            return []
+        
+        # Filter valid detections with depth
+        valid_detections = [d for d in detections if d.get('avg_depth') is not None and d['avg_depth'] > 0]
+        
+        if len(valid_detections) < 1:
+            return [detections]
+        
+        # Create 3D points (x, y, depth)
+        points_3d = np.array([
+            [d['center'][0], d['center'][1], d['avg_depth']]
+            for d in valid_detections
+        ])
+        
+        # Normalize x, y coordinates to match depth scale (approximate)
+        # Adjust scale_factor based on your camera FOV and resolution
+        scale_factor = 1.0  # Tune this value
+        points_3d[:, :2] *= scale_factor
+        
+        # Perform DBSCAN clustering
+        clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(points_3d)
+        
+        # Group detections by cluster
+        clusters = {}
+        for idx, label in enumerate(clustering.labels_):
+            if label not in clusters:
+                clusters[label] = []
+            clusters[label].append(valid_detections[idx])
+        
+        return list(clusters.values())
+
     def _create_visualization(self) -> Optional[np.ndarray]:
-        """Create a visualization frame with contours and detections drawn."""
+        """Create a visualization frame with contours, detections, and depth info."""
         if self._color_frame is None or self.find_contours_output is None:
             return None
         
-        # Create a copy to draw on
         output = self._color_frame.copy()
         
-        # Draw all contours
         cv2.drawContours(output, self.find_contours_output, -1, (0, 255, 0), 2)
         
-        # Draw detection info
         output_data = self.get_output()
-        for detection in output_data["detections"]:
-            cx, cy = detection["center"]
-            x, y, w, h = detection["bounding_box"]
-            
-            # Draw bounding box
-            cv2.rectangle(output, (x, y), (x + w, y + h), (255, 0, 0), 2)
-            
-            # Draw center point
-            cv2.circle(output, (cx, cy), 5, (0, 0, 255), -1)
-            
-            # Draw area label
-            cv2.putText(
-                output, 
-                f"Area: {int(detection['area'])}", 
-                (x, y - 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 
-                0.5, 
-                (255, 255, 255), 
-                1
-            )
         
-        # Draw summary info
-        info_text = f"Fuel Targets: {output_data['contours_found']}"
-        cv2.putText(
-            output, 
-            info_text, 
-            (10, 30),
-            cv2.FONT_HERSHEY_SIMPLEX, 
-            1, 
-            (0, 255, 0), 
-            2
-        )
+        clusters = self.cluster_by_depth(output_data["detections"])
+        
+        colors = [(255, 0, 0), (0, 255, 255), (255, 0, 255), (255, 255, 0), (128, 0, 255)]
+        
+        for cluster_idx, cluster in enumerate(clusters):
+            cluster_color = colors[cluster_idx % len(colors)]
+            
+            for detection in cluster:
+                cx, cy = detection["center"]
+                x, y, w, h = detection["bounding_box"]
+                
+                cv2.rectangle(output, (x, y), (x + w, y + h), cluster_color, 2)
+                
+                cv2.circle(output, (cx, cy), 5, (0, 0, 255), -1)
+                
+                info_lines = [f"Area: {int(detection['area'])}"]
+                
+                if detection.get('avg_depth') is not None and detection['avg_depth'] > 0:
+                    depth_m = detection['avg_depth'] / 1000.0
+                    info_lines.append(f"Depth: {depth_m:.2f}m")
+                
+                y_offset = y - 10
+                for line in reversed(info_lines):
+                    text_size = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0]
+                    cv2.rectangle(output, 
+                                (x, y_offset - text_size[1] - 4),
+                                (x + text_size[0] + 4, y_offset + 2),
+                                (0, 0, 0), -1)
+                    cv2.putText(output, line, (x + 2, y_offset),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    y_offset -= (text_size[1] + 6)
+        
+        info_text = f"Fuel Targets: {output_data['contours_found']} | Clusters: {len(clusters)}"
+        
+        text_size = cv2.getTextSize(info_text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
+        cv2.rectangle(output, (5, 5), (15 + text_size[0], 40), (0, 0, 0), -1)
+        cv2.putText(output, info_text, (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
         
         return output
 
