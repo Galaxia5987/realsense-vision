@@ -51,6 +51,8 @@ class FuelPipeline(PipelineBase):
         
         self.process(color_frame)
         
+        logger.info(self.camera.get_latest_pointcloud().shape)
+
         # Create visualization output
         self._output_frame = self._create_visualization()
             
@@ -155,11 +157,6 @@ class FuelPipeline(PipelineBase):
             [d['center'][0], d['center'][1], d['avg_depth']]
             for d in valid_detections
         ])
-        
-        # Normalize x, y coordinates to match depth scale (approximate)
-        # Adjust scale_factor based on your camera FOV and resolution
-        scale_factor = 1.0  # Tune this value
-        points_3d[:, :2] *= scale_factor
         
         # Perform DBSCAN clustering
         clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(points_3d)

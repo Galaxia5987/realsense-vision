@@ -40,6 +40,7 @@ class RealSenseCamera(AsyncLoopBase):
         self.hole_filling = None
 
         self.color_map = rs.colorizer()
+        self._point_cloud = rs.pointcloud()
 
         # Attempt initialization
         try:
@@ -243,6 +244,11 @@ class RealSenseCamera(AsyncLoopBase):
     def latest_depth_data(self):
         """Get the latest raw depth data object."""
         return self._latest_depth_data
+    
+    def get_latest_pointcloud(self):
+        self._point_cloud.map_to(self.latest_depth_frame)
+        points = self._point_cloud.calculate(self._latest_depth_data)
+        return np.asanyarray(points.get_data())
 
     def stop_pipeline(self):
         """Stop the camera gracefully."""
