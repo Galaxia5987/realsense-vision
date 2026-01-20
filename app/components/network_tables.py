@@ -9,7 +9,7 @@ from models.detection_model import Detection
 from utils.utils import singleton
 
 logger = logging_config.get_logger(__name__)
-NTCORE = True
+NTCORE = False
 try:
     import ntcore
     from wpimath.geometry import Pose3d, Rotation3d, Translation3d

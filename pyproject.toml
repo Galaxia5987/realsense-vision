@@ -28,7 +28,8 @@ dependencies = [
     "robotpy_wpiutil",
     "robotpy_wpimath",
     "tensorflow",
-    "tflite_runtime"
+    "tflite_runtime",
+    "scikit-learn>=1.7.2",
 ]
 
 [tool.uv.sources]

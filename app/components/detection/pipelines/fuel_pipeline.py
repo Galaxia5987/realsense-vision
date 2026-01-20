@@ -24,9 +24,6 @@ class FuelPipeline(PipelineBase):
         self.upper = np.array([34.54545454545455, 255.0, 255.0])
 
         self.hsv_threshold_output = None
-        self.__find_contours_external_only = False
-        self.find_contours_output = None
-        
 
         # Store latest frames
         self._color_frame = None
@@ -46,181 +43,144 @@ class FuelPipeline(PipelineBase):
         
         self._color_frame = color_frame
 
-        if self.camera.latest_depth_frame:
+        if self.camera.latest_depth_frame is not None:
             self._depth_frame = self.camera.latest_depth_frame
         
-        self.process(color_frame)
+        self._process(color_frame)
         
-        logger.info(self.camera.get_latest_pointcloud().shape)
+    def _process(self, color_frame):
+        frame = color_frame.copy()
+        self.hsv_threshold_output = self.__hsv_threshold(frame)
 
-        # Create visualization output
-        self._output_frame = self._create_visualization()
-            
+        point_cloud = self.camera.get_latest_pointcloud()
+        h, w = self.hsv_threshold_output.shape
 
-    def process(self, frame):
-        # Step HSV_Threshold0:
-        self.hsv_threshold_output = self.__hsv_threshold(
-            frame, 
-        )
+        # Reshape point cloud to image-aligned format
+        point_cloud = point_cloud.reshape(h, w, 3)
 
-        # Step Find_Contours0:
-        self.find_contours_output = self.__find_contours(
-            self.hsv_threshold_output, 
-            self.__find_contours_external_only
-        )
+        # Apply HSV mask and keep track of pixel coordinates
+        mask = self.hsv_threshold_output > 0
+        
+        # Get pixel coordinates where mask is True
+        pixel_coords = np.argwhere(mask)  # Returns (row, col) pairs
+        
+        # Get corresponding 3D points
+        ball_points = point_cloud[mask]
+
+        # Remove invalid depth and corresponding pixel coordinates
+        valid_depth_mask = ball_points[:, 2] > 0
+        ball_points = ball_points[valid_depth_mask]
+        pixel_coords = pixel_coords[valid_depth_mask]
+
+        clustered_balls = self.cluster_by_depth(ball_points, pixel_coords)
+        self._output_frame = self._create_visualization(clustered_balls)
+
 
     def get_color_jpeg(self) -> Optional[bytes]:
         """Return the original color frame as JPEG bytes."""
-        if self._color_frame is None:
+        if self._color_frame is None or self._output_frame is None:
             return None
-        return frames_to_jpeg_bytes(self._output_frame)
+        return frames_to_jpeg_bytes(self._output_frame, resolution=(self.camera.width, self.camera.height))
 
     def get_depth_jpeg(self) -> Optional[bytes]:
         """No Depth Frame"""
-        return frames_to_jpeg_bytes(self._depth_frame)
+        if self._depth_frame is None:
+            return None
+        return frames_to_jpeg_bytes(self._depth_frame, resolution=(self.camera.width, self.camera.height))
 
-    def get_output(self) -> dict:
-        """Return pipeline output data including contours and depth-based detections."""
-        if self.find_contours_output is None:
-            return {
-                "contours_found": 0,
-                "detections": []
-            }
-        
-        detections = []
-        for contour in self.find_contours_output:
-            # Calculate contour properties
-            area = cv2.contourArea(contour)
-            
-            if area < 1000:
-                continue
+    def get_output(self) -> None:
+        pass
 
-            # Get bounding box
-            x, y, w, h = cv2.boundingRect(contour)
-            
-            # Get center point
-            M = cv2.moments(contour)
-            if M["m00"] != 0:
-                cx = int(M["m10"] / M["m00"])
-                cy = int(M["m01"] / M["m00"])
-            else:
-                cx, cy = x + w // 2, y + h // 2
-            
-            depth_value = None
-            avg_depth = None
-            if self._depth_frame is not None:
-                depth_value = self._depth_frame[cy, cx]
-                
-                # Calculate average depth over the contour region
-                mask = np.zeros(self._depth_frame.shape, dtype=np.uint8)
-                cv2.drawContours(mask, [contour], -1, (0,255,0), -1)
-                depth_values = self._depth_frame[mask == 255]
-                avg_depth = np.median(depth_values[depth_values > 0])
-            
-            detections.append({
-                "center": (cx, cy),
-                "bounding_box": (x, y, w, h),
-                "area": area,
-                "contour_points": len(contour),
-                "depth": depth_value,
-                "avg_depth": avg_depth
-            })
-        
-        return {
-            "contours_found": len(detections),
-            "detections": detections,
-        }
-
-    def cluster_by_depth(self, detections, eps=50, min_samples=1):
-        """
-        Cluster detections in 3D space using DBSCAN.
-        
-        Args:
-            detections: List of detection dictionaries
-            eps: Maximum distance between points in same cluster (in mm)
-            min_samples: Minimum points to form a cluster
-            
-        Returns:
-            List of clusters with their detections
-        """
-        if not detections:
+    def cluster_by_depth(self, ball_points, pixel_coords):
+        if ball_points.shape[0] == 0 or ball_points is None:
             return []
         
-        # Filter valid detections with depth
-        valid_detections = [d for d in detections if d.get('avg_depth') is not None and d['avg_depth'] > 0]
-        
-        if len(valid_detections) < 1:
-            return [detections]
-        
-        # Create 3D points (x, y, depth)
-        points_3d = np.array([
-            [d['center'][0], d['center'][1], d['avg_depth']]
-            for d in valid_detections
-        ])
-        
-        # Perform DBSCAN clustering
-        clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(points_3d)
-        
-        # Group detections by cluster
-        clusters = {}
-        for idx, label in enumerate(clustering.labels_):
-            if label not in clusters:
-                clusters[label] = []
-            clusters[label].append(valid_detections[idx])
-        
-        return list(clusters.values())
+        clustering = DBSCAN(eps=0.05, min_samples=5).fit(ball_points)
+        labels = clustering.labels_
 
-    def _create_visualization(self) -> Optional[np.ndarray]:
-        """Create a visualization frame with contours, detections, and depth info."""
-        if self._color_frame is None or self.find_contours_output is None:
+        unique_labels = set(labels)
+        unique_labels.discard(-1)  # Remove noise label
+
+        clusters = []
+        for label in unique_labels:
+            # Get all points belonging to this cluster
+            cluster_mask = labels == label
+            cluster_points = ball_points[cluster_mask]
+            cluster_pixels = pixel_coords[cluster_mask]
+            
+            num_points = len(cluster_points)
+            
+            # Discard clusters with fewer than 400 points (noise)
+            if num_points < 400:
+                continue
+            
+            # Calculate cluster properties
+            centroid_3d = np.mean(cluster_points, axis=0)  # [X, Y, Z]
+            centroid_2d = np.mean(cluster_pixels, axis=0).astype(int)  # [row, col]
+            depth = centroid_3d[2]  # Z coordinate
+            
+            clusters.append({
+                'id': label,
+                'points': cluster_points,
+                'pixels': cluster_pixels,  # Store 2D pixel coordinates
+                'centroid_3d': centroid_3d,
+                'centroid_2d': centroid_2d,
+                'depth': depth,
+                'num_points': num_points
+            })
+            
+        # clusters.sort(key=lambda c: c['depth'])
+        return clusters
+
+    def _create_visualization(self, clustered_balls) -> Optional[np.ndarray]:
+        if self._color_frame is None:
             return None
-        
-        output = self._color_frame.copy()
-        
-        cv2.drawContours(output, self.find_contours_output, -1, (0, 255, 0), 2)
-        
-        output_data = self.get_output()
-        
-        clusters = self.cluster_by_depth(output_data["detections"])
-        
+
+        output = self._color_frame.copy()  # Avoid modifying original frame
+
+        if len(clustered_balls) == 0:
+            return output
+
+        clusters = clustered_balls
         colors = [(255, 0, 0), (0, 255, 255), (255, 0, 255), (255, 255, 0), (128, 0, 255)]
-        
+
         for cluster_idx, cluster in enumerate(clusters):
             cluster_color = colors[cluster_idx % len(colors)]
+            pixels = cluster['pixels']  # 2D pixel coordinates (row, col)
+
+            # bounding box
+            rows, cols = pixels[:, 0], pixels[:, 1]
+            y_min, y_max = int(rows.min()), int(rows.max())
+            x_min, x_max = int(cols.min()), int(cols.max())
             
-            for detection in cluster:
-                cx, cy = detection["center"]
-                x, y, w, h = detection["bounding_box"]
-                
-                cv2.rectangle(output, (x, y), (x + w, y + h), cluster_color, 2)
-                
-                cv2.circle(output, (cx, cy), 5, (0, 0, 255), -1)
-                
-                info_lines = [f"Area: {int(detection['area'])}"]
-                
-                if detection.get('avg_depth') is not None and detection['avg_depth'] > 0:
-                    depth_m = detection['avg_depth'] / 1000.0
-                    info_lines.append(f"Depth: {depth_m:.2f}m")
-                
-                y_offset = y - 10
-                for line in reversed(info_lines):
-                    text_size = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0]
-                    cv2.rectangle(output, 
-                                (x, y_offset - text_size[1] - 4),
-                                (x + text_size[0] + 4, y_offset + 2),
-                                (0, 0, 0), -1)
-                    cv2.putText(output, line, (x + 2, y_offset),
+            x, y = x_min, y_min
+            w, h = x_max - x_min, y_max - y_min
+
+            # Draw bounding box
+            cv2.rectangle(output, (x, y), (x + w, y + h), cluster_color, 2)
+
+            # Draw centre (convert row, col to x, y)
+            cx, cy = cluster['centroid_2d'][1], cluster['centroid_2d'][0]
+            cv2.circle(output, (cx, cy), 5, (0, 0, 255), -1)
+
+            info_lines = [f"Points: {cluster['num_points']}"]
+            if cluster.get('depth') is not None and cluster['depth'] > 0:
+                depth_m = cluster['depth'] / 1000.0
+                info_lines.append(f"Depth: {depth_m:.2f}m")
+
+            y_offset = y - 10
+            for line in reversed(info_lines):
+                text_size = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)[0]
+                cv2.putText(output, line, (x + 2, y_offset),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                    y_offset -= (text_size[1] + 6)
-        
-        info_text = f"Fuel Targets: {output_data['contours_found']} | Clusters: {len(clusters)}"
-        
-        text_size = cv2.getTextSize(info_text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
-        cv2.rectangle(output, (5, 5), (15 + text_size[0], 40), (0, 0, 0), -1)
+                y_offset -= (text_size[1] + 6)
+
+        info_text = f"Clusters: {len(clusters)}"
         cv2.putText(output, info_text, (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-        
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+
         return output
+
 
     def get_visualization_jpeg(self) -> Optional[bytes]:
         """Return the visualization frame as JPEG bytes."""
@@ -232,32 +192,3 @@ class FuelPipeline(PipelineBase):
     def __hsv_threshold(self, input):
         out = cv2.cvtColor(input, cv2.COLOR_BGR2HSV)
         return cv2.inRange(out, self.lower, self.upper)
-
-    @staticmethod
-    def __find_contours(input, external_only):
-        """Find contours in a binary image.
-        
-        Args:
-            input: A numpy.ndarray binary image.
-            external_only: A boolean. If true only external contours are found.
-            
-        Return:
-            A list of numpy.ndarray where each one represents a contour.
-        """
-        if external_only:
-            mode = cv2.RETR_EXTERNAL
-        else:
-            mode = cv2.RETR_LIST
-        method = cv2.CHAIN_APPROX_SIMPLE
-        
-        # Handle different OpenCV versions
-        contours_output = cv2.findContours(input, mode=mode, method=method)
-        
-        # OpenCV 3.x returns (image, contours, hierarchy)
-        # OpenCV 4.x returns (contours, hierarchy)
-        if len(contours_output) == 3:
-            contours = contours_output[1]
-        else:
-            contours = contours_output[0]
-        
-        return contours

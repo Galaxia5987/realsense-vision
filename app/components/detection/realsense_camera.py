@@ -208,6 +208,9 @@ class RealSenseCamera(AsyncLoopBase):
                     depth_frame = filter.process(depth_frame)
 
             # 4. Process Data
+            self._latest_raw_depth_frame = depth_frame
+            self._latest_raw_color_frame = color_frame
+
             self._latest_frame = np.asanyarray(color_frame.get_data())
             self._latest_depth_data = depth_frame.as_depth_frame()
 
@@ -246,9 +249,15 @@ class RealSenseCamera(AsyncLoopBase):
         return self._latest_depth_data
     
     def get_latest_pointcloud(self):
-        self._point_cloud.map_to(self.latest_depth_frame)
-        points = self._point_cloud.calculate(self._latest_depth_data)
-        return np.asanyarray(points.get_data())
+        self._point_cloud.map_to(self._latest_raw_color_frame)
+        points = self._point_cloud.calculate(self._latest_raw_depth_frame)
+        
+        vertices = np.asanyarray(points.get_vertices())
+        
+        # View as regular float array and reshape
+        xyz = vertices.view(np.float32).reshape(-1, 3)
+        
+        return xyz  # Shape: (307200, 3)
 
     def stop_pipeline(self):
         """Stop the camera gracefully."""
