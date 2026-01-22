@@ -1,11 +1,10 @@
 import cv2
+from matplotlib.pyplot import hsv
 import numpy as np
 from typing import Optional
 from app.components.detection.realsense_camera import RealSenseCamera
 from app.core import logging_config
 from app.components.detection.pipelines.pipeline_base import PipelineBase
-from models.models import Pipeline
-from sklearn.cluster import DBSCAN
 
 from utils.utils import frames_to_jpeg_bytes
 
@@ -49,24 +48,21 @@ class FuelPipeline(PipelineBase):
         self._process(color_frame)
         
     def _process(self, color_frame):
-        depth = self._depth_frame.copy()[:, :, 0]
-
+        depth = cv2.cvtColor(self._depth_frame, cv2.COLOR_BGR2GRAY)
         # Normalize depth to 0-255 uint8
         depth_norm = cv2.normalize(depth, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-
         # HSV mask (uint8, 0/255)
-        hsv_mask = self.__hsv_threshold(color_frame).astype(np.uint8)        
-
+        hsv_mask = self.__hsv_threshold(color_frame).astype(np.uint8)
         # Mask depth with HSV
         depth_roi = cv2.bitwise_and(
             depth_norm, depth_norm, mask=hsv_mask
         )
-
         contours, _ = cv2.findContours(
             depth_roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
-        self._create_visualization(color_frame, contours)
 
+        # self._output_frame = self.__hsv_threshold(color_frame)
+        self._create_visualization(color_frame, contours)
 
 
     def get_color_jpeg(self) -> Optional[bytes]:
@@ -86,10 +82,9 @@ class FuelPipeline(PipelineBase):
 
     def _create_visualization(self, frame, contours) -> Optional[np.ndarray]:
         if frame is None:
-            return None
-
+            return
+        
         output = frame.copy()
-
         if contours:
             for i, cnt in enumerate(contours):
                 area = cv2.contourArea(cnt)
