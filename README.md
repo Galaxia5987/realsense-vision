@@ -184,6 +184,17 @@ network:
       optional: true
 ```
 
+To fixate the adapter name to eth0 (If running photonvision)
+```sudo nano /etc/udev/rules.d/70-persistent-net.rules```
+In that blank file, paste the following line. Make sure to replace the xx:xx... with your actual MAC address:
+You can view it by doing
+```ip a``` and looking under the ethernet adapter name
+
+then in the 70-persistent-net.rules file put:
+```SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="xx:xx:xx:xx:xx:xx", NAME="eth0"```
+
+xx:xx:xx:xx:xx:xx is the MAC address
+
 ## License
 
 Licensed under the MIT License. See the [LICENSE](LICENSE) file.
