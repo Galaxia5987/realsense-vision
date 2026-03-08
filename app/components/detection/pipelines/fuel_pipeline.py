@@ -73,7 +73,7 @@ class FuelPipeline(PipelineBase):
         # self._output_frame = self.__hsv_threshold(color_frame)
         self._create_visualization(color_frame, contours)
 
-    def process_contours(self, contours, depth_mat) -> list[Detection]:
+    def process_contours(self, contours, depth_mat) -> list[tuple[Detection, float]]:
         out = []
         if contours:
             for i, cnt in enumerate(contours):
@@ -93,14 +93,11 @@ class FuelPipeline(PipelineBase):
                 point = rs2_deproject_pixel_to_point(self.intrinsics, [cx,cy], depth_meters)
                 y, z, x = point
                 det = Detection(
-                    Point3d(x, y, z), Point2d(cx, cy), depth_meters
+                    Point3d(x, y, z), Point2d(cx, cy), depth_meters, area
                 )
                 out.append((det, area))
-        if not out:
-            return []
 
-        biggest_det = max(out, key=lambda det: det[1])
-        return [biggest_det[0]]
+        return out
 
 
     def get_color_jpeg(self) -> Optional[bytes]:

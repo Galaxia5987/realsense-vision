@@ -106,9 +106,10 @@ class NetworkTablesPublisher:
 
         # Struct array publisher instead of single struct
         self.pose_pub = self.table.getStructArrayTopic("poses", Pose3d).publish()
+        self.area_pub = self.table.getFloatArrayTopic("areas").publish()
         logger.debug("Pose publisher created", operation="init_connection")
 
-    def publish_detections(self, detections: list[Detection]):
+    def publish_detections(self, detections: list[tuple[Detection, float]]):
         """Publish detection results to NetworkTables with error handling."""
         if not NTCORE:
             return
@@ -118,13 +119,15 @@ class NetworkTablesPublisher:
                 return
 
             poses = []
-            for i, det in enumerate(detections):
+            areas = []
+            for i, (det,area) in enumerate(detections):
                 try:
                     point = det.point
                     pose = Pose3d(
                         Translation3d(point.x, -point.y, -point.z), Rotation3d()
                     )
                     poses.append(pose)
+                    areas.append(area)
                 except Exception as e:
                     logger.warning(
                         f"Failed to create pose for detection {i}: {e}",
@@ -134,6 +137,7 @@ class NetworkTablesPublisher:
             # Publish as struct array
             if poses:
                 self.pose_pub.set(poses)
+                self.area_pub.set(areas)
                 self.publish_count += 1
 
                 if self.publish_count % 30 == 0:  # Log every 30 publishes
