@@ -95,9 +95,12 @@ class FuelPipeline(PipelineBase):
                 det = Detection(
                     Point3d(x, y, z), Point2d(cx, cy), depth_meters
                 )
-                out.append(det)
+                out.append((det, area))
+        if not out:
+            return []
 
-        return out
+        biggest_det = max(out, key=lambda det: det[1])
+        return [biggest_det[0]]
 
 
     def get_color_jpeg(self) -> Optional[bytes]:
