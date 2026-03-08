@@ -2,9 +2,13 @@ import cv2
 from matplotlib.pyplot import hsv
 import numpy as np
 from typing import Optional
+
+from pyrealsense2 import rs2_deproject_pixel_to_point
+
 from app.components.detection.realsense_camera import RealSenseCamera
 from app.core import logging_config
 from app.components.detection.pipelines.pipeline_base import PipelineBase
+from models.detection_model import Detection, Point3d, Point2d
 
 from utils.utils import frames_to_jpeg_bytes
 
@@ -16,6 +20,7 @@ class FuelPipeline(PipelineBase):
     
     def __init__(self, camera):
         super().__init__()
+        self.intrinsics = None
         self.camera: RealSenseCamera = camera
         
         # HSV threshold parameters for fuel
@@ -44,6 +49,7 @@ class FuelPipeline(PipelineBase):
 
         if self.camera.latest_depth_frame is not None:
             self._depth_frame = self.camera.latest_depth_frame
+            self.intrinsics = self._depth_frame.profile.as_video_stream_profile().get_intrinsics()
         
         self._process(color_frame)
         
@@ -60,9 +66,38 @@ class FuelPipeline(PipelineBase):
         contours, _ = cv2.findContours(
             depth_roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
+        depth_mat = np.asanyarray(self._depth_frame.get_data())
+
+        self.detections = self.process_contours(contours, depth_mat)
 
         # self._output_frame = self.__hsv_threshold(color_frame)
         self._create_visualization(color_frame, contours)
+
+    def process_contours(self, contours, depth_mat) -> list[Detection]:
+        out = []
+        if contours:
+            for i, cnt in enumerate(contours):
+                area = cv2.contourArea(cnt)
+                if area < 500:
+                    continue
+
+                x, y, w, h = cv2.boundingRect(cnt)
+
+                M = cv2.moments(cnt)
+                cx, cy = x + w // 2, y + h // 2
+                if M["m00"] != 0:
+                    cx = int(M["m10"] / M["m00"])
+                    cy = int(M["m01"] / M["m00"])
+
+                depth_meters = depth_mat[cy,cx] / 1000.0
+                point = rs2_deproject_pixel_to_point(self.intrinsics, [cx,cy], depth_meters)
+                y, z, x = point
+                det = Detection(
+                    Point3d(x, y, z), Point2d(cx, cy), depth_meters
+                )
+                out.append(det)
+
+        return out
 
 
     def get_color_jpeg(self) -> Optional[bytes]:
@@ -77,8 +112,8 @@ class FuelPipeline(PipelineBase):
             return None
         return frames_to_jpeg_bytes(self._depth_frame, resolution=(self.camera.width, self.camera.height))
 
-    def get_output(self) -> None:
-        pass
+    def get_output(self) -> list[Detection]:
+        return self.detections
 
     def _create_visualization(self, frame, contours) -> Optional[np.ndarray]:
         if frame is None:
