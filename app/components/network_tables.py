@@ -46,6 +46,8 @@ class NetworkTablesPublisher:
         table_name = config.network_tables.table
         server = config.network_tables.server
 
+        self.last_is_connected = False
+
         logger.info(
             f"Initializing NetworkTables connection to {server} with table {table_name}",
             operation="init",
@@ -107,13 +109,17 @@ class NetworkTablesPublisher:
         # Struct array publisher instead of single struct
         self.pose_pub = self.table.getStructArrayTopic("poses", Pose3d).publish()
         self.area_pub = self.table.getFloatArrayTopic("areas").publish()
+        self.is_connected_pub = self.table.getBooleanTopic("connected").publish()
         logger.debug("Pose publisher created", operation="init_connection")
 
-    def publish_detections(self, detections: list[tuple[Detection, float]]):
+    def publish_detections(self, detections: list[tuple[Detection, float]], is_connected: bool):
         """Publish detection results to NetworkTables with error handling."""
         if not NTCORE:
             return
         try:
+            if is_connected != self.last_is_connected:
+                self.last_is_connected = is_connected
+                self.is_connected_pub.set(is_connected)
             if not detections:
                 self.clear()
                 return

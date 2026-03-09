@@ -86,7 +86,7 @@ class Initializer:
 
             def _publish(output):
                 if self.publisher:
-                    self.publisher.publish_detections(output)
+                    self.publisher.publish_detections(output, self.camera.is_still_connected())
 
             self.runner = PipelineRunner(self.pipeline, _publish)
             self.runner.start()

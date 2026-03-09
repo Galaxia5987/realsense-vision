@@ -20,6 +20,7 @@ LOOP_INTERVAL = 0.01  # 100 Hz
 class RealSenseCamera(AsyncLoopBase):
     def __init__(self, width=640, height=480, fps=30, frame_timeout_ms=5000):
         super().__init__(LOOP_INTERVAL)
+        self.device_connected = False
         self.width = width
         self.height = height
         self.fps = fps
@@ -56,12 +57,16 @@ class RealSenseCamera(AsyncLoopBase):
             operation="init",
         )
 
+    def is_still_connected(self) -> bool:
+        return self.device_connected
+
     def is_connected(self) -> bool:
         """Check if any device is connected"""
         try:
             ctx = rs.context()
             devices = ctx.query_devices()
-            return len(devices) > 0
+            self.device_connected = len(devices) > 0
+            return self.device_connected
         except Exception:
             return False
 
@@ -107,6 +112,15 @@ class RealSenseCamera(AsyncLoopBase):
             operation="init_pipeline",
         )
 
+    def on_devices_changed(self,info):
+        logger.info("Device list changed!")
+        if info.was_removed():
+            self.device_connected = False
+            logger.warning("A device was disconnected.")
+        if info.get_new_devices().size() > 0:
+            self.device_connected = True
+            logger.info("A new device was connected.")
+
     def _initialize_pipeline(self):
         """Initialize the RealSense pipeline with proper reset sequence."""
         logger.debug(
@@ -117,7 +131,8 @@ class RealSenseCamera(AsyncLoopBase):
         devices = ctx.query_devices()
         if not devices:
             raise RuntimeError("Lost device after reset sequence.")
-
+        self.device_connected = True
+        ctx.set_devices_changed_callback(self.on_devices_changed)
         # Configure Pipeline
         self.pipeline = rs.pipeline()
         rs_config = rs.config()
