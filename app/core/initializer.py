@@ -120,7 +120,6 @@ class Initializer:
 
         streams.create_stream_route(self.app_instance, "/video_feed", video_color)
         streams.create_stream_route(self.app_instance, "/depth_feed", video_depth)
-        streams.create_stream_route(self.app_instance, "/test_feed", lambda: frames_to_jpeg_bytes(self.camera.latest_frame))
 
         logger.info(
             "Stream routes configured successfully",
