@@ -68,7 +68,7 @@ class FuelPipeline(PipelineBase):
             depth_roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
         depth_mat = np.asanyarray(self.camera.latest_depth_data)
-        logger.info(depth_mat.ndim)
+        logger.info(str(depth_mat.size) + " " + str(depth_mat.shape))
         if depth_mat.ndim == 2:
             self.detections = self.process_contours(contours, depth_mat)
 
