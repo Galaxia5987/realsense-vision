@@ -33,6 +33,7 @@ class FuelPipeline(PipelineBase):
         self._color_frame = None
         self._depth_frame = None
         self._output_frame = None
+        self.detections = []
         
         logger.info("FuelPipeline initialized")
 
@@ -68,7 +69,8 @@ class FuelPipeline(PipelineBase):
         )
         depth_mat = np.asanyarray(self.camera.latest_depth_data)
 
-        self.detections = self.process_contours(contours, depth_mat)
+        if depth_mat.ndim == 2:
+            self.detections = self.process_contours(contours, depth_mat)
 
         # self._output_frame = self.__hsv_threshold(color_frame)
         self._create_visualization(color_frame, contours)
