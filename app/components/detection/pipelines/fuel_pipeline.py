@@ -49,7 +49,7 @@ class FuelPipeline(PipelineBase):
 
         if self.camera.latest_depth_frame is not None:
             self._depth_frame = self.camera.latest_depth_frame
-            self.intrinsics = self._depth_frame.profile.as_video_stream_profile().get_intrinsics()
+            self.intrinsics = self.camera.latest_depth_data.profile.as_video_stream_profile().get_intrinsics()
         
         self._process(color_frame)
         
