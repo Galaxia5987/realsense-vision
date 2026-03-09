@@ -111,6 +111,8 @@ class NetworkTablesPublisher:
         self.area_pub = self.table.getFloatArrayTopic("areas").publish()
         self.is_connected_pub = self.table.getBooleanTopic("connected").publish()
         logger.debug("Pose publisher created", operation="init_connection")
+        self.poses = []
+        self.areas = []
 
     def publish_detections(self, detections: list[tuple[Detection, float]], is_connected: bool):
         """Publish detection results to NetworkTables with error handling."""
@@ -124,16 +126,17 @@ class NetworkTablesPublisher:
                 self.clear()
                 return
 
-            poses = []
-            areas = []
+            self.poses.clear()
+            self.areas.clear()
+
             for i, (det,area) in enumerate(detections):
                 try:
                     point = det.point
                     pose = Pose3d(
                         Translation3d(point.x, -point.y, -point.z), Rotation3d()
                     )
-                    poses.append(pose)
-                    areas.append(area)
+                    self.poses.append(pose)
+                    self.areas.append(area)
                 except Exception as e:
                     logger.warning(
                         f"Failed to create pose for detection {i}: {e}",
@@ -141,14 +144,14 @@ class NetworkTablesPublisher:
                     )
 
             # Publish as struct array
-            if poses:
-                self.pose_pub.set(poses)
-                self.area_pub.set(areas)
+            if self.poses:
+                self.pose_pub.set(self.poses)
+                self.area_pub.set(self.areas)
                 self.publish_count += 1
 
                 if self.publish_count % 30 == 0:  # Log every 30 publishes
                     logger.debug(
-                        f"Published {len(poses)} detections (total publishes: {self.publish_count})",
+                        f"Published {len(self.poses)} detections (total publishes: {self.publish_count})",
                         operation="publish_detections",
                     )
             else:
@@ -190,5 +193,6 @@ class NetworkTablesPublisher:
         try:
             # Publish an empty array
             self.pose_pub.set([])
+            self.area_pub.set([])
         except Exception as e:
             logger.warning(f"Error clearing detections: {e}", operation="clear")

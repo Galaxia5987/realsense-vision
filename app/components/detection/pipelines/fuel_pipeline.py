@@ -114,7 +114,7 @@ class FuelPipeline(PipelineBase):
             return None
         return frames_to_jpeg_bytes(self._depth_frame, resolution=(self.camera.width, self.camera.height))
 
-    def get_output(self) -> list[Detection]:
+    def get_output(self) -> list[tuple[Detection, float]]:
         return self.detections
 
     def _create_visualization(self, frame, contours) -> Optional[np.ndarray]:
