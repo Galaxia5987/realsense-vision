@@ -1,5 +1,10 @@
 # Intel RealSense Vision for FRC
 
+> [!Warning]
+> This project is no longer used or maintained; Please check out [AetherVision](https://github.com/Galaxia5987/aether-vision).
+
+
+
 Integrate Intel RealSense cameras with FRC robots seamlessly.
 
 > **Note:** Tested only on Orange Pi 5, and Orange Pi 5 Pro. Other platforms are not guaranteed to work.
